@@ -46,7 +46,7 @@ export default function LoginSheet({ isOpen, onOpenChange, onSuccess }: LoginShe
   return (
     <Dialog isOpen={isOpen} onOpenChange={onOpenChange} width={360}>
       <div className={styles.body}>
-        <h2 className={styles.title}>unmask 시작하기</h2>
+        <h2 className={styles.title}>ClearGuard 시작하기</h2>
         <p className={styles.description}>
           로그인하면 진단 결과와 분석 기록이 계정에 연결됩니다.
         </p>

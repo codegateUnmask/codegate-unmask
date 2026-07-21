@@ -78,7 +78,7 @@ export default function AnalysisProgressScreen({
           <span className={styles.brandIcon}>
             <ShieldIcon />
           </span>
-          <span>unmask</span>
+          <span>ClearGuard</span>
         </div>
         {onCancel ? (
           <button type="button" className={styles.iconButton} onClick={onCancel} aria-label="분석 취소">

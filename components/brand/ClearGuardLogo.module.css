@@ -1,0 +1,40 @@
+.root {
+  display: inline-flex;
+  align-items: center;
+  color: var(--ink);
+}
+
+.lockup {
+  gap: 0.8rem;
+}
+
+.markOnly {
+  gap: 0;
+}
+
+.mark {
+  display: inline-grid;
+  width: var(--clearguard-mark-size);
+  height: var(--clearguard-mark-size);
+  flex: 0 0 auto;
+  place-items: center;
+}
+
+.svg {
+  display: block;
+  overflow: visible;
+  flex: 0 0 auto;
+}
+
+.wordmark {
+  color: currentColor;
+  font-size: clamp(1rem, calc(var(--clearguard-mark-size) * 0.72), 1.6rem);
+  font-weight: 800;
+  letter-spacing: -0.045em;
+  line-height: 1;
+  white-space: nowrap;
+}
+
+.light {
+  color: #ffffff;
+}

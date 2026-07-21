@@ -91,7 +91,7 @@ export default function RequestPhrasesScreen({
           <span className={styles.brandIcon}>
             <ShieldIcon />
           </span>
-          <span>unmask</span>
+          <span>ClearGuard</span>
         </span>
         <span aria-hidden="true" />
       </header>

@@ -58,7 +58,7 @@ export default function AnalysisErrorScreen({ kind, onRetry, onEdit, onBack }: A
           <span className={styles.brandIcon}>
             <ShieldIcon />
           </span>
-          <span>unmask</span>
+          <span>ClearGuard</span>
         </div>
         <span />
       </header>
