@@ -1,3 +1,4 @@
+import type { AnalysisStage } from '@/lib/types';
 import styles from './AnalysisProgressScreen.module.css';
 
 function ShieldIcon() {
@@ -37,7 +38,19 @@ function CheckIcon() {
   );
 }
 
-export default function AnalysisProgressScreen() {
+export interface AnalysisProgressScreenProps {
+  docTypeLabel: string;
+  stage: AnalysisStage | null;
+}
+
+const STEP_LABELS = ['개인정보 마스킹 완료', '위험 조항 탐색 중...', '원문 근거 검증 중...'] as const;
+
+export default function AnalysisProgressScreen({ docTypeLabel, stage }: AnalysisProgressScreenProps) {
+  // triage 전: 1단계만 완료, triage 중: 2단계 진행, full 진입: 2단계 완료+3단계 진행
+  const activeIndex = stage === 'full' ? 2 : 1;
+  const progressPct = stage === 'full' ? 80 : stage === 'triage' ? 45 : 20;
+  const statusText = stage === 'full' ? '원문 근거를 검증하고 있습니다...' : '문서를 꼼꼼히 읽고 있습니다...';
+
   return (
     <section className={styles.screen} aria-labelledby="analysis-progress-title">
       <header className={styles.header}>
@@ -58,7 +71,7 @@ export default function AnalysisProgressScreen() {
           <article className={styles.documentCard}>
             <DocumentThumbnail />
             <div className={styles.documentCopy}>
-              <span className={styles.badge}>부동산 임대차 계약서</span>
+              <span className={styles.badge}>{docTypeLabel}</span>
               <h1 id="analysis-progress-title">
                 문서를
                 <br />
@@ -74,30 +87,31 @@ export default function AnalysisProgressScreen() {
               aria-label="계약서 분석 진행률"
               aria-valuemin={0}
               aria-valuemax={100}
-              aria-valuenow={45}
+              aria-valuenow={progressPct}
             >
-              <span />
+              <span style={{ width: `${progressPct}%` }} />
             </div>
-            <p>문서를 꼼꼼히 읽고 있습니다...</p>
+            <p>{statusText}</p>
           </div>
 
           <ol className={styles.steps}>
-            <li className={styles.completedStep}>
-              <span className={styles.stepIcon}>
-                <CheckIcon />
-              </span>
-              <span>개인정보 마스킹 완료</span>
-            </li>
-            <li className={styles.activeStep}>
-              <span className={styles.stepIcon} aria-hidden="true">
-                <span />
-              </span>
-              <span>위험 조항 탐색 중...</span>
-            </li>
-            <li className={styles.pendingStep}>
-              <span className={styles.stepIcon} aria-hidden="true" />
-              <span>원문 근거 검증 대기</span>
-            </li>
+            {STEP_LABELS.map((label, i) => (
+              <li
+                key={label}
+                className={
+                  i < activeIndex
+                    ? styles.completedStep
+                    : i === activeIndex
+                      ? styles.activeStep
+                      : styles.pendingStep
+                }
+              >
+                <span className={styles.stepIcon} aria-hidden="true">
+                  {i < activeIndex ? <CheckIcon /> : i === activeIndex ? <span /> : null}
+                </span>
+                <span>{label}</span>
+              </li>
+            ))}
           </ol>
         </div>
 

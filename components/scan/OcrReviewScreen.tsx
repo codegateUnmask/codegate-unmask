@@ -1,5 +1,6 @@
 'use client';
 
+import type { ContractOcrAssessment } from '@/lib/ocr-confidence';
 import styles from './OcrReviewScreen.module.css';
 
 const ICON_PATHS = {
@@ -11,8 +12,6 @@ const ICON_PATHS = {
   arrow: 'm12 4-1.41 1.41L16.17 11H4v2h12.17l-5.58 5.59L12 20l8-8-8-8Z',
 } as const;
 
-const DEFAULT_FILE_NAME = '부동산 임대차 계약서.jpg';
-
 function Icon({ name, size = 20 }: { name: keyof typeof ICON_PATHS; size?: number }) {
   return (
     <svg aria-hidden="true" width={size} height={size} viewBox="0 0 24 24" fill="currentColor">
@@ -21,35 +20,49 @@ function Icon({ name, size = 20 }: { name: keyof typeof ICON_PATHS; size?: numbe
   );
 }
 
-function SampleContractText() {
-  return (
-    <>
-      <p><strong>제 1 조 (목적)</strong><br />본 계약은 임대인과 임차인 쌍방이 아래 표시 부동산에 관하여 다음 내용과 같이 임대차계약을 체결한다.</p>
-      <p><strong>제 2 조 (부동산의 표시)</strong><br />소재지 : 서울특별시 강남구 테헤란로 123, 45층 4501호<br />면적 : 85.00 ㎡</p>
-      <p><strong>제 3 조 (보증금 및 지급시기)</strong><br />임대차 <mark className={styles.errorHighlight}>보중금음</mark> 금 삼억원정 (₩ 300,000,000)으로 하며, 다음과 같이 지급한다.<br />1. 계약금 : 금 삼천만원정 (₩ 30,000,000)은 계약 시에 지불한다.<br />2. 잔금 : 금 이억칠천만원정 (₩ 270,000,000)은 <mark className={styles.warningHighlight}>2024년 10월 31일</mark>에 지불한다.</p>
-      <p><strong>제 4 조 (존속기간)</strong><br />임대인은 위 부동산을 임대차 목적대로 사용, 수익할 수 있는 상태로 2024년 10월 31일까지 임차인에게 인도하며, 임대차 기간은 인도일로부터 24개월로 한다.</p>
-      <p><strong>제 5 조 (계약의 해제)</strong><br />임차인이 임대인에게 중도금(중도금이 없을 때는 잔금)을 지불하기 전까지, 임대인은 계약금의 배액을 상환하고, 임차인은 계약금을 포기하고 본 계약을 해제할 수 있다.</p>
-      <p><strong>제 6 조 (특약사항)</strong><br />1. 반려동물 사육은 <mark className={styles.errorHighlight}>엄격히 금지</mark>하며, 적발 시 즉각 퇴거 조치한다.<br />2. 기본 시설물 파손 시 임차인이 원상복구 비용을 전액 부담한다.</p>
-    </>
-  );
-}
+const ARROW_LEFT = 'm11 6-6 6 6 6M5 12h14';
 
 export interface OcrReviewScreenProps {
   fileName?: string;
-  text?: string;
+  text: string;
+  onTextChange: (text: string) => void;
+  assessment: ContractOcrAssessment | null;
+  confirmed: boolean;
+  onConfirmedChange: (confirmed: boolean) => void;
+  requiresConfirmation: boolean;
+  onAnalyze: () => void;
+  analyzeDisabled: boolean;
+  busy: boolean;
+  onBack: () => void;
 }
 
-export function OcrReviewScreen({ fileName = DEFAULT_FILE_NAME, text }: OcrReviewScreenProps) {
+export function OcrReviewScreen({
+  fileName = '계약서 사진',
+  text,
+  onTextChange,
+  assessment,
+  confirmed,
+  onConfirmedChange,
+  requiresConfirmation,
+  onAnalyze,
+  analyzeDisabled,
+  busy,
+  onBack,
+}: OcrReviewScreenProps) {
+  const reviewLines = assessment?.lines.filter((line) => line.critical || line.lowConfidence) ?? [];
+
   return (
     <div className={styles.screen}>
       <header className={styles.header}>
-        <button className={styles.iconButton} type="button" aria-label="보안 화면으로 돌아가기">
-          <Icon name="security" size={24} />
+        <button className={styles.iconButton} type="button" onClick={onBack} aria-label="이전 화면으로">
+          <svg aria-hidden="true" width={24} height={24} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={1.9} strokeLinecap="round" strokeLinejoin="round">
+            <path d={ARROW_LEFT} />
+          </svg>
         </button>
         <h1 className={styles.logo}>unmask</h1>
-        <button className={styles.iconButton} type="button" aria-label="알림">
+        <span className={styles.iconButton} aria-hidden="true">
           <Icon name="notifications" size={24} />
-        </button>
+        </span>
       </header>
 
       <main className={styles.main}>
@@ -59,7 +72,7 @@ export function OcrReviewScreen({ fileName = DEFAULT_FILE_NAME, text }: OcrRevie
             <span>1단계: 텍스트 추출 완료</span>
           </div>
           <h2 id="ocr-review-title">추출된 내용을 확인해 주세요.</h2>
-          <p>오타가 있거나 인식이 잘못된 부분이 있다면 수정할 수 있습니다. 형광펜으로 칠해진 부분은 인식이 부정확할 수 있습니다.</p>
+          <p>오타가 있거나 인식이 잘못된 부분이 있다면 수정할 수 있습니다. 아래 핵심 항목은 원문 사진과 꼭 대조해 주세요.</p>
         </section>
 
         <section className={styles.documentCard} aria-label="추출된 계약서 내용">
@@ -68,23 +81,67 @@ export function OcrReviewScreen({ fileName = DEFAULT_FILE_NAME, text }: OcrRevie
               <Icon name="scanner" size={18} />
               <span>{fileName}</span>
             </div>
-            <button className={styles.editButton} type="button">
-              <Icon name="edit" size={18} />
-              <span>직접 수정</span>
-            </button>
           </div>
-          <div className={styles.documentText} role="textbox" aria-label="OCR로 추출된 계약서 텍스트" aria-readonly="true">
-            {text ? <p className={styles.customText}>{text}</p> : <SampleContractText />}
+          <div className={styles.documentText}>
+            <textarea
+              value={text}
+              onChange={(e) => onTextChange(e.target.value)}
+              disabled={busy}
+              rows={14}
+              aria-label="추출된 계약서 텍스트 (수정 가능)"
+              className={styles.editableText}
+            />
           </div>
+
+          {assessment && (
+            <div className={styles.reviewPanel}>
+              <p className={styles.reviewTitle}>
+                <Icon name="edit" size={16} />
+                핵심 항목 확인
+              </p>
+              {reviewLines.length > 0 ? (
+                <ul className={styles.reviewList}>
+                  {reviewLines.map((line, index) => (
+                    <li key={`${line.text}-${index}`} className={styles.reviewItem}>
+                      {line.critical && <span className={styles.criticalBadge}>핵심 항목</span>}
+                      {line.lowConfidence && <span className={styles.lowConfidenceBadge}>인식 불확실</span>}
+                      {line.text}
+                    </li>
+                  ))}
+                </ul>
+              ) : (
+                <p className={styles.reviewEmpty}>
+                  핵심 또는 불확실 항목을 찾지 못했습니다. 누락되지 않았는지 전체 텍스트를 직접 확인해 주세요.
+                </p>
+              )}
+              <label className={styles.confirmRow}>
+                <input
+                  type="checkbox"
+                  checked={confirmed}
+                  onChange={(e) => onConfirmedChange(e.target.checked)}
+                />
+                금액, 날짜·기간, 위약금·환불, 자동갱신, 주민번호, 연락처, 계좌번호를 원문과 대조했습니다.
+              </label>
+              {requiresConfirmation && (
+                <p role="status" className={styles.confirmNotice}>
+                  핵심 항목 확인 후 분석을 시작할 수 있습니다.
+                </p>
+              )}
+            </div>
+          )}
         </section>
       </main>
 
       <footer className={styles.actions}>
-        <button className={styles.primaryAction} type="button">
-          <span>이대로 분석하기</span>
+        <button
+          className={styles.primaryAction}
+          type="button"
+          disabled={analyzeDisabled}
+          onClick={onAnalyze}
+        >
+          <span>{busy ? '분석 중…' : '이대로 분석하기'}</span>
           <Icon name="arrow" size={20} />
         </button>
-        <button className={styles.secondaryAction} type="button">내용 수정하기</button>
       </footer>
     </div>
   );

@@ -1,9 +1,23 @@
 'use client';
 
-import { useState } from 'react';
+import Link from 'next/link';
+import { ContractImageOcr } from './ContractImageOcr';
+import { USE_OCR } from '@/lib/config';
+import type { Sample } from '@/lib/mock.scan';
+import type { ContractImageExtraction } from '@/lib/ocr';
+import type { DocType, VulnProfile } from '@/lib/types';
 import styles from './ContractInputScreen.module.css';
 
 type InputMode = 'camera' | 'upload' | 'text';
+type ReviewResult = Extract<ContractImageExtraction, { decision: 'review-required' }>;
+
+const DOC_TABS: { key: DocType; label: string }[] = [
+  { key: 'lease', label: '전월세' },
+  { key: 'labor', label: '근로계약' },
+  { key: 'service', label: '선불서비스' },
+  { key: 'terms', label: '약관' },
+  { key: 'message', label: '문자' },
+];
 
 const MODES: Array<{
   key: InputMode;
@@ -91,30 +105,77 @@ function ArrowIcon() {
   );
 }
 
-export function ContractInputScreen() {
-  const [mode, setMode] = useState<InputMode>('camera');
+export interface ContractInputScreenProps {
+  docType: DocType;
+  onDocTypeChange: (docType: DocType) => void;
+  mode: InputMode;
+  onModeChange: (mode: InputMode) => void;
+  text: string;
+  onTextChange: (text: string) => void;
+  samples: Sample[];
+  onSample: (sample: Sample) => void;
+  onOcrResult: (result: ReviewResult) => void;
+  onOcrBusyChange: (busy: boolean) => void;
+  busy: boolean;
+  onNext: () => void;
+  profile: VulnProfile | null;
+}
+
+export function ContractInputScreen({
+  docType,
+  onDocTypeChange,
+  mode,
+  onModeChange,
+  text,
+  onTextChange,
+  samples,
+  onSample,
+  onOcrResult,
+  onOcrBusyChange,
+  busy,
+  onNext,
+  profile,
+}: ContractInputScreenProps) {
+  const canProceed = mode === 'text' && text.trim().length > 0 && !busy;
 
   return (
     <main className={styles.screen}>
       <header className={styles.header}>
-        <button className={styles.iconButton} type="button" aria-label="보안 화면으로 돌아가기">
+        <span className={styles.iconButton} aria-hidden="true">
           <SecurityIcon />
-        </button>
+        </span>
         <h1 className={styles.logo}>unmask</h1>
-        <button className={styles.iconButton} type="button" aria-label="알림">
+        <span className={styles.iconButton} aria-hidden="true">
           <BellIcon />
-        </button>
+        </span>
       </header>
 
       <section className={styles.content}>
         <div className={styles.heading}>
           <h1>
-            어떤 방식으로
+            어떤 계약서인지,
             <br />
-            분석할까요?
+            어떻게 분석할까요?
           </h1>
-          <p>가장 편리한 방법을 선택해 주세요.</p>
+          <p>문서 종류와 입력 방법을 선택해 주세요.</p>
         </div>
+
+        <fieldset className={styles.docTypeGroup}>
+          <legend>문서 종류</legend>
+          <div className={styles.docTypeTabs}>
+            {DOC_TABS.map((tab) => (
+              <button
+                key={tab.key}
+                type="button"
+                disabled={busy}
+                onClick={() => onDocTypeChange(tab.key)}
+                className={docType === tab.key ? styles.docTypeTabActive : styles.docTypeTab}
+              >
+                {tab.label}
+              </button>
+            ))}
+          </div>
+        </fieldset>
 
         <fieldset className={styles.modeGroup}>
           <legend>계약서 입력 방법</legend>
@@ -132,7 +193,8 @@ export function ContractInputScreen() {
                   name="input-mode"
                   value={item.key}
                   checked={selected}
-                  onChange={() => setMode(item.key)}
+                  disabled={busy}
+                  onChange={() => onModeChange(item.key)}
                 />
                 <span className={styles.modeIcon}>
                   <Icon />
@@ -146,6 +208,50 @@ export function ContractInputScreen() {
           })}
         </fieldset>
 
+        {mode === 'text' && (
+          <div className={styles.textPanel}>
+            <textarea
+              value={text}
+              onChange={(e) => onTextChange(e.target.value)}
+              disabled={busy}
+              placeholder="계약서 내용을 여기에 붙여넣으세요"
+              rows={10}
+              className={styles.textarea}
+            />
+            {samples.length > 0 && (
+              <div className={styles.sampleRow}>
+                {samples.map((sample) => (
+                  <button
+                    key={sample.name}
+                    type="button"
+                    disabled={busy}
+                    onClick={() => onSample(sample)}
+                    className={styles.sampleButton}
+                  >
+                    {sample.name}
+                  </button>
+                ))}
+              </div>
+            )}
+          </div>
+        )}
+
+        {mode !== 'text' && USE_OCR && (
+          <div className={styles.ocrPanel}>
+            <ContractImageOcr
+              disabled={busy}
+              onBusyChange={onOcrBusyChange}
+              onSelectionStart={() => {}}
+              onResult={onOcrResult}
+            />
+          </div>
+        )}
+        {mode !== 'text' && !USE_OCR && (
+          <p className={styles.ocrDisabledNotice}>
+            이 환경에서는 사진 인식이 꺼져 있습니다. &quot;텍스트 직접 입력&quot;을 이용해 주세요.
+          </p>
+        )}
+
         <div className={styles.bottom}>
           <div className={styles.privacy}>
             <span className={styles.privacyIcon}>
@@ -153,7 +259,20 @@ export function ContractInputScreen() {
             </span>
             <p>계약서 이미지는 서버에 저장되지 않고 브라우저 내에서 안전하게 처리됩니다.</p>
           </div>
-          <button type="button" className={styles.cta} aria-disabled="true">
+          {profile ? (
+            <p className={styles.personalizedNotice}>🎯 『{profile.typeName}』 맞춤 판독이 적용돼요</p>
+          ) : (
+            <Link href="/diagnose" className={styles.personalizedLink}>
+              1분 진단하면 내 유형 맞춤 경고를 함께 받아요 →
+            </Link>
+          )}
+          <button
+            type="button"
+            className={styles.cta}
+            disabled={!canProceed}
+            aria-disabled={!canProceed}
+            onClick={onNext}
+          >
             <span>다음 단계로</span>
             <ArrowIcon />
           </button>
