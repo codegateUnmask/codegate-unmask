@@ -1,46 +1,29 @@
 'use client';
 
+// 로그인 게이트 — [담당: 지식·데이터·인프라(D)]
+// 여기서 직접 로그인시키지 않고 /login 으로 보냅니다.
+// 소셜 버튼은 "환경변수가 있는 프로바이더만" 띄워야 하는데(auth.ts),
+// 그 판단은 서버에서만 가능해서 로그인 화면 한 곳에만 두고 재사용합니다.
+
+import { usePathname, useRouter } from 'next/navigation';
 import { Dialog } from '@astryxdesign/core/Dialog';
 import { Button } from '@astryxdesign/core/Button';
-import { useAuthStore } from '@/stores/authStore';
 import styles from './LoginSheet.module.css';
-
-function GoogleLogo() {
-  return (
-    <svg width="20" height="20" viewBox="0 0 48 48" aria-hidden="true">
-      <path
-        fill="#EA4335"
-        d="M24 9.5c3.54 0 6.71 1.22 9.21 3.6l6.85-6.85C35.9 2.38 30.47 0 24 0 14.62 0 6.51 5.38 2.56 13.22l7.98 6.19C12.43 13.72 17.74 9.5 24 9.5z"
-      />
-      <path
-        fill="#4285F4"
-        d="M46.98 24.55c0-1.57-.15-3.09-.38-4.55H24v9.02h12.94c-.58 2.96-2.26 5.48-4.78 7.18l7.73 6c4.51-4.18 7.09-10.36 7.09-17.65z"
-      />
-      <path
-        fill="#FBBC05"
-        d="M10.53 28.59c-.48-1.45-.76-2.99-.76-4.59s.27-3.14.76-4.59l-7.98-6.19C.92 16.46 0 20.12 0 24c0 3.88.92 7.54 2.56 10.78l7.97-6.19z"
-      />
-      <path
-        fill="#34A853"
-        d="M24 48c6.48 0 11.93-2.13 15.89-5.81l-7.73-6c-2.15 1.45-4.92 2.3-8.16 2.3-6.26 0-11.57-4.22-13.47-9.91l-7.98 6.19C6.51 42.62 14.62 48 24 48z"
-      />
-    </svg>
-  );
-}
 
 export interface LoginSheetProps {
   isOpen: boolean;
   onOpenChange: (isOpen: boolean) => void;
-  onSuccess?: () => void;
+  /** 로그인 후 돌아올 경로. 비우면 지금 보고 있는 화면으로 돌아옵니다. */
+  callbackPath?: string;
 }
 
-export default function LoginSheet({ isOpen, onOpenChange, onSuccess }: LoginSheetProps) {
-  const signIn = useAuthStore((s) => s.signIn);
+export default function LoginSheet({ isOpen, onOpenChange, callbackPath }: LoginSheetProps) {
+  const router = useRouter();
+  const pathname = usePathname();
 
-  function handleGoogle() {
-    signIn();
+  function handleLogin() {
     onOpenChange(false);
-    onSuccess?.();
+    router.push(`/login?callbackUrl=${encodeURIComponent(callbackPath ?? pathname)}`);
   }
 
   return (
@@ -50,12 +33,9 @@ export default function LoginSheet({ isOpen, onOpenChange, onSuccess }: LoginShe
         <p className={styles.description}>
           로그인하면 진단 결과와 분석 기록이 계정에 연결됩니다.
         </p>
-        <button type="button" className={styles.googleButton} onClick={handleGoogle}>
-          <GoogleLogo />
-          Google로 계속하기
-        </button>
+        <Button label="로그인하러 가기" variant="primary" width="100%" onClick={handleLogin} />
         <Button label="다음에 할게요" variant="ghost" width="100%" onClick={() => onOpenChange(false)} />
-        <p className={styles.notice}>데모 버전 — 실제 계정 연동 없이 로그인 상태만 저장됩니다.</p>
+        <p className={styles.notice}>카카오·구글·네이버 또는 닉네임만으로 체험할 수 있어요.</p>
       </div>
     </Dialog>
   );
