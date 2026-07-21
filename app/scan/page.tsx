@@ -12,6 +12,7 @@ import type { ContractOcrAssessment } from '@/lib/ocr-confidence';
 import type { ContractImageExtraction } from '@/lib/ocr';
 import type { DocType } from '@/lib/types';
 import { useScanStore } from '@/stores/scanStore';
+import { isMismatch } from '@/lib/docTypeGuess';
 
 const DOC_LABELS: Record<DocType, string> = {
   lease: '전월세 계약서',
@@ -60,6 +61,7 @@ function ScanFlow() {
   const [ocrReview, setOcrReview] = useState<ContractOcrAssessment | null>(null);
   const [confirmed, setConfirmed] = useState(false);
   const [requestsOpen, setRequestsOpen] = useState(false);
+  const [mismatch, setMismatch] = useState<{ label: string; type: DocType } | null>(null);
 
   const running = status === 'triage' || status === 'full';
   const requiresConfirmation = ocrReview !== null && !confirmed;
@@ -86,11 +88,21 @@ function ScanFlow() {
 
   function handleNextFromInput() {
     if (mode !== 'text' || !text.trim()) return;
+    const check = isMismatch(text, docType);
+    if (check.mismatch && check.suggest && check.suggestLabel) {
+      setMismatch({ label: check.suggestLabel, type: check.suggest });
+      return; // 탭과 다른 문서로 보이면 판독을 시작하지 않고 안내
+    }
     start(profile ?? undefined);
   }
 
   function handleAnalyzeFromReview() {
     if (requiresConfirmation || !text.trim()) return;
+    const check = isMismatch(text, docType);
+    if (check.mismatch && check.suggest && check.suggestLabel) {
+      setMismatch({ label: check.suggestLabel, type: check.suggest });
+      return;
+    }
     start(profile ?? undefined);
   }
 
@@ -101,6 +113,7 @@ function ScanFlow() {
     setOcrReview(null);
     setConfirmed(false);
     setRequestsOpen(false);
+    setMismatch(null);
   }
 
   function handleBackToInput() {
@@ -111,6 +124,7 @@ function ScanFlow() {
 
   if (step === 'ocr-review') {
     return (
+      <>
       <OcrReviewScreen
         text={text}
         onTextChange={setText}
@@ -123,6 +137,41 @@ function ScanFlow() {
         busy={running}
         onBack={handleBackToInput}
       />
+      {mismatch && (
+        <div
+          role="dialog"
+          aria-label="문서 유형 확인"
+          className="fixed inset-0 z-30 flex items-end justify-center bg-black/40 px-4 pb-6"
+          onClick={() => setMismatch(null)}
+        >
+          <div
+            className="w-full max-w-[480px] rounded-2xl bg-white p-5"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <h3 className="text-[16px] font-extrabold text-[var(--ink)]">
+              이 문서는 「{mismatch.label}」 문서로 보여요
+            </h3>
+            <p className="mt-1 text-[13.5px] leading-relaxed text-[var(--ink-soft)]">
+              정확한 판독을 위해 {DOC_LABELS[mismatch.type]} 분석을 이용해주세요.
+            </p>
+            <button
+              type="button"
+              onClick={() => { setDocType(mismatch.type); setMismatch(null); }}
+              className="mt-4 w-full rounded-xl bg-[var(--ink)] px-4 py-3 text-[14px] font-bold text-white"
+            >
+              {mismatch.label} 분석으로 이동
+            </button>
+            <button
+              type="button"
+              onClick={() => { setMismatch(null); start(profile ?? undefined); }}
+              className="mt-2 w-full py-1 text-center text-[12.5px] font-bold text-[var(--ink-soft)] underline underline-offset-2"
+            >
+              그래도 판독하기
+            </button>
+          </div>
+        </div>
+      )}
+      </>
     );
   }
 
@@ -190,20 +239,56 @@ function ScanFlow() {
   }
 
   return (
-    <ContractInputScreen
-      docType={docType}
-      onDocTypeChange={setDocType}
-      mode={mode}
-      onModeChange={setMode}
-      text={text}
-      onTextChange={setText}
-      samples={SAMPLES[docType] ?? []}
-      onSample={handleSample}
-      onOcrResult={handleOcrResult}
-      onOcrBusyChange={setOcrBusy}
-      busy={running || ocrBusy}
-      onNext={handleNextFromInput}
-      profile={profile}
-    />
+    <>
+      <ContractInputScreen
+        docType={docType}
+        onDocTypeChange={setDocType}
+        mode={mode}
+        onModeChange={setMode}
+        text={text}
+        onTextChange={setText}
+        samples={SAMPLES[docType] ?? []}
+        onSample={handleSample}
+        onOcrResult={handleOcrResult}
+        onOcrBusyChange={setOcrBusy}
+        busy={running || ocrBusy}
+        onNext={handleNextFromInput}
+        profile={profile}
+      />
+      {mismatch && (
+        <div
+          role="dialog"
+          aria-label="문서 유형 확인"
+          className="fixed inset-0 z-30 flex items-end justify-center bg-black/40 px-4 pb-6"
+          onClick={() => setMismatch(null)}
+        >
+          <div
+            className="w-full max-w-[480px] rounded-2xl bg-white p-5"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <h3 className="text-[16px] font-extrabold text-[var(--ink)]">
+              이 문서는 「{mismatch.label}」 문서로 보여요
+            </h3>
+            <p className="mt-1 text-[13.5px] leading-relaxed text-[var(--ink-soft)]">
+              정확한 판독을 위해 {DOC_LABELS[mismatch.type]} 분석을 이용해주세요.
+            </p>
+            <button
+              type="button"
+              onClick={() => { setDocType(mismatch.type); setMismatch(null); }}
+              className="mt-4 w-full rounded-xl bg-[var(--ink)] px-4 py-3 text-[14px] font-bold text-white"
+            >
+              {mismatch.label} 분석으로 이동
+            </button>
+            <button
+              type="button"
+              onClick={() => { setMismatch(null); start(profile ?? undefined); }}
+              className="mt-2 w-full py-1 text-center text-[12.5px] font-bold text-[var(--ink-soft)] underline underline-offset-2"
+            >
+              그래도 판독하기
+            </button>
+          </div>
+        </div>
+      )}
+    </>
   );
 }
