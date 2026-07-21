@@ -1,0 +1,15 @@
+.cow {
+  position: fixed;
+  top: 0;
+  left: 0;
+  z-index: 9999;
+  opacity: 0;
+  pointer-events: none; /* 클릭·호버를 절대 가로채지 않음 */
+  transition: opacity 0.3s ease;
+  will-change: transform;
+  filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.18));
+}
+
+.visible {
+  opacity: 1;
+}
