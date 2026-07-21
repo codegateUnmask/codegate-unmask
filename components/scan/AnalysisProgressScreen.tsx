@@ -56,9 +56,13 @@ export default function AnalysisProgressScreen({
   dangerCount,
   warningCount,
 }: AnalysisProgressScreenProps) {
-  const activeIndex = stage === 'full' ? 2 : 1;
+  const activeIndex = stage === 'full' ? 3 : stage === 'triage' ? 2 : 1;
   const statusText =
-    stage === 'full' ? '정밀 계약 판독을 진행하고 있습니다.' : '빠른 위험 분류를 진행하고 있습니다.';
+    stage === 'full'
+      ? '원문 근거를 검증하고 있습니다.'
+      : stage === 'triage'
+        ? '정밀 계약 판독을 진행하고 있습니다.'
+        : '빠른 위험 분류를 진행하고 있습니다.';
 
   const countParts: string[] = [];
   if (dangerCount) countParts.push(`위험 ${dangerCount}건`);

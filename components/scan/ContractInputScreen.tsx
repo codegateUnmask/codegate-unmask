@@ -1,15 +1,12 @@
 'use client';
 
 import Link from 'next/link';
-import { ContractImageOcr } from './ContractImageOcr';
 import { USE_OCR } from '@/lib/config';
 import type { Sample } from '@/lib/mock.scan';
-import type { ContractImageExtraction } from '@/lib/ocr';
 import type { DocType, VulnProfile } from '@/lib/types';
 import styles from './ContractInputScreen.module.css';
 
 type InputMode = 'camera' | 'upload' | 'text';
-type ReviewResult = Extract<ContractImageExtraction, { decision: 'review-required' }>;
 
 const DOC_TABS: { key: DocType; label: string }[] = [
   { key: 'lease', label: '전월세' },
@@ -101,12 +98,8 @@ export interface ContractInputScreenProps {
   onDocTypeChange: (docType: DocType) => void;
   mode: InputMode;
   onModeChange: (mode: InputMode) => void;
-  text: string;
-  onTextChange: (text: string) => void;
   samples: Sample[];
   onSample: (sample: Sample) => void;
-  onOcrResult: (result: ReviewResult) => void;
-  onOcrBusyChange: (busy: boolean) => void;
   busy: boolean;
   onNext: () => void;
   profile: VulnProfile | null;
@@ -118,18 +111,14 @@ export function ContractInputScreen({
   onDocTypeChange,
   mode,
   onModeChange,
-  text,
-  onTextChange,
   samples,
   onSample,
-  onOcrResult,
-  onOcrBusyChange,
   busy,
   onNext,
   profile,
   onBack,
 }: ContractInputScreenProps) {
-  const canProceed = mode === 'text' && text.trim().length > 0 && !busy;
+  const canProceed = !busy && (mode === 'text' || USE_OCR);
 
   return (
     <main className={styles.screen}>
@@ -208,44 +197,24 @@ export function ContractInputScreen({
           })}
         </fieldset>
 
-        {mode === 'text' && (
+        {mode === 'text' && samples.length > 0 && (
           <div className={styles.textPanel}>
-            <textarea
-              value={text}
-              onChange={(e) => onTextChange(e.target.value)}
-              disabled={busy}
-              placeholder="계약서 내용을 여기에 붙여넣으세요"
-              rows={10}
-              className={styles.textarea}
-            />
-            {samples.length > 0 && (
-              <div className={styles.sampleRow}>
-                {samples.map((sample) => (
-                  <button
-                    key={sample.name}
-                    type="button"
-                    disabled={busy}
-                    onClick={() => onSample(sample)}
-                    className={styles.sampleButton}
-                  >
-                    {sample.name}
-                  </button>
-                ))}
-              </div>
-            )}
+            <div className={styles.sampleRow}>
+              {samples.map((sample) => (
+                <button
+                  key={sample.name}
+                  type="button"
+                  disabled={busy}
+                  onClick={() => onSample(sample)}
+                  className={styles.sampleButton}
+                >
+                  {sample.name}
+                </button>
+              ))}
+            </div>
           </div>
         )}
 
-        {mode !== 'text' && USE_OCR && (
-          <div className={styles.ocrPanel}>
-            <ContractImageOcr
-              disabled={busy}
-              onBusyChange={onOcrBusyChange}
-              onSelectionStart={() => {}}
-              onResult={onOcrResult}
-            />
-          </div>
-        )}
         {mode !== 'text' && !USE_OCR && (
           <p className={styles.ocrDisabledNotice}>
             이 환경에서는 사진 인식이 꺼져 있습니다. &quot;텍스트 직접 입력&quot;을 이용해 주세요.
