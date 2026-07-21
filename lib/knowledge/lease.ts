@@ -13,6 +13,7 @@
 // ============================================================
 
 import type { KnowledgePack } from './index';
+import { PACK_TASKS } from './tasks';
 
 /**
  * 법령 원문 — 판독 결과의 legalBasis에 인용할 근거.
@@ -125,18 +126,8 @@ const UNVERIFIABLE_GUIDE = `
 `;
 
 export const leasePack: KnowledgePack = {
-  label: '전월세 계약서',
-  tasks: [
-    '계약 상대방과 등기상 소유자 일치 여부',
-    '대리계약 시 위임장·인감증명서 구비 여부',
-    '주택의 권리침해·근저당 상태',
-    '보증금과 시세의 관계',
-    '선순위 권리 확인 여부',
-    '보증보험 가입 가능성',
-    '특약의 보증금 보호 조항 유무',
-    '중개사 설명과 계약서의 일치 여부',
-    '계약 후 과업(전입신고·확정일자·등기변동 확인)',
-  ],
+  label: PACK_TASKS.lease.label,
+  tasks: PACK_TASKS.lease.tasks,
   requestRecipient: '중개사',
   officialChannels: [
     '인터넷등기소 (등기부등본 열람 — 소유자·근저당 확인)',

@@ -12,14 +12,38 @@ import { useAppStore } from '@/lib/store';
 import { PACK_TASKS } from '@/lib/knowledge/tasks';
 import { MOCK_SCAN_RESULT } from '@/lib/mock';
 import { RISKY_LEASE_SAMPLE, SAFE_LEASE_SAMPLE } from '@/lib/samples/lease';
+import { RISKY_LABOR_SAMPLE, SAFE_LABOR_SAMPLE } from '@/lib/samples/labor';
+import {
+  RISKY_SERVICE_SAMPLE,
+  RISKY_CLINIC_SAMPLE,
+  SAFE_SERVICE_SAMPLE,
+} from '@/lib/samples/service';
 import { AnalysisChecklist } from '@/components/viewer/AnalysisChecklist';
 import { ScanReport } from '@/components/viewer/ScanReport';
 
 const DOC_TYPE_LABEL: Record<DocType, string> = {
-  lease: '전월세 계약서',
-  labor: '근로·알바 계약서',
-  terms: '약관·독소조항',
-  message: '문자 (스미싱/피싱)',
+  lease: '전월세',
+  labor: '근로·알바',
+  service: '헬스장·피부과·학원',
+  terms: '약관·구독',
+  message: '문자 (스미싱)',
+};
+
+/** 유형별 데모 샘플 — 발표 중 붙여넣기 실수를 없애기 위한 버튼 */
+const SAMPLES: Partial<Record<DocType, { label: string; text: string }[]>> = {
+  lease: [
+    { label: '위험한 계약서', text: RISKY_LEASE_SAMPLE },
+    { label: '안전한 계약서', text: SAFE_LEASE_SAMPLE },
+  ],
+  labor: [
+    { label: '위험한 알바 계약서', text: RISKY_LABOR_SAMPLE },
+    { label: '안전한 알바 계약서', text: SAFE_LABOR_SAMPLE },
+  ],
+  service: [
+    { label: '헬스장 (위험)', text: RISKY_SERVICE_SAMPLE },
+    { label: '피부과 패키지 (위험)', text: RISKY_CLINIC_SAMPLE },
+    { label: '헬스장 (안전)', text: SAFE_SERVICE_SAMPLE },
+  ],
 };
 
 type Stage = 'idle' | 'triage' | 'full';
@@ -112,23 +136,19 @@ export default function ScanPage() {
       />
 
       {/* 데모용 샘플 불러오기 — 발표 때 붙여넣기 실수를 없애기 위한 버튼 */}
-      {docType === 'lease' && (
-        <div className="flex items-center gap-2 text-xs">
+      {SAMPLES[docType] && (
+        <div className="flex flex-wrap items-center gap-2 text-xs">
           <span className="text-neutral-400">샘플:</span>
-          <button
-            type="button"
-            onClick={() => setText(RISKY_LEASE_SAMPLE)}
-            className="rounded-full border border-neutral-300 px-3 py-1 hover:bg-neutral-100 dark:border-neutral-700 dark:hover:bg-neutral-900"
-          >
-            위험한 계약서
-          </button>
-          <button
-            type="button"
-            onClick={() => setText(SAFE_LEASE_SAMPLE)}
-            className="rounded-full border border-neutral-300 px-3 py-1 hover:bg-neutral-100 dark:border-neutral-700 dark:hover:bg-neutral-900"
-          >
-            안전한 계약서
-          </button>
+          {SAMPLES[docType]!.map((s) => (
+            <button
+              key={s.label}
+              type="button"
+              onClick={() => setText(s.text)}
+              className="rounded-full border border-neutral-300 px-3 py-1 hover:bg-neutral-100 dark:border-neutral-700 dark:hover:bg-neutral-900"
+            >
+              {s.label}
+            </button>
+          ))}
         </div>
       )}
 
@@ -154,7 +174,8 @@ export default function ScanPage() {
         <>
           {isMock && (
             <p className="rounded-lg bg-yellow-100 px-3 py-2 text-xs text-yellow-800 dark:bg-yellow-950 dark:text-yellow-300">
-              ⚠️ 목업 데이터입니다 (API 연결 전 화면 확인용)
+              ⚠️ 목업 데이터입니다 — API가 응답하지 않아 <b>전월세 예시 결과</b>를 대신
+              보여주고 있습니다. 지금 입력한 문서를 판독한 결과가 아닙니다.
             </p>
           )}
           <ScanReport result={result} />
