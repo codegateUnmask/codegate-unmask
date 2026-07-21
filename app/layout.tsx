@@ -1,6 +1,7 @@
 import type { Metadata } from 'next';
 import './globals.css';
 import { Providers } from './providers';
+import TabBar from '@/components/nav/TabBar';
 
 export const metadata: Metadata = {
   title: 'unmask — 사기 면역력 트레이너',
@@ -11,7 +12,10 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
   return (
     <html lang="ko" data-theme="light">
       <body className="antialiased">
-        <Providers>{children}</Providers>
+        <Providers>
+          {children}
+          <TabBar />
+        </Providers>
       </body>
     </html>
   );
