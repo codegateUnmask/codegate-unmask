@@ -4,7 +4,7 @@
 // ============================================================
 'use client';
 
-import { useState } from 'react';
+import { useRef, useState } from 'react';
 import { useSession } from 'next-auth/react';
 import { Button } from '@astryxdesign/core/Button';
 import { SelectableCard } from '@astryxdesign/core/SelectableCard';
@@ -12,6 +12,8 @@ import type { VulnAxes, VulnProfile } from '@/lib/types';
 import { QUESTIONS } from '@/lib/diagnosis/questions';
 import { useAppStore } from '@/lib/store';
 import { ANON_OWNER, FRESH_DIAGNOSIS_KEY, identityKey } from '@/components/auth/identity';
+import ShareResultButtons from '@/components/share/ShareResultButtons';
+import { profileToShareUrl } from '@/lib/share';
 
 // 4축 그래프 라벨 — verify만 "높을수록 안전"인 역방향 축이라 색을 달리 칠한다
 const AXIS_LABELS: { key: keyof VulnAxes; label: string; safe: boolean }[] = [
@@ -27,6 +29,8 @@ export default function DiagnosePage() {
   const [answers, setAnswers] = useState<number[]>(new Array(QUESTIONS.length).fill(-1));
   const [result, setResult] = useState<VulnProfile | null>(null);
   const [loading, setLoading] = useState(false);
+  // 결과 카드 캡처용 (이미지 공유)
+  const cardRef = useRef<HTMLDivElement>(null);
 
   const answered = answers.filter((a) => a >= 0).length;
 
@@ -50,21 +54,6 @@ export default function DiagnosePage() {
     }
   }
 
-  async function handleShare() {
-    if (!result) return;
-    const text = `[ClearGuard 사기 취약 유형 진단]\n나는 「${result.typeName}」 — ${result.tagline}\n1분 진단하기: ${window.location.origin}/diagnose`;
-    try {
-      if (navigator.share) {
-        await navigator.share({ title: 'ClearGuard 유형 진단', text });
-      } else {
-        await navigator.clipboard.writeText(text);
-        alert('결과가 복사됐어요! 원하는 곳에 붙여넣어 공유하세요.');
-      }
-    } catch {
-      /* 사용자가 공유 시트를 닫은 경우 등 — 무시 */
-    }
-  }
-
   function handleRetake() {
     setResult(null);
     setAnswers(new Array(QUESTIONS.length).fill(-1));
@@ -75,7 +64,7 @@ export default function DiagnosePage() {
     const isDefensive = result.category === 'defensive';
     return (
       <main className="mx-auto flex w-full max-w-[480px] flex-1 flex-col items-center justify-center gap-6 px-6 py-12">
-        <div className="w-full rounded-2xl border border-neutral-200 p-6 dark:border-neutral-800">
+        <div ref={cardRef} className="w-full rounded-2xl border border-neutral-200 bg-white p-6 dark:border-neutral-800 dark:bg-neutral-950">
           {/* 분류 배지 */}
           <div className="flex items-center justify-between">
             <span
@@ -150,15 +139,14 @@ export default function DiagnosePage() {
             </div>
           )}
         </div>
+        {/* 공유: 카드 이미지 복사 + 결과 재현 링크 (/diagnose/shared) */}
+        <ShareResultButtons
+          targetRef={cardRef}
+          shareUrl={profileToShareUrl(result)}
+          fileName={`clearguard-${result.typeCode}.png`}
+        />
         <div className="flex w-full flex-col items-stretch gap-2 sm:flex-row sm:justify-center">
           <Button label="내 유형 맞춤 계약서 판독하러 가기" variant="primary" size="lg" href="/scan" />
-          <button
-            type="button"
-            onClick={handleShare}
-            className="rounded-xl border border-neutral-300 px-5 py-3 text-sm font-bold text-neutral-700 dark:border-neutral-700 dark:text-neutral-300"
-          >
-            결과 공유하기
-          </button>
           <button
             type="button"
             onClick={handleRetake}
