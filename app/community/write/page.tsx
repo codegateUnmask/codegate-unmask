@@ -1,12 +1,20 @@
 'use client';
 
-import { useState } from 'react';
+import { Suspense, useState } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { BOARD_META, BOARD_ORDER } from '@/lib/community/shared';
 import type { BoardType } from '@/lib/community/shared';
 import { getClientToken } from '@/lib/community/client';
 
 export default function WritePage() {
+  return (
+    <Suspense fallback={null}>
+      <WriteForm />
+    </Suspense>
+  );
+}
+
+function WriteForm() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const initialBoard = (searchParams.get('board') as BoardType) || 'scam-case';
