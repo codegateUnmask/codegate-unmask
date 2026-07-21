@@ -1,4 +1,5 @@
 import Link from 'next/link';
+import { ClickableCard } from '@astryxdesign/core/ClickableCard';
 import styles from './page.module.css';
 
 function ShieldLockedIcon() {
@@ -76,11 +77,11 @@ export default function Home() {
     <main className={styles.screen}>
       <header className={styles.header}>
         {/* 로고 탭 → 첫 화면. display:contents로 감싸 기존 flex 레이아웃 무변경. */}
-        <Link href="/" aria-label="클리어가드 홈으로" style={{ display: 'contents', color: 'inherit', textDecoration: 'none' }}>
+        <Link href="/" aria-label="unmask 홈으로" style={{ display: 'contents', color: 'inherit', textDecoration: 'none' }}>
           <span className={styles.brandIcon}>
             <ShieldLockedIcon />
           </span>
-          <span className={styles.brand}>클리어가드</span>
+          <span className={styles.brand}>unmask</span>
         </Link>
       </header>
 
@@ -106,22 +107,22 @@ export default function Home() {
           {ENTRIES.map((entry) => {
             const Icon = entry.icon;
             return (
-              <Link
-                key={entry.href}
-                href={entry.href}
-                className={entry.primary ? styles.entryCardPrimary : styles.entryCard}
-              >
-                <span className={styles.entryIcon}>
-                  <Icon />
-                </span>
-                <span className={styles.entryBody}>
-                  <strong>{entry.title}</strong>
-                  <span>{entry.description}</span>
-                </span>
-                <span className={styles.entryArrow}>
-                  <ArrowIcon />
-                </span>
-              </Link>
+              <div key={entry.href} className={entry.primary ? styles.entryPrimary : undefined}>
+                <ClickableCard label={entry.title} href={entry.href}>
+                  <span className={styles.entryInner}>
+                    <span className={styles.entryIcon}>
+                      <Icon />
+                    </span>
+                    <span className={styles.entryBody}>
+                      <strong>{entry.title}</strong>
+                      <span>{entry.description}</span>
+                    </span>
+                    <span className={styles.entryArrow}>
+                      <ArrowIcon />
+                    </span>
+                  </span>
+                </ClickableCard>
+              </div>
             );
           })}
         </nav>

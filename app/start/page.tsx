@@ -29,7 +29,7 @@ export default function StartPage() {
   return (
     <main className="mx-auto flex min-h-[80vh] max-w-sm flex-col justify-center px-6 py-12">
       <p className="font-mono text-[13px] font-bold tracking-[0.22em] text-[var(--ink-soft)]">
-        클리어가드
+        UNMASK
       </p>
       <h1 className="mt-1 text-[24px] font-extrabold leading-snug text-[var(--ink)]">
         무엇부터 해볼까요?
