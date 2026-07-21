@@ -57,13 +57,14 @@ export const RISK_LABEL = {
 /**
  * 지식 팩 레지스트리 — 팩 = {과업 분해, 지식 소스, 우선순위}.
  * lib/knowledge/*.ts 가 이 목록과 1:1 대응합니다.
- * terms(약관)는 시간이 밀리면 가장 먼저 뺄 것 (§강등 순서).
+ * 데모에서 시간이 부족하면 priority가 큰 것부터 뺍니다.
  */
 export const KNOWLEDGE_PACKS = {
   lease: { label: '전월세 계약서', priority: 1, day: 1 },
-  labor: { label: '근로·알바 계약서', priority: 2, day: 2 },
-  terms: { label: '약관·독소조항', priority: 3, day: 2 },
-  message: { label: '스미싱·피싱 문자 (부가 모드)', priority: 2, day: 2 },
+  labor: { label: '근로·알바 계약서', priority: 2, day: 1 },
+  service: { label: '헬스장·피부과·학원 회원계약', priority: 2, day: 1 },
+  terms: { label: '온라인 서비스 약관·구독', priority: 3, day: 2 },
+  message: { label: '스미싱·피싱 문자 (부가 모드)', priority: 3, day: 2 },
 } as const;
 
 // ------------------------------------------------------------

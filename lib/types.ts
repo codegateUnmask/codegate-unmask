@@ -11,8 +11,15 @@
 /** 위험 등급 — UI 신호등 3색과 1:1 대응 */
 export type RiskLevel = 'danger' | 'warning' | 'safe';
 
-/** 분석 대상 종류 — /lib/knowledge 의 지식 팩과 1:1 대응. terms는 스트레치 */
-export type DocType = 'lease' | 'labor' | 'terms' | 'message';
+/**
+ * 분석 대상 종류 — /lib/knowledge 의 지식 팩과 1:1 대응.
+ *   lease   전월세 계약서
+ *   labor   근로·알바 계약서
+ *   service 선불 서비스 회원계약 (헬스장·PT·피부과 패키지·학원 등 — 방문판매법 계속거래)
+ *   terms   온라인 서비스 약관·구독
+ *   message 스미싱·피싱 문자 (부가 모드)
+ */
+export type DocType = 'lease' | 'labor' | 'service' | 'terms' | 'message';
 
 /** SSE 분석 단계 — 트리아지(Haiku, 빠름) 먼저, 정밀(Opus)이 이어붙음 */
 export type AnalysisStage = 'triage' | 'full';
