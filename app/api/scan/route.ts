@@ -1,8 +1,3 @@
-// ============================================================
-// POST /api/scan — [담당: 코어 오너(A)]
-// 마스킹 → 트리아지(Haiku, 1차 SSE) → 정밀 분석(Opus, 2차 SSE) 순으로 스트리밍합니다.
-// ============================================================
-
 import type { NextRequest } from 'next/server';
 import type { ScanRequest, ScanStreamEvent } from '@/lib/types';
 import { maskPII } from '@/lib/engine/mask';
@@ -24,14 +19,15 @@ export async function POST(req: NextRequest) {
     async start(controller) {
       const encoder = new TextEncoder();
       try {
-        const triageResult = await runTriage(text, body.docType, body.profile);
-        controller.enqueue(encoder.encode(toSSE({ stage: 'triage', result: triageResult })));
+        const triageResult = await runTriage(text, body.docType, body.profile).catch(() => null);
+        if (triageResult) {
+          controller.enqueue(encoder.encode(toSSE({ stage: 'triage', result: triageResult })));
+        }
 
         const fullResult = await analyzeDocument(text, body.docType, body.profile);
         controller.enqueue(encoder.encode(toSSE({ stage: 'full', result: fullResult })));
-      } catch (err) {
-        // TODO(A): 에러 이벤트를 프론트에 알릴 형식 정의 (지금은 로그만 남기고 스트림을 닫음)
-        console.error('[api/scan] failed:', err);
+      } catch {
+        return;
       } finally {
         controller.close();
       }

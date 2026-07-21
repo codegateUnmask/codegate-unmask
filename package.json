@@ -9,11 +9,12 @@
     "lint": "eslint",
     "test:mask": "tsc lib/config.ts lib/engine/mask.ts lib/engine/mask.test.ts --target ES2022 --module commonjs --moduleResolution node --outDir .next/mask-test --esModuleInterop --skipLibCheck && node .next/mask-test/engine/mask.test.js",
     "test:guard": "tsc lib/engine/guard.ts lib/engine/guard.test.ts --target ES2022 --module commonjs --moduleResolution node --outDir .next/guard-test --esModuleInterop --skipLibCheck && node .next/guard-test/guard.test.js",
+    "test:analyze": "tsc lib/engine/analyze.test.ts --target ES2022 --module commonjs --moduleResolution node --outDir .next/analyze-test --esModuleInterop --skipLibCheck && node .next/analyze-test/engine/analyze.test.js",
     "sync-deploy": "git pull origin main && git push personal main"
   },
   "dependencies": {
-    "@anthropic-ai/sdk": "^0.112.4",
     "next": "^15.5.20",
+    "openai": "^6.48.0",
     "react": "19.2.4",
     "react-dom": "19.2.4",
     "tesseract.js": "^7.0.0",
