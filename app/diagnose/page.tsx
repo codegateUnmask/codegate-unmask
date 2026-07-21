@@ -46,7 +46,7 @@ export default function DiagnosePage() {
   if (result) {
     const isDefensive = result.category === 'defensive';
     return (
-      <main className="mx-auto flex w-full max-w-xl flex-1 flex-col items-center justify-center gap-6 px-6 py-12">
+      <main className="mx-auto flex w-full max-w-[480px] flex-1 flex-col items-center justify-center gap-6 px-6 py-12">
         <div className="w-full rounded-2xl border border-neutral-200 p-6 dark:border-neutral-800">
           {/* 분류 배지 + MBTI 칩 */}
           <div className="flex items-center justify-between">
@@ -133,7 +133,7 @@ export default function DiagnosePage() {
   }
 
   return (
-    <main className="mx-auto flex w-full max-w-xl flex-1 flex-col gap-6 px-6 py-12">
+    <main className="mx-auto flex w-full max-w-[480px] flex-1 flex-col gap-6 px-6 py-12">
       <h1 className="text-2xl font-bold">나는 어떤 사기에 약할까?</h1>
 
       <div className="space-y-6">
@@ -151,7 +151,7 @@ export default function DiagnosePage() {
                   }
                   padding={2}
                 >
-                  <span className="text-sm">{opt.label}</span>
+                  <span className="text-sm font-medium text-[var(--color-text-primary)]">{opt.label}</span>
                 </SelectableCard>
               ))}
             </div>
