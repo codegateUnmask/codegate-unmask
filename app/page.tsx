@@ -1,4 +1,5 @@
 import Link from 'next/link';
+import { ClickableCard } from '@astryxdesign/core/ClickableCard';
 import styles from './page.module.css';
 
 function ShieldLockedIcon() {
@@ -106,22 +107,22 @@ export default function Home() {
           {ENTRIES.map((entry) => {
             const Icon = entry.icon;
             return (
-              <Link
-                key={entry.href}
-                href={entry.href}
-                className={entry.primary ? styles.entryCardPrimary : styles.entryCard}
-              >
-                <span className={styles.entryIcon}>
-                  <Icon />
-                </span>
-                <span className={styles.entryBody}>
-                  <strong>{entry.title}</strong>
-                  <span>{entry.description}</span>
-                </span>
-                <span className={styles.entryArrow}>
-                  <ArrowIcon />
-                </span>
-              </Link>
+              <div key={entry.href} className={entry.primary ? styles.entryPrimary : undefined}>
+                <ClickableCard label={entry.title} href={entry.href}>
+                  <span className={styles.entryInner}>
+                    <span className={styles.entryIcon}>
+                      <Icon />
+                    </span>
+                    <span className={styles.entryBody}>
+                      <strong>{entry.title}</strong>
+                      <span>{entry.description}</span>
+                    </span>
+                    <span className={styles.entryArrow}>
+                      <ArrowIcon />
+                    </span>
+                  </span>
+                </ClickableCard>
+              </div>
             );
           })}
         </nav>

@@ -5,7 +5,8 @@
 'use client';
 
 import { useState } from 'react';
-import Link from 'next/link';
+import { Button } from '@astryxdesign/core/Button';
+import { SelectableCard } from '@astryxdesign/core/SelectableCard';
 import type { VulnAxes, VulnProfile } from '@/lib/types';
 import { QUESTIONS } from '@/lib/diagnosis/questions';
 import { useAppStore } from '@/lib/store';
@@ -126,12 +127,7 @@ export default function DiagnosePage() {
             </div>
           )}
         </div>
-        <Link
-          href="/scan"
-          className="rounded-full bg-neutral-900 px-6 py-3 text-white dark:bg-white dark:text-neutral-900"
-        >
-          내 유형 맞춤 계약서 판독하러 가기
-        </Link>
+        <Button label="내 유형 맞춤 계약서 판독하러 가기" variant="primary" size="lg" href="/scan" />
       </main>
     );
   }
@@ -146,34 +142,33 @@ export default function DiagnosePage() {
             <p className="mb-2 font-medium">{q.text}</p>
             <div className="flex flex-col gap-2">
               {q.options.map((opt, oi) => (
-                <button
+                <SelectableCard
                   key={oi}
-                  type="button"
-                  onClick={() =>
+                  label={opt.label}
+                  isSelected={answers[qi] === opt.score}
+                  onChange={() =>
                     setAnswers((prev) => prev.map((a, i) => (i === qi ? opt.score : a)))
                   }
-                  className={`rounded-lg border px-4 py-2 text-left text-sm ${
-                    answers[qi] === opt.score
-                      ? 'border-neutral-900 bg-neutral-100 dark:border-white dark:bg-neutral-900'
-                      : 'border-neutral-300 dark:border-neutral-700'
-                  }`}
+                  padding={2}
                 >
-                  {opt.label}
-                </button>
+                  <span className="text-sm">{opt.label}</span>
+                </SelectableCard>
               ))}
             </div>
           </div>
         ))}
       </div>
 
-      <button
-        type="button"
-        onClick={handleSubmit}
-        disabled={answered < QUESTIONS.length || loading}
-        className="self-start rounded-full bg-neutral-900 px-6 py-3 text-white disabled:opacity-40 dark:bg-white dark:text-neutral-900"
-      >
-        {loading ? '분석 중…' : '결과 보기'}
-      </button>
+      <div className="self-start">
+        <Button
+          label={loading ? '분석 중…' : '결과 보기'}
+          variant="primary"
+          size="lg"
+          isDisabled={answered < QUESTIONS.length}
+          isLoading={loading}
+          onClick={handleSubmit}
+        />
+      </div>
     </main>
   );
 }

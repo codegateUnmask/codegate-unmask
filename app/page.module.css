@@ -119,23 +119,18 @@
   letter-spacing: -0.01em;
 }
 
-.entryCard,
-.entryCardPrimary {
+.entryInner {
   display: grid;
   width: 100%;
   box-sizing: border-box;
   grid-template-columns: 44px minmax(0, 1fr) 20px;
   align-items: center;
   gap: 14px;
-  padding: 16px;
-  border: 1px solid #d8dad3;
-  border-radius: 14px;
-  background: #fff;
   color: #202124;
-  text-decoration: none;
 }
 
-.entryCardPrimary {
+/* astryx ClickableCard 컨테이너에 라임 강조를 입히는 래퍼 */
+.entryPrimary :global(.astryx-clickable-card) {
   border-color: #202124;
   background: #f6ffe0;
 }
@@ -150,7 +145,7 @@
   color: #202124;
 }
 
-.entryCardPrimary .entryIcon {
+.entryPrimary .entryIcon {
   background: #c8f04b;
 }
 
@@ -201,12 +196,6 @@
   stroke-linecap: round;
   stroke-linejoin: round;
   stroke-width: 2;
-}
-
-.entryCard:focus-visible,
-.entryCardPrimary:focus-visible {
-  outline: 2px solid #202124;
-  outline-offset: 3px;
 }
 
 .entries .login {
