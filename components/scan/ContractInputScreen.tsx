@@ -16,32 +16,6 @@ const DOC_TABS: { key: DocType; label: string }[] = [
   { key: 'message', label: '문자' },
 ];
 
-const MODES: Array<{
-  key: InputMode;
-  title: string;
-  description: string;
-  icon: typeof CameraIcon;
-}> = [
-  {
-    key: 'camera',
-    title: '사진 촬영',
-    description: '종이 계약서를 스마트폰 카메라로 바로 찍어서 분석합니다.',
-    icon: CameraIcon,
-  },
-  {
-    key: 'upload',
-    title: '이미지 업로드',
-    description: '갤러리에 저장된 계약서 캡처본이나 사진을 불러옵니다.',
-    icon: ImageIcon,
-  },
-  {
-    key: 'text',
-    title: '텍스트 직접 입력',
-    description: '확인이 필요한 특정 조항이나 텍스트를 직접 복사하여 붙여넣습니다.',
-    icon: TextIcon,
-  },
-];
-
 function BackIcon() {
   return (
     <svg viewBox="0 0 24 24" aria-hidden="true">
@@ -119,6 +93,7 @@ export function ContractInputScreen({
   onBack,
 }: ContractInputScreenProps) {
   const canProceed = !busy && (mode === 'text' || USE_OCR);
+  const ocrLocked = !USE_OCR;
 
   return (
     <main className={styles.screen}>
@@ -142,15 +117,14 @@ export function ContractInputScreen({
       <section className={styles.content}>
         <div className={styles.heading}>
           <h1>
-            어떤 계약서인지,
-            <br />
-            어떻게 분석할까요?
+            서명 전에,
+            <br />한 번 확인해요
           </h1>
-          <p>문서 종류와 입력 방법을 선택해 주세요.</p>
+          <p>문서를 고르고 편한 방법으로 가져오세요.</p>
         </div>
 
-        <fieldset className={styles.docTypeGroup}>
-          <legend>문서 종류</legend>
+        <fieldset className={styles.section}>
+          <legend className={styles.sectionLabel}>무엇을 확인하나요?</legend>
           <div className={styles.docTypeTabs}>
             {DOC_TABS.map((tab) => (
               <button
@@ -166,39 +140,67 @@ export function ContractInputScreen({
           </div>
         </fieldset>
 
-        <fieldset className={styles.modeGroup}>
-          <legend>계약서 입력 방법</legend>
-          {MODES.map((item) => {
-            const Icon = item.icon;
-            const selected = mode === item.key;
+        <fieldset className={styles.section}>
+          <legend className={styles.sectionLabel}>어떻게 가져올까요?</legend>
 
-            return (
-              <label
-                key={item.key}
-                className={selected ? styles.modeCardSelected : styles.modeCard}
-              >
-                <input
-                  type="radio"
-                  name="input-mode"
-                  value={item.key}
-                  checked={selected}
-                  disabled={busy}
-                  onChange={() => onModeChange(item.key)}
-                />
-                <span className={styles.modeIcon}>
-                  <Icon />
-                </span>
-                <span className={styles.modeCopy}>
-                  <strong>{item.title}</strong>
-                  <span>{item.description}</span>
-                </span>
-              </label>
-            );
-          })}
+          <label
+            className={mode === 'camera' ? styles.primaryModeSelected : styles.primaryMode}
+          >
+            <input
+              type="radio"
+              name="input-mode"
+              value="camera"
+              checked={mode === 'camera'}
+              disabled={busy || ocrLocked}
+              onChange={() => onModeChange('camera')}
+            />
+            <span className={styles.primaryIcon}>
+              <CameraIcon />
+            </span>
+            <span className={styles.primaryCopy}>
+              <strong>사진 촬영</strong>
+              <span>종이 계약서를 바로 찍어요</span>
+            </span>
+          </label>
+
+          <div className={styles.subModes}>
+            <label className={mode === 'upload' ? styles.subModeSelected : styles.subMode}>
+              <input
+                type="radio"
+                name="input-mode"
+                value="upload"
+                checked={mode === 'upload'}
+                disabled={busy || ocrLocked}
+                onChange={() => onModeChange('upload')}
+              />
+              <ImageIcon />
+              <span>이미지 업로드</span>
+            </label>
+            <label className={mode === 'text' ? styles.subModeSelected : styles.subMode}>
+              <input
+                type="radio"
+                name="input-mode"
+                value="text"
+                checked={mode === 'text'}
+                disabled={busy}
+                onChange={() => onModeChange('text')}
+              />
+              <TextIcon />
+              <span>텍스트 직접 입력</span>
+            </label>
+          </div>
+
+          {ocrLocked && (
+            <p className={styles.ocrDisabledNotice}>
+              이 환경에서는 사진 인식이 꺼져 있습니다. &quot;텍스트 직접 입력&quot;을 이용해
+              주세요.
+            </p>
+          )}
         </fieldset>
 
-        {mode === 'text' && samples.length > 0 && (
-          <div className={styles.textPanel}>
+        {samples.length > 0 && (
+          <div className={styles.section}>
+            <p className={styles.sectionLabel}>30초 체험</p>
             <div className={styles.sampleRow}>
               {samples.map((sample) => (
                 <button
@@ -215,21 +217,15 @@ export function ContractInputScreen({
           </div>
         )}
 
-        {mode !== 'text' && !USE_OCR && (
-          <p className={styles.ocrDisabledNotice}>
-            이 환경에서는 사진 인식이 꺼져 있습니다. &quot;텍스트 직접 입력&quot;을 이용해 주세요.
-          </p>
-        )}
-
         <div className={styles.bottom}>
-          <div className={styles.privacy}>
-            <span className={styles.privacyIcon}>
-              <VerifiedIcon />
-            </span>
-            <p>계약서 이미지는 서버에 저장되지 않고 브라우저 내에서 안전하게 처리됩니다.</p>
-          </div>
+          <p className={styles.privacy}>
+            <VerifiedIcon />
+            <span>원문은 서버에 저장되지 않고 브라우저 안에서 처리돼요.</span>
+          </p>
           {profile ? (
-            <p className={styles.personalizedNotice}>🎯 『{profile.typeName}』 맞춤 판독이 적용돼요</p>
+            <p className={styles.personalizedNotice}>
+              『{profile.typeName}』 맞춤 판독이 적용돼요
+            </p>
           ) : (
             <Link href="/diagnose" className={styles.personalizedLink}>
               1분 진단하면 내 유형 맞춤 경고를 함께 받아요 →
