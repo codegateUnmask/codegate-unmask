@@ -17,7 +17,11 @@ const ANALYSIS_ERROR_MESSAGE = '문서 분석에 실패했습니다.';
 // triage는 실측 5.9~7.8초라 15초면 충분하고, 실패해도 정밀 분석 결과로 넘어갑니다.
 export const OPENAI_TIMEOUT_MS = {
   triage: 15_000,
-  scan: 40_000,
+  // 실측: 로컬 10.9~30.4초. 프로덕션은 더 느려서 40초에서도 잘렸습니다
+  // (라이브 실패 40,476ms = 당시 40초 설정과 일치).
+  // 두 단계가 병렬이라 예산이 '합'이 아니라 max라, maxDuration(120초) 안에서
+  // 넉넉히 잡아 둡니다. 여기서 잘리면 사용자는 결과를 통째로 잃습니다.
+  scan: 90_000,
 } as const;
 
 /** @deprecated 단계별 값(OPENAI_TIMEOUT_MS)을 쓰세요. 기존 참조 호환용. */

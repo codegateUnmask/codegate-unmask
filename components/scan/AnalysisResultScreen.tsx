@@ -101,6 +101,8 @@ export interface AnalysisResultScreenProps {
   srcText?: string;
   /** 1차(triage) 결과를 먼저 보여주는 중이고 정밀 분석이 아직 진행 중인지 */
   refining?: boolean;
+  /** 정밀 분석이 실패해 1차 결과만 남은 경우 — 재시도 콜백 */
+  onRetryRefine?: () => void;
   onBack: () => void;
   onShowRequests?: () => void;
   onShowDetail?: () => void;
@@ -111,6 +113,7 @@ export default function AnalysisResultScreen({
   docTypeLabel,
   srcText,
   refining,
+  onRetryRefine,
   onBack,
   onShowRequests,
   onShowDetail,
@@ -151,6 +154,18 @@ export default function AnalysisResultScreen({
               <strong>1차 빠른 판독 결과</strong>입니다. 정밀 분석이 진행 중이며, 끝나면 더 자세한
               내용으로 자동 업데이트됩니다.
             </p>
+          </section>
+        )}
+
+        {!refining && onRetryRefine && (
+          <section className={styles.refineFailed} role="status">
+            <p>
+              <strong>1차 빠른 판독 결과</strong>입니다. 정밀 분석은 완료하지 못했어요 — 아래 내용은
+              참고용으로 보시고, 더 자세한 분석이 필요하면 다시 시도해 주세요.
+            </p>
+            <button type="button" className={styles.retryRefineButton} onClick={onRetryRefine}>
+              정밀 분석 다시 시도
+            </button>
           </section>
         )}
 

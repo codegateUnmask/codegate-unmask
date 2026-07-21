@@ -317,6 +317,36 @@
   word-break: keep-all;
 }
 
+/* 정밀 분석 실패 — 1차 결과만 남은 경우 */
+.refineFailed {
+  margin-bottom: 16px;
+  padding: 13px 15px;
+  border: 1px solid #ffdcc2;
+  border-radius: 12px;
+  background: #fff8ef;
+}
+
+.refineFailed p {
+  margin: 0;
+  color: #8f4a00;
+  font-size: 13px;
+  line-height: 1.6;
+  word-break: keep-all;
+}
+
+.retryRefineButton {
+  margin-top: 10px;
+  padding: 9px 14px;
+  border: 0;
+  border-radius: 9px;
+  background: #8f4a00;
+  color: #fff;
+  font: inherit;
+  font-size: 13px;
+  font-weight: 800;
+  cursor: pointer;
+}
+
 /* 위험도 게이지 */
 .gauge {
   margin-top: 16px;
