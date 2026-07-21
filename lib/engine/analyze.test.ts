@@ -96,8 +96,23 @@ async function run(): Promise<void> {
   assert.equal(scanRequest.store, false);
   assert.equal(JSON.parse(String(scanRequest.input).split('\n')[1]), input.slice(0, MAX_INPUT_CHARS));
   assert.equal(String(scanRequest.instructions).includes('SYSTEM_INJECTION'), false);
-  const { OPENAI_REQUEST_TIMEOUT_MS } = await import('./openai');
-  assert.equal(OPENAI_REQUEST_TIMEOUT_MS, 30_000);
+  // 타임아웃은 단계별로 나뉩니다. 값을 못 박기보다 "실측을 견디는가"를 검증합니다.
+  //   정밀 분석 실측 10.9~29.4초 · triage 실측 5.9~7.8초 (2026-07-21)
+  //   과거 30초 단일값일 때 정밀 분석이 타임아웃으로 실패한 사례가 있었습니다.
+  const { OPENAI_TIMEOUT_MS } = await import('./openai');
+  assert.ok(
+    OPENAI_TIMEOUT_MS.scan >= 35_000,
+    `정밀 분석 타임아웃이 실측 최악(29.4초) 대비 여유가 부족합니다: ${OPENAI_TIMEOUT_MS.scan}ms`,
+  );
+  assert.ok(
+    OPENAI_TIMEOUT_MS.triage >= 12_000,
+    `triage 타임아웃이 실측 최악(7.8초) 대비 여유가 부족합니다: ${OPENAI_TIMEOUT_MS.triage}ms`,
+  );
+  // 라우트 maxDuration(120초) 예산을 넘지 않아야 합니다.
+  assert.ok(
+    OPENAI_TIMEOUT_MS.triage + OPENAI_TIMEOUT_MS.scan <= 120_000,
+    '두 단계 타임아웃 합이 라우트 maxDuration을 초과합니다',
+  );
 
   const format = (scanRequest.text as { format: Record<string, unknown> }).format;
   assert.equal(format.type, 'json_schema');
