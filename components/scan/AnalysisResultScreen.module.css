@@ -278,6 +278,45 @@
   stroke-width: 1.8;
 }
 
+/* 1차 결과 표시 중 — 정밀 분석 진행 배너 */
+.refining {
+  display: grid;
+  grid-template-columns: 10px minmax(0, 1fr);
+  align-items: start;
+  gap: 10px;
+  margin-bottom: 16px;
+  padding: 13px 15px;
+  border: 1px solid #d8dad3;
+  border-radius: 12px;
+  background: #f6ffe0;
+}
+
+.refiningDot {
+  width: 10px;
+  height: 10px;
+  margin-top: 5px;
+  border-radius: 50%;
+  background: #57624a;
+  animation: refiningPulse 1.1s ease-in-out infinite;
+}
+
+@keyframes refiningPulse {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.25; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .refiningDot { animation: none; }
+}
+
+.refining p {
+  margin: 0;
+  color: #39490b;
+  font-size: 13px;
+  line-height: 1.6;
+  word-break: keep-all;
+}
+
 /* 위험도 게이지 */
 .gauge {
   margin-top: 16px;
