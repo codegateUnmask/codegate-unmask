@@ -16,35 +16,36 @@
   display: grid;
   width: min(100%, 480px);
   height: 64px;
-  grid-template-columns: 40px 1fr 40px;
+  grid-template-columns: 44px minmax(0, 1fr) 44px;
   align-items: center;
-  padding: 12px;
+  padding: 0 12px;
   transform: translateX(-50%);
   background: #f7f7f2;
 }
 
 .iconButton {
   display: grid;
-  width: 40px;
-  height: 40px;
+  width: 44px;
+  height: 44px;
   place-items: center;
   padding: 0;
   border: 0;
   border-radius: 50%;
   background: transparent;
   color: #202124;
+  cursor: pointer;
 }
 
-.iconButton svg {
-  width: 24px;
-  height: 24px;
+span.iconButton {
+  cursor: default;
 }
 
-.iconButton:first-child svg {
-  fill: currentColor;
+.iconButton:focus-visible {
+  outline: 3px solid #b1d83b;
+  outline-offset: 2px;
 }
 
-.iconButton:last-child svg,
+.iconButton svg,
 .modeIcon svg,
 .cta svg {
   width: 24px;

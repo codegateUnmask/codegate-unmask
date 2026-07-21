@@ -48,19 +48,10 @@ const MODES: Array<{
   },
 ];
 
-function SecurityIcon() {
+function BackIcon() {
   return (
     <svg viewBox="0 0 24 24" aria-hidden="true">
-      <path d="M12 1 3 5v6c0 5.55 3.84 10.74 9 12 5.16-1.26 9-6.45 9-12V5l-9-4Zm0 2.18 7 3.11V11c0 4.52-2.98 8.69-7 9.93C7.98 19.69 5 15.52 5 11V6.29l7-3.11Z" />
-    </svg>
-  );
-}
-
-function BellIcon() {
-  return (
-    <svg viewBox="0 0 24 24" aria-hidden="true">
-      <path d="M18 8a6 6 0 0 0-12 0c0 7-3 7-3 9h18c0-2-3-2-3-9" />
-      <path d="M10 21h4" />
+      <path d="m11 6-6 6 6 6M5 12h14" />
     </svg>
   );
 }
@@ -122,6 +113,7 @@ export interface ContractInputScreenProps {
   busy: boolean;
   onNext: () => void;
   profile: VulnProfile | null;
+  onBack?: () => void;
 }
 
 export function ContractInputScreen({
@@ -138,6 +130,7 @@ export function ContractInputScreen({
   busy,
   onNext,
   profile,
+  onBack,
 }: ContractInputScreenProps) {
   const canProceed = mode === 'text' && text.trim().length > 0 && !busy;
   // 키워드 기반이라 LLM 호출 없음 — 입력할 때마다 즉시 재판정해도 비용이 없습니다.
@@ -146,13 +139,20 @@ export function ContractInputScreen({
   return (
     <main className={styles.screen}>
       <header className={styles.header}>
-        <span className={styles.iconButton} aria-hidden="true">
-          <SecurityIcon />
-        </span>
+        {onBack ? (
+          <button
+            type="button"
+            className={styles.iconButton}
+            onClick={onBack}
+            aria-label="이전 화면으로"
+          >
+            <BackIcon />
+          </button>
+        ) : (
+          <span className={styles.iconButton} aria-hidden="true" />
+        )}
         <h1 className={styles.logo}>unmask</h1>
-        <span className={styles.iconButton} aria-hidden="true">
-          <BellIcon />
-        </span>
+        <span className={styles.iconButton} aria-hidden="true" />
       </header>
 
       <section className={styles.content}>

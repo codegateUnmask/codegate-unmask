@@ -46,7 +46,7 @@
 }
 
 .main {
-  padding: 24px 20px 79px;
+  padding: 24px 20px 200px;
 }
 
 .intro {
@@ -116,6 +116,20 @@
 .fileName span {
   overflow: hidden;
   text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.editHint {
+  display: inline-flex;
+  flex: 0 0 auto;
+  align-items: center;
+  gap: 4px;
+  padding: 4px 10px;
+  border: 1px solid #c6c7c1;
+  border-radius: 999px;
+  color: #484944;
+  font-size: 12px;
+  font-weight: 700;
   white-space: nowrap;
 }
 
@@ -224,6 +238,9 @@
 .confirmRow input {
   margin-top: 3px;
   flex: 0 0 auto;
+  width: 18px;
+  height: 18px;
+  accent-color: #151618;
 }
 
 .confirmNotice {
@@ -259,10 +276,11 @@
   bottom: 0;
   left: 0;
   z-index: 20;
+  display: grid;
   width: min(100%, 480px);
-  height: 161px;
   margin: 0 auto;
-  padding: 16px 20px 32px;
+  padding: 12px 20px calc(16px + env(safe-area-inset-bottom));
+  gap: 10px;
   border-top: 1px solid rgba(196, 199, 197, 0.55);
   background: rgba(247, 247, 242, 0.98);
 }
@@ -290,9 +308,37 @@
   box-shadow: none;
 }
 
+.primaryAction:hover:not(:disabled) {
+  background: #b1d83b;
+}
+
+.secondaryAction {
+  display: flex;
+  width: 100%;
+  height: 48px;
+  align-items: center;
+  justify-content: center;
+  border: 1px solid #c6c7c1;
+  border-radius: 8px;
+  background: #fff;
+  color: #202124;
+  font-family: inherit;
+  font-size: 15px;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.secondaryAction:disabled {
+  opacity: 0.4;
+  cursor: default;
+}
+
 .iconButton:focus-visible,
-.primaryAction:focus-visible {
-  outline: 3px solid #202124;
+.primaryAction:focus-visible,
+.secondaryAction:focus-visible,
+.editableText:focus-visible,
+.confirmRow input:focus-visible {
+  outline: 3px solid #b1d83b;
   outline-offset: 2px;
 }
 

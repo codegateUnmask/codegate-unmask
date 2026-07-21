@@ -5,7 +5,6 @@ import styles from './OcrReviewScreen.module.css';
 
 const ICON_PATHS = {
   security: 'M12 1 3 5v6c0 5.55 3.84 10.74 9 12 5.16-1.26 9-6.45 9-12V5l-9-4Zm0 2.18 7 3.11V11c0 4.52-2.98 8.69-7 9.93C7.98 19.69 5 15.52 5 11V6.29l7-3.11Z',
-  notifications: 'M12 22a2.2 2.2 0 0 0 2.2-2h-4.4A2.2 2.2 0 0 0 12 22Zm7-5v-5.5c0-3.07-1.64-5.64-4.5-6.32V4.5a2.5 2.5 0 0 0-5 0v.68C6.63 5.86 5 8.42 5 11.5V17l-2 2v1h18v-1l-2-2Zm-2 1H7v-6.5C7 8.46 8.79 7 12 7s5 1.46 5 4.5V18Z',
   check: 'M12 2a10 10 0 1 0 .01 20.01A10 10 0 0 0 12 2Zm-2 15-5-5 1.41-1.41L10 14.17l7.59-7.58L19 8l-9 9Z',
   scanner: 'M4 7V4h3V2H4a2 2 0 0 0-2 2v3h2Zm13-5v2h3v3h2V4a2 2 0 0 0-2-2h-3Zm3 15v3h-3v2h3a2 2 0 0 0 2-2v-3h-2ZM7 20H4v-3H2v3a2 2 0 0 0 2 2h3v-2Zm-1-5h12V9H6v6Zm2-4h8v2H8v-2Z',
   edit: 'M3 17.25V21h3.75L17.81 9.94l-3.75-3.75L3 17.25Zm17.71-10.04a1 1 0 0 0 0-1.42l-2.5-2.5a1 1 0 0 0-1.42 0l-1.96 1.96 3.75 3.75 2.13-1.79Z',
@@ -34,6 +33,7 @@ export interface OcrReviewScreenProps {
   analyzeDisabled: boolean;
   busy: boolean;
   onBack: () => void;
+  onRetake?: () => void;
 }
 
 export function OcrReviewScreen({
@@ -48,6 +48,7 @@ export function OcrReviewScreen({
   analyzeDisabled,
   busy,
   onBack,
+  onRetake,
 }: OcrReviewScreenProps) {
   const reviewLines = assessment?.lines.filter((line) => line.critical || line.lowConfidence) ?? [];
 
@@ -60,9 +61,7 @@ export function OcrReviewScreen({
           </svg>
         </button>
         <h1 className={styles.logo}>unmask</h1>
-        <span className={styles.iconButton} aria-hidden="true">
-          <Icon name="notifications" size={24} />
-        </span>
+        <span className={styles.iconButton} aria-hidden="true" />
       </header>
 
       <main className={styles.main}>
@@ -81,6 +80,10 @@ export function OcrReviewScreen({
               <Icon name="scanner" size={18} />
               <span>{fileName}</span>
             </div>
+            <span className={styles.editHint}>
+              <Icon name="edit" size={14} />
+              직접 수정 가능
+            </span>
           </div>
           <div className={styles.documentText}>
             <textarea
@@ -120,7 +123,7 @@ export function OcrReviewScreen({
                   checked={confirmed}
                   onChange={(e) => onConfirmedChange(e.target.checked)}
                 />
-                금액, 날짜·기간, 위약금·환불, 자동갱신, 주민번호, 연락처, 계좌번호를 원문과 대조했습니다.
+                금액, 날짜, 위약금 등 핵심 항목을 원본 사진과 대조했습니다.
               </label>
               {requiresConfirmation && (
                 <p role="status" className={styles.confirmNotice}>
@@ -139,9 +142,19 @@ export function OcrReviewScreen({
           disabled={analyzeDisabled}
           onClick={onAnalyze}
         >
-          <span>{busy ? '분석 중…' : '이대로 분석하기'}</span>
+          <span>{busy ? '분석 중…' : '수정한 내용으로 분석하기'}</span>
           <Icon name="arrow" size={20} />
         </button>
+        {onRetake && (
+          <button
+            className={styles.secondaryAction}
+            type="button"
+            disabled={busy}
+            onClick={onRetake}
+          >
+            재촬영하기
+          </button>
+        )}
       </footer>
     </div>
   );

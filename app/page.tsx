@@ -121,10 +121,6 @@ export default function Home() {
               </Link>
             );
           })}
-
-          <p className={styles.login}>
-            이미 가입하셨나요? <span>로그인하기</span>
-          </p>
         </nav>
       </section>
     </main>
