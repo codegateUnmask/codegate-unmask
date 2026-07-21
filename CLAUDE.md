@@ -50,8 +50,8 @@
 - **Next.js 15 (App Router) + TypeScript** 단일 앱 (프론트+API 한 몸, 백엔드 분리 안 함)
 - **Tailwind CSS**
 - **Zustand** — 클라이언트 상태(진단 결과, 판독 진행상태 등)
-- **Claude API만 사용** (`@anthropic-ai/sdk`) — OpenAI 등 추가 SDK 쓰지 않습니다. 모델 분리(Opus=정밀판독 / Haiku=트리아지·메시지)가 차별화 서사의 일부라 SDK를 하나로 유지합니다.
-- **판독 API는 SSE 스트리밍** (`/api/scan`) — Haiku 트리아지 결과를 먼저 흘려보내고, Opus 정밀 분석 결과를 이어붙입니다. 로딩 UI(체크리스트 실시간 채움)가 이 스트림을 그대로 씁니다.
+- **OpenAI API만 사용** (`openai`) — 빠른 트리아지는 `gpt-5.4-nano`, 정밀 판독은 `gpt-5.4-mini`를 사용합니다.
+- **판독 API는 SSE 스트리밍** (`/api/scan`) — nano 트리아지 결과를 먼저 흘려보내고, mini 정밀 분석 결과를 이어붙입니다. 로딩 UI(체크리스트 실시간 채움)가 이 스트림을 그대로 씁니다.
 - 배포: Vercel
 - **새 라이브러리를 임의로 설치하지 마세요.** 꼭 필요하면 팀에 먼저 알릴 것.
 - ⚠️ **박재우 안 중 확인 필요한 것 2개** (임의로 반영 안 함): ① 프론트 라이브러리 "astryx" — 팀 내 선례 없고 무슨 패키지인지 불명확, 확인 전까지 Tailwind만 사용 ② OCR — 기존 "원본 외부 반출 없음" 보안 서사와 충돌해 미채택 유지. 둘 다 박재우에게 재확인 필요.
@@ -79,8 +79,8 @@
   /engine                     # 판독 엔진        [담당: 코어 오너 전용]
     mask.ts                   #   개인정보 마스킹
     guard.ts                  #   프롬프트 인젝션 방어
-    triage.ts                 #   1단계: Haiku 빠른 트리아지 (SSE로 먼저 흘려보냄)
-    analyze.ts                #   2단계: Opus 정밀 분석 (지식 팩 주입)
+    triage.ts                 #   1단계: nano 빠른 트리아지 (SSE로 먼저 흘려보냄)
+    analyze.ts                #   2단계: mini 정밀 분석 (지식 팩 주입)
     citation.ts               #   근거 추출·검증
   /knowledge                  # 지식 팩 (교체 가능 단위) [담당: 지식·프롬프트]
     lease.ts                  #   팩1 전월세: 주택임대차보호법·표준계약서·독소조항 (Day1 필수)
@@ -103,7 +103,7 @@
 
 1. **한 파일 = 한 가지 일.** 200줄 넘으면 쪼갤 신호.
 2. **UI / 로직 / 데이터(지식) / 설정을 절대 한 파일에 섞지 마세요.**
-   - 화면 컴포넌트 안에서 Claude API를 직접 호출하지 말 것 → 반드시 `/api` 경유
+   - 화면 컴포넌트 안에서 OpenAI API를 직접 호출하지 말 것 → 반드시 `/api` 경유
    - 지식(법령·수법 텍스트)을 로직 파일에 넣지 말 것 → `/lib/knowledge`에만
 3. **본인 담당 영역 밖의 파일을 수정하지 마세요.** 필요하면 담당자에게 요청.
 4. **하드코딩은 허용하되 `lib/config.ts` 한 곳에 모으세요.** (모델명, 임계값, 샘플 데이터 경로 등)
@@ -219,7 +219,7 @@ export interface VulnProfile {
 판독 파이프라인은 반드시 이 순서:
 
 ```
-입력 → ① 개인정보 마스킹 → ② 인젝션 방어 → ③ Claude 판독(+지식) → ④ 근거 검증 → 출력
+입력 → ① 개인정보 마스킹 → ② 인젝션 방어 → ③ OpenAI 판독(+지식) → ④ 근거 검증 → 출력
 ```
 
 1. **마스킹 후 분석** — 이름·연락처·계좌·주소를 가린 뒤에만 API로 전송 (`lib/engine/mask.ts`)
@@ -275,7 +275,7 @@ export interface VulnProfile {
 - [ ] `lib/config.ts` — 모델명·상수·임계값
 - [ ] `lib/engine/mask.ts` — 이름·전화·계좌·주소 정규식 마스킹
 - [ ] `lib/engine/guard.ts` — 입력을 구분자로 감싸 '데이터'로 격리 (인젝션 방어)
-- [ ] `lib/engine/analyze.ts` — Claude API 호출 + 지식 모듈(D 산출물) 주입
+- [ ] `lib/engine/analyze.ts` — OpenAI API 호출 + 지식 모듈(D 산출물) 주입
 - [ ] `lib/engine/citation.ts` — `quote` 없는 finding은 버림 (환각 차단)
 - [ ] `app/api/scan/route.ts` — 조립해서 `ScanResult` 반환
 - [ ] **🎯 최우선 마일스톤**: 계약서 텍스트 → findings가 나오는 **end-to-end 1회 관통**

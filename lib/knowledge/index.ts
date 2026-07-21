@@ -7,6 +7,7 @@
 import type { DocType } from '../types';
 import { leasePack } from './lease';
 import { laborPack } from './labor';
+import { servicePack } from './service';
 import { termsPack } from './terms';
 import { smishingPack } from './smishing';
 
@@ -29,6 +30,7 @@ export interface KnowledgePack {
 const PACKS: Record<DocType, KnowledgePack> = {
   lease: leasePack,
   labor: laborPack,
+  service: servicePack,
   terms: termsPack,
   message: smishingPack,
 };

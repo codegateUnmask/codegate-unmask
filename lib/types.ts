@@ -16,8 +16,7 @@
 /** 위험 등급 — UI 신호등 3색과 1:1 대응 */
 export type RiskLevel = 'danger' | 'warning' | 'safe';
 
-/** 분석 대상 종류 — /lib/knowledge 의 지식 모듈과 1:1 대응 */
-export type DocType = 'lease' | 'labor' | 'message';
+
 
 // ------------------------------------------------------------
 // 진단 (데모 컷1)

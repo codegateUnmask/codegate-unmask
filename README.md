@@ -6,7 +6,7 @@
 
 ```bash
 npm install
-cp .env.example .env.local   # ANTHROPIC_API_KEY 채우기
+cp .env.example .env.local   # OPENAI_API_KEY 채우기
 npm run dev
 ```
 
@@ -26,18 +26,32 @@ http://localhost:3000 에서 확인. `/diagnose`(진단), `/scan`(판독) 화면
 
 ## 배포 — Vercel (GitHub Pages 아님)
 
-**GitHub Pages로는 배포할 수 없습니다.** 이 앱은 `/api/scan`, `/api/diagnose` 같은 서버 API 라우트를 쓰는데 GitHub Pages는 정적 파일만 호스팅합니다. Claude API 키도 서버에서만 써야 하므로(브라우저에 노출되면 키 유출) 서버가 도는 Vercel이 필요합니다.
+**GitHub Pages로는 배포할 수 없습니다.** 이 앱은 `/api/scan`, `/api/diagnose` 같은 서버 API 라우트를 쓰는데 GitHub Pages는 정적 파일만 호스팅합니다. OpenAI API 키도 서버에서만 써야 하므로(브라우저에 노출되면 키 유출) 서버가 도는 Vercel이 필요합니다.
 
-세팅 순서 (한 번만, 브라우저에서):
+⚠️ **Vercel은 GitHub 조직 소유 레포를 무료(Hobby) 등급으로 배포해주지 않습니다** — 유료 팀(Pro)을 요구합니다. 그래서 조직 레포는 협업·PR 용도로 그대로 두고, **배포는 개인 계정의 미러 레포에서** 합니다.
 
-1. https://vercel.com 에 **GitHub 계정으로 로그인**
-2. **Add New… → Project** → `codegateUnmask/codegate-unmask` 선택 → Import
-   - 조직 레포가 안 보이면 "Adjust GitHub App Permissions"에서 `codegateUnmask` 조직 접근 허용
+```
+codegateUnmask/codegate-unmask   ← 팀 협업·PR (origin)
+        │  git push personal main
+        ▼
+ChoHyeonChan/codegate-unmask-deploy   ← 배포 전용 미러 (personal) → Vercel 자동 배포
+```
+
+**동기화 (레포 오너만):** 조직 `main`에 PR이 머지된 뒤
+
+```bash
+npm run sync-deploy    # git pull origin main && git push personal main
+```
+
+푸시되면 Vercel이 알아서 다시 배포합니다. 팀원은 이 명령을 쓸 일이 없습니다(`personal` remote가 없어서 실패합니다) — 평소대로 조직 레포에 PR만 올리면 됩니다.
+
+**Vercel 세팅 (한 번만, 브라우저에서):**
+
+1. https://vercel.com 에 GitHub 계정으로 로그인
+2. **Add New… → Project** → `ChoHyeonChan/codegate-unmask-deploy` 선택 → Import
 3. Framework는 Next.js로 자동 인식됨 — 빌드 설정 그대로 두기
-4. **Environment Variables**에 `ANTHROPIC_API_KEY` 추가 (값은 팀 채팅방에서 받은 키)
+4. **Environment Variables**에 `OPENAI_API_KEY` 추가 (키가 아직 없으면 비워둬도 됩니다 — 목업으로 화면은 동작합니다)
 5. Deploy
-
-이후에는 `main`에 머지될 때마다 자동 배포되고, **PR을 열 때마다 미리보기 URL이 자동 생성**됩니다. 팀이 서로 코드 안 받고도 화면을 확인할 수 있습니다.
 
 ## 데이터베이스 — 현재 쓰지 않습니다
 
