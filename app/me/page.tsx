@@ -1,9 +1,9 @@
 'use client';
 
-import { useState } from 'react';
 import Image from 'next/image';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
+import { signOut, useSession } from 'next-auth/react';
 import { ShieldCheck } from 'lucide-react';
 import { Avatar } from '@astryxdesign/core/Avatar';
 import { Badge } from '@astryxdesign/core/Badge';
@@ -11,8 +11,6 @@ import { Button } from '@astryxdesign/core/Button';
 import { EmptyState } from '@astryxdesign/core/EmptyState';
 import { List, ListItem } from '@astryxdesign/core/List';
 import { useToast } from '@astryxdesign/core/Toast';
-import LoginSheet from '@/components/auth/LoginSheet';
-import { useAuthStore } from '@/stores/authStore';
 import { useAppStore } from '@/lib/store';
 import { MOCK_SCAN_HISTORY } from '@/lib/mock.me';
 import type { RiskLevel } from '@/lib/types';
@@ -31,12 +29,11 @@ const LEVEL_LABEL: Record<RiskLevel, string> = {
 };
 
 export default function MePage() {
-  const user = useAuthStore((s) => s.user);
-  const signOut = useAuthStore((s) => s.signOut);
+  const { data: session } = useSession();
+  const user = session?.user ?? null;
   const profile = useAppStore((s) => s.profile);
   const toast = useToast();
   const router = useRouter();
-  const [isSheetOpen, setIsSheetOpen] = useState(false);
 
   if (!user) {
     return (
@@ -49,19 +46,14 @@ export default function MePage() {
           <p className={styles.heroDesc}>진단 결과와 계약서 분석 기록이 한곳에 저장돼요.</p>
           <div className={styles.heroAction}>
             <Button
-              label="Google로 로그인"
+              label="로그인하기"
               variant="primary"
               width="100%"
-              onClick={() => setIsSheetOpen(true)}
+              onClick={() => router.push('/login?callbackUrl=/start')}
             />
           </div>
           <p className={styles.guestNote}>지금은 로그인 없이 둘러보는 중이에요</p>
         </section>
-        <LoginSheet
-          isOpen={isSheetOpen}
-          onOpenChange={setIsSheetOpen}
-          onSuccess={() => router.push('/start')}
-        />
       </main>
     );
   }
@@ -71,10 +63,10 @@ export default function MePage() {
       <h1 className="sr-only">마이페이지</h1>
 
       <header className={styles.profile}>
-        <Avatar name={user.name} size="large" />
+        <Avatar name={user.name ?? '사용자'} size="large" />
         <div>
-          <p className={styles.name}>{user.name}</p>
-          <p className={styles.email}>{user.email}</p>
+          <p className={styles.name}>{user.name ?? '사용자'}</p>
+          <p className={styles.email}>{user.email ?? '체험 모드'}</p>
         </div>
       </header>
 
@@ -164,7 +156,7 @@ export default function MePage() {
             label="이용약관"
             onClick={() => toast({ body: '준비 중이에요', uniqueID: 'me-settings' })}
           />
-          <ListItem label="로그아웃" onClick={signOut} />
+          <ListItem label="로그아웃" onClick={() => void signOut({ callbackUrl: '/me' })} />
         </List>
       </section>
 
