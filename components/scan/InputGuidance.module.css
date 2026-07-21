@@ -2,7 +2,7 @@
 .emergency {
   margin-top: 20px;
   padding: 18px;
-  border: 2px solid #ba1a1a;
+  border: 2px solid var(--color-error);
   border-radius: 14px;
   background: #fff5f4;
 }
@@ -20,7 +20,7 @@
   flex: 0 0 34px;
   place-items: center;
   border-radius: 50%;
-  background: #ba1a1a;
+  background: var(--color-error);
   color: #fff;
 }
 
@@ -84,14 +84,14 @@
 }
 
 .callPrimary {
-  background: #ba1a1a;
+  background: var(--color-error);
   color: #fff;
 }
 
 .callSecondary {
-  border: 1.5px solid #ba1a1a;
+  border: 1.5px solid var(--color-error);
   background: #fff;
-  color: #ba1a1a;
+  color: var(--color-error);
 }
 
 .emergencyFoot {
@@ -108,7 +108,7 @@
   gap: 12px;
   margin-top: 20px;
   padding: 14px;
-  border: 1px solid #ffdcc4;
+  border: 1px solid var(--color-warning-muted);
   border-radius: 12px;
   background: #fff8ef;
 }
@@ -119,8 +119,8 @@
   height: 32px;
   place-items: center;
   border-radius: 50%;
-  background: #ffdcc4;
-  color: #8f4a00;
+  background: var(--color-warning-muted);
+  color: var(--color-warning);
 }
 
 .mismatchIcon svg {
@@ -150,7 +150,7 @@
   padding: 9px 14px;
   border: 0;
   border-radius: 9px;
-  background: #8f4a00;
+  background: var(--color-warning);
   color: #fff;
   font: inherit;
   font-size: 13px;
@@ -161,6 +161,6 @@
 .switchButton:focus-visible,
 .callPrimary:focus-visible,
 .callSecondary:focus-visible {
-  outline: 3px solid #202124;
+  outline: 3px solid var(--color-text-primary);
   outline-offset: 2px;
 }

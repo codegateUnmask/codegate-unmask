@@ -61,8 +61,8 @@ function ArrowIcon() {
 }
 
 const SUMMARY_STYLE: Record<RiskLevel, { bg: string; iconBg: string; eyebrow: string; title: string }> = {
-  danger: { bg: '#ffdad6', iconBg: '#ba1a1a', eyebrow: '#8c1515', title: '#5f1111' },
-  warning: { bg: '#ffe9d1', iconBg: '#8f4a00', eyebrow: '#6b3800', title: '#4a2600' },
+  danger: { bg: 'var(--color-error-muted)', iconBg: 'var(--color-error)', eyebrow: '#8c1515', title: '#5f1111' },
+  warning: { bg: '#ffe9d1', iconBg: 'var(--color-warning)', eyebrow: '#6b3800', title: '#4a2600' },
   safe: { bg: '#e1f5d8', iconBg: '#2e6b1f', eyebrow: '#245416', title: '#1c400f' },
 };
 

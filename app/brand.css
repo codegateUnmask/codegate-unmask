@@ -8,6 +8,20 @@
       --color-accent-muted: #efffc0;
       --color-icon-accent: #4f6414;
       --color-text-accent: #4f6414;
+      --color-background-body: #f7f7f2;
+      --color-background-surface: #ffffff;
+      --color-background-card: #ffffff;
+      --color-text-primary: #202124;
+      --color-text-secondary: #484944;
+      --color-border: #e5e5df;
+      --color-border-emphasized: #c6c7c1;
+      --color-error: #ba1a1a;
+      --color-error-muted: #ffdad6;
+      --color-warning: #8f4a00;
+      --color-warning-muted: #ffdcc4;
+      --unmask-accent-hover: #b1d83b;
+      --unmask-accent-selected: #e1f88a;
+      --unmask-ink-deep: #151618;
       --font-family-body: 'Pretendard Variable', Pretendard, 'Apple SD Gothic Neo', 'Noto Sans KR', system-ui, sans-serif;
       --font-family-heading: 'Pretendard Variable', Pretendard, 'Apple SD Gothic Neo', 'Noto Sans KR', system-ui, sans-serif;
     }
