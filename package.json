@@ -11,14 +11,15 @@
     "test:guard": "tsc lib/engine/guard.ts lib/engine/guard.test.ts --target ES2022 --module commonjs --moduleResolution node --outDir .next/guard-test --esModuleInterop --skipLibCheck && node .next/guard-test/guard.test.js",
     "test:analyze": "tsc lib/engine/analyze.test.ts --target ES2022 --module commonjs --moduleResolution node --outDir .next/analyze-test --esModuleInterop --skipLibCheck && node .next/analyze-test/engine/analyze.test.js",
     "test:scan": "tsc app/api/scan/route.test.ts --target ES2022 --module commonjs --moduleResolution node --outDir .next/scan-test --esModuleInterop --skipLibCheck && node .next/scan-test/app/api/scan/route.test.js",
+    "test:ocr": "tsc lib/ocr-confidence.ts lib/ocr-quality.ts lib/ocr.test.ts --target ES2022 --module commonjs --moduleResolution node --outDir .next/ocr-test --esModuleInterop --skipLibCheck && node .next/ocr-test/ocr.test.js",
     "sync-deploy": "git pull origin main && git push personal main"
   },
   "dependencies": {
+    "@paddleocr/paddleocr-js": "0.4.2",
     "next": "^15.5.20",
     "openai": "^6.48.0",
     "react": "19.2.4",
     "react-dom": "19.2.4",
-    "tesseract.js": "^7.0.0",
     "zustand": "^5.0.14"
   },
   "devDependencies": {
