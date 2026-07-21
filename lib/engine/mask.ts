@@ -1,17 +1,17 @@
 // ============================================================
 // 개인정보 마스킹 — [담당: 코어 오너(A)]
-// Claude API로 넘기기 전, 이름·연락처·계좌·주민번호를 가립니다.
+// 외부 모델로 넘기기 전, 정규식으로 식별 가능한 민감정보를 가립니다.
 // ============================================================
 
 import { MASK_PATTERNS, MASK_REPLACEMENT } from '../config';
 
-/**
- * 텍스트에서 개인정보 패턴을 찾아 마스킹합니다.
- * TODO(A): 이름 마스킹(정규식만으로는 어려움 — 흔한 성씨 사전 or NER 검토) 추가
- */
+// 전화번호·주민번호를 더 일반적인 계좌 패턴보다 먼저 처리합니다.
+const MASK_ORDER = ['phone', 'rrn', 'account', 'email'] as const;
+
+/** 텍스트에서 지원하는 민감정보 패턴을 모두 마스킹합니다. */
 export function maskPII(text: string): string {
   let masked = text;
-  for (const key of Object.keys(MASK_PATTERNS) as (keyof typeof MASK_PATTERNS)[]) {
+  for (const key of MASK_ORDER) {
     masked = masked.replace(MASK_PATTERNS[key], MASK_REPLACEMENT[key]);
   }
   return masked;
