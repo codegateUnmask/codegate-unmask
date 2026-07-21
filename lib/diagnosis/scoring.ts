@@ -2,8 +2,14 @@
 // 채점 로직
 //
 // scoreAnswers(): answers(0~3 점수 배열) → VulnAxes(0~100 정규화)
-// determineType(): VulnAxes → PROFILE_TYPES 의 typeCode
+// determineType(): VulnAxes → PROFILE_TYPES 의 typeCode (MBTI 16종)
 // buildProfile(): 위 둘을 합쳐 완성된 VulnProfile 반환 (API가 이 함수만 호출하면 됨)
+//
+// 16유형 판정 원리:
+//  4축(authority/urgency/greed/verify)을 각각 50점 기준 고(1)/저(0)로
+//  나누면 2^4=16가지 조합이 나옵니다. 이 조합을 그대로 MBTI 16유형에
+//  1:1 매칭했습니다 (PATTERN_TO_TYPE 참고). verify가 높으면(1) 방어형,
+//  낮으면(0) 취약형이 되고, 나머지 3축의 고/저 조합이 세부 유형을 정합니다.
 // ============================================================
 
 import type { VulnAxes, VulnProfile } from '../types';
@@ -12,6 +18,30 @@ import { PROFILE_TYPES } from './profileTypes';
 
 const AXES: (keyof VulnAxes)[] = ['authority', 'urgency', 'greed', 'verify'];
 const MAX_OPTION_SCORE = 3;
+const THRESHOLD = 50;
+
+/** 비트 순서: authority, urgency, greed, verify → 문자열 키(예: '1010') */
+const PATTERN_TO_TYPE: Record<string, string> = {
+  // 취약형 (verify = 0)
+  '0000': 'INFP', // 전부 낮음, 검증도 없음 → 무기력 방관자형
+  '0010': 'ENFP', // 이득만 높음
+  '0100': 'ESFP', // 시간압박만 높음
+  '0110': 'ESTP', // 시간압박+이득
+  '1000': 'ISFJ', // 권위만 높음
+  '1010': 'ESFJ', // 권위+이득
+  '1100': 'ENFJ', // 권위+시간압박
+  '1110': 'ISFP', // 셋 다 높음 → 총체적 무방비형
+
+  // 방어형 (verify = 1)
+  '0001': 'ISTJ', // 전부 낮음 + 검증 높음 → 철옹성
+  '0011': 'ENTJ', // 이득만 남은 빈틈
+  '0101': 'ESTJ', // 시간압박만 남은 빈틈
+  '0111': 'ENTP', // 시간압박+이득 빈틈
+  '1001': 'INTJ', // 권위만 남은 빈틈
+  '1011': 'INFJ', // 권위+이득 빈틈
+  '1101': 'INTP', // 권위+시간압박 빈틈
+  '1111': 'ISTP', // 셋 다 높지만 검증으로 버팀
+};
 
 /**
  * answers 는 QUESTIONS 배열과 같은 길이·같은 순서여야 합니다.
@@ -42,57 +72,17 @@ export function scoreAnswers(answers: number[]): VulnAxes {
   return axes;
 }
 
-/**
- * 4축 점수로 유형 코드를 판정합니다.
- *
- * 방어형 조건: verify(검증습관) >= 60 이고, authority/urgency/greed 평균 <= 45
- *  1) verify >= 85                         → ULTRA_SKEPTIC (만사 불신 대현자)
- *  2) 세 축(authority/urgency/greed)이      → FORTRESS (균형 잡힌 철옹성)
- *     서로 15점 이내로 고르게 낮음
- *  3) 그 외에는 가장 낮은(=가장 강한 방어)   → AUTHORITY_IMMUNE / CALM_ANCHOR /
- *     축 하나를 대표 방어 포인트로 선정        TEMPTATION_PROOF
- *
- * 취약형: 위 조건에 해당하지 않으면 authority/urgency/greed 중 최댓값 축으로 판정
- *  - 셋 다 비슷하게 중간이고 verify도 낮으면 LOW_VERIFY_DRIFTER
- */
+/** 4축 점수 → 16유형(MBTI 코드) 판정 */
 export function determineType(axes: VulnAxes): string {
-  const { authority, urgency, greed, verify } = axes;
-  const avgVuln = (authority + urgency + greed) / 3;
+  const bit = (v: number) => (v >= THRESHOLD ? '1' : '0');
+  const key = `${bit(axes.authority)}${bit(axes.urgency)}${bit(axes.greed)}${bit(axes.verify)}`;
+  const typeCode = PATTERN_TO_TYPE[key];
 
-  const isDefensive = verify >= 60 && avgVuln <= 45;
-
-  if (isDefensive) {
-    if (verify >= 85) return 'ULTRA_SKEPTIC';
-
-    const triple = { authority, urgency, greed };
-    const values = Object.values(triple);
-    const spread = Math.max(...values) - Math.min(...values);
-
-    if (spread < 15) return 'FORTRESS';
-
-    const lowestAxis = (Object.keys(triple) as (keyof typeof triple)[]).reduce((a, b) =>
-      triple[a] <= triple[b] ? a : b
-    );
-
-    if (lowestAxis === 'authority') return 'AUTHORITY_IMMUNE';
-    if (lowestAxis === 'urgency') return 'CALM_ANCHOR';
-    return 'TEMPTATION_PROOF';
+  if (!typeCode) {
+    // 이론상 16개 조합을 모두 정의했으므로 도달하지 않지만, 방어적으로 처리
+    throw new Error(`매칭되는 유형이 없습니다 (pattern: ${key})`);
   }
-
-  const triple = { authority, urgency, greed };
-  const values = Object.values(triple);
-  const spread = Math.max(...values) - Math.min(...values);
-
-  // 세 축이 서로 비슷하고 검증 습관도 낮으면 특정 약점이 아니라 "전반적 무방비"
-  if (spread < 10 && verify < 45) return 'LOW_VERIFY_DRIFTER';
-
-  const highestAxis = (Object.keys(triple) as (keyof typeof triple)[]).reduce((a, b) =>
-    triple[a] >= triple[b] ? a : b
-  );
-
-  if (highestAxis === 'authority') return 'AUTHORITY_DOMINANT';
-  if (highestAxis === 'urgency') return 'URGENCY_DOMINANT';
-  return 'GREED_DOMINANT';
+  return typeCode;
 }
 
 /** answers → 완성된 VulnProfile. /api/diagnose 는 이 함수 하나만 호출하면 됩니다. */
@@ -102,7 +92,6 @@ export function buildProfile(answers: number[]): VulnProfile {
   const def = PROFILE_TYPES[typeCode];
 
   if (!def) {
-    // 방어적 fallback — 이론상 도달하지 않지만 타입 정의 누락 시 대비
     throw new Error(`알 수 없는 유형 코드: ${typeCode}`);
   }
 
@@ -120,4 +109,3 @@ export function buildProfile(answers: number[]): VulnProfile {
     strengths: def.strengths,
   };
 }
-git add .

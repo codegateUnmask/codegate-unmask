@@ -47,3 +47,4 @@ export async function POST(req: NextRequest) {
     console.error('[diagnose] buildProfile 실패:', err);
     return NextResponse.json({ error: '진단 처리 중 오류가 발생했습니다.' }, { status: 500 });
   }
+}
