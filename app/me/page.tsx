@@ -13,10 +13,12 @@ import { List, ListItem } from '@astryxdesign/core/List';
 import { useToast } from '@astryxdesign/core/Toast';
 import LoginSheet from '@/components/auth/LoginSheet';
 import ProfileEditor from '@/components/profile/ProfileEditor';
+import HistoryDetail from '@/components/me/HistoryDetail';
 import { useProfileStore } from '@/stores/profileStore';
+import { useHistoryStore, type ScanRecord } from '@/stores/historyStore';
 import { useSession, signOut } from 'next-auth/react';
 import { useAppStore } from '@/lib/store';
-import { MOCK_SCAN_HISTORY } from '@/lib/mock.me';
+import { KNOWLEDGE_PACKS } from '@/lib/config';
 import type { RiskLevel } from '@/lib/types';
 import styles from './Me.module.css';
 
@@ -40,9 +42,12 @@ export default function MePage() {
   const router = useRouter();
   const [isSheetOpen, setIsSheetOpen] = useState(false);
   const [isEditOpen, setIsEditOpen] = useState(false);
+  const [openRecord, setOpenRecord] = useState<ScanRecord | null>(null);
   // 표시 이름·사진은 이 기기에만 저장한 값을 우선합니다 (없으면 세션 값)
   const localName = useProfileStore((s) => s.nickname);
   const localAvatar = useProfileStore((s) => s.avatar);
+  // 판독 기록 — 이 기기(localStorage)에만 저장된 실제 데이터
+  const records = useHistoryStore((s) => s.records);
 
   // 세션 확인 전에 로그아웃 화면을 그리면 로그인한 사용자에게 한 번 깜빡입니다.
   if (status === 'loading') return <main className={styles.page} aria-busy="true" />;
@@ -150,26 +155,38 @@ export default function MePage() {
           <h2 id="me-history-title" className={styles.sectionTitle}>
             분석 히스토리
           </h2>
-          <Badge label="목업 데이터" />
+          <Badge label="내 기기에만 저장" />
         </div>
-        <List hasDividers density="spacious">
-          {MOCK_SCAN_HISTORY.map((item) => (
-            <ListItem
-              key={item.id}
-              label={item.docTypeLabel}
-              description={item.summary}
-              endContent={
-                <span className={styles.histEnd}>
-                  <Badge variant={LEVEL_BADGE[item.level]} label={LEVEL_LABEL[item.level]} />
-                  <span className={styles.histDate}>{item.date}</span>
-                </span>
-              }
-              onClick={() =>
-                toast({ body: '데모에서는 상세 보기를 제공하지 않아요', uniqueID: 'me-history' })
-              }
-            />
-          ))}
-        </List>
+        {records.length === 0 ? (
+          <EmptyState
+            isCompact
+            title="아직 판독 기록이 없어요"
+            description="계약서나 문자를 판독하면 결과가 여기에 남아요. 서버가 아니라 이 기기에만 저장돼요."
+            actions={<Button label="계약서 판독하러 가기" variant="primary" href="/scan" />}
+          />
+        ) : (
+          <List hasDividers density="spacious">
+            {records.map((item) => (
+              <ListItem
+                key={item.id}
+                label={KNOWLEDGE_PACKS[item.docType]?.label ?? item.docType}
+                description={item.result.summary}
+                endContent={
+                  <span className={styles.histEnd}>
+                    <Badge
+                      variant={LEVEL_BADGE[item.result.overallLevel]}
+                      label={LEVEL_LABEL[item.result.overallLevel]}
+                    />
+                    <span className={styles.histDate}>
+                      {new Date(item.ts).getMonth() + 1}월 {new Date(item.ts).getDate()}일
+                    </span>
+                  </span>
+                }
+                onClick={() => setOpenRecord(item)}
+              />
+            ))}
+          </List>
+        )}
       </section>
 
       <section className={styles.section} aria-labelledby="me-settings-title">
@@ -194,6 +211,7 @@ export default function MePage() {
       {isEditOpen && (
         <ProfileEditor fallbackName={user.name ?? '사용자'} onClose={() => setIsEditOpen(false)} />
       )}
+      {openRecord && <HistoryDetail record={openRecord} onClose={() => setOpenRecord(null)} />}
     </main>
   );
 }

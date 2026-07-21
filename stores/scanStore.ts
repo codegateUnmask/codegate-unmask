@@ -9,6 +9,7 @@
 import { create } from 'zustand';
 import { scanStream } from '@/lib/sse';
 import { MAX_INPUT_CHARS } from '@/lib/config';
+import { useHistoryStore } from '@/stores/historyStore';
 import type { Sample } from '@/lib/mock.scan';
 import type { AnalysisStage, DocType, ScanResult, VulnProfile } from '@/lib/types';
 
@@ -70,6 +71,9 @@ export const useScanStore = create<ScanState>((set, get) => ({
         activeSample ?? undefined,
       );
       set((s) => ({ status: s.result ? 'done' : 'error', error: s.result ? null : '판독 결과가 없습니다.' }));
+      // 판독 완료 시 이 기기(localStorage)에만 기록 — 서버 저장 없음, 원문 텍스트 미포함
+      const finished = get().result;
+      if (finished) useHistoryStore.getState().add(get().docType, finished);
     } catch (err) {
       if ((err as Error).name === 'AbortError') return;
       set({ status: 'error', error: '연결이 끊어졌어요. 다시 시도해주세요.' });
