@@ -6,12 +6,11 @@
 
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useState } from 'react';
 import Link from 'next/link';
 
 type Plan = {
   id: string;
-  amount: number;
   badge?: string;
   name: string;
   price: string;
@@ -23,7 +22,6 @@ type Plan = {
 const PLANS: Plan[] = [
   {
     id: 'pass',
-    amount: 9900,
     badge: '이사철 인기',
     name: '전세 계약 패스',
     price: '9,900',
@@ -37,7 +35,6 @@ const PLANS: Plan[] = [
   },
   {
     id: 'premium',
-    amount: 5900,
     name: '프리미엄',
     price: '5,900',
     per: '원 / 월',
@@ -59,37 +56,10 @@ const PAY_METHODS = [
 
 type Step = 'closed' | 'sheet' | 'processing' | 'done';
 
-const SUB_KEY = 'unmask.subscription';
-const PASS_KEY = 'unmask.passes';
-
-interface Subscription { since: string }
-
-function addMonth(iso: string): string {
-  const d = new Date(iso);
-  d.setMonth(d.getMonth() + 1);
-  return d.toLocaleDateString('ko-KR', { month: 'long', day: 'numeric' });
-}
-
 export default function PremiumPage() {
   const [plan, setPlan] = useState<Plan | null>(null);
   const [step, setStep] = useState<Step>('closed');
   const [method, setMethod] = useState<string>('kakao');
-  const [sub, setSub] = useState<Subscription | null>(null);
-  const [passes, setPasses] = useState(0);
-
-  // 저장된 구독 상태 불러오기 (기기 저장 — 서버·계정 없음)
-  useEffect(() => {
-    try {
-      const s = localStorage.getItem(SUB_KEY);
-      if (s) setSub(JSON.parse(s));
-      setPasses(Number(localStorage.getItem(PASS_KEY) ?? 0));
-    } catch { /* 저장소 접근 불가 시 무시 */ }
-  }, []);
-
-  function cancelSub() {
-    localStorage.removeItem(SUB_KEY);
-    setSub(null);
-  }
 
   function openSheet(p: Plan) {
     setPlan(p);
@@ -97,45 +67,14 @@ export default function PremiumPage() {
     setStep('sheet');
   }
 
-  async function pay() {
-    // 카카오페이: 실제 테스트 결제(TC0ONETIME, 실과금 없음).
-    // 키가 없거나 API 실패 시 자동으로 아래 목업 흐름 폴백.
-    if (method === 'kakao' && plan) {
-      setStep('processing');
-      try {
-        const orderId = `unmask-${Date.now()}`;
-        const res = await fetch('/api/pay/kakao/ready', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ planId: plan.id, itemName: `unmask ${plan.name}`, amount: plan.amount, orderId }),
-        });
-        const d = await res.json();
-        if (!d.demo && d.tid) {
-          sessionStorage.setItem('kakao.tid', d.tid);
-          sessionStorage.setItem('kakao.orderId', orderId);
-          const mobile = /Android|iPhone|iPad/i.test(navigator.userAgent);
-          window.location.href = mobile ? d.redirectMobile : d.redirectPc;
-          return; // 카카오페이 결제창으로 이동 → /premium/kakao로 돌아옴
-        }
-      } catch { /* 폴백으로 진행 */ }
-    }
-    // 토스/카드(및 카카오 폴백): 목업 연출.
-    // 실서비스 전환 지점 — 토스페이먼츠 결제위젯으로 교체.
+  function pay() {
+    // ── 실서비스 전환 지점 ──────────────────────────────
+    // 여기서 토스페이먼츠 결제위젯 호출로 교체:
+    //   loadTossPayments(clientKey) → widgets.requestPayment(...)
+    // 데모에서는 1.2초 처리 연출 후 완료 화면.
+    // ──────────────────────────────────────────────────
     setStep('processing');
-    setTimeout(() => {
-      try {
-        if (plan?.id === 'premium') {
-          const s = { since: new Date().toISOString() };
-          localStorage.setItem(SUB_KEY, JSON.stringify(s));
-          setSub(s);
-        } else if (plan?.id === 'pass') {
-          const n = passes + 1;
-          localStorage.setItem(PASS_KEY, String(n));
-          setPasses(n);
-        }
-      } catch { /* 저장 실패해도 데모 흐름은 계속 */ }
-      setStep('done');
-    }, 1200);
+    setTimeout(() => setStep('done'), 1200);
   }
 
   return (
@@ -151,35 +90,6 @@ export default function PremiumPage() {
           판독 1회가 막아주는 손해는 보증금 몇천만 원일 수 있어요.
         </p>
       </header>
-
-      {sub && (
-        <section className="card-in mb-5 rounded-2xl border-2 border-[var(--safe)] bg-white p-5">
-          <div className="flex items-start justify-between gap-3">
-            <div>
-              <p className="font-mono text-[11.5px] font-bold tracking-wider text-[var(--safe)]">
-                ✓ 프리미엄 구독 중
-              </p>
-              <p className="mt-1 text-[14px] text-[var(--ink)]">
-                다음 결제일 <b>{addMonth(sub.since)}</b> · 무제한 판독 이용 중
-              </p>
-            </div>
-            <button
-              onClick={cancelSub}
-              className="shrink-0 rounded-lg border-[1.5px] border-[var(--line)] px-3 py-1.5 text-[12.5px] font-bold text-[var(--ink-soft)]"
-            >
-              구독 해지
-            </button>
-          </div>
-          <p className="mt-2 text-[12px] text-[var(--ink-soft)]">
-            해지는 지금 이 버튼 하나로 끝나요 — 저희가 잡아내는 "해지 어려운 약관", 저희는 안 만듭니다.
-          </p>
-        </section>
-      )}
-      {passes > 0 && !sub && (
-        <p className="card-in mb-4 rounded-xl bg-white px-4 py-3 text-[13.5px] font-bold text-[var(--ink)] border border-[var(--line)]">
-          🎫 전세 계약 패스 <b>{passes}건</b> 보유 중
-        </p>
-      )}
 
       <div className="grid gap-4 sm:grid-cols-2">
         {PLANS.map((p) => (
@@ -209,10 +119,9 @@ export default function PremiumPage() {
             </ul>
             <button
               onClick={() => openSheet(p)}
-              disabled={p.id === 'premium' && !!sub}
-              className="mt-4 w-full rounded-xl bg-[var(--ink)] px-5 py-3 text-[15px] font-extrabold text-white transition-transform active:scale-[0.98] disabled:cursor-default disabled:bg-[var(--safe)]"
+              className="mt-4 w-full rounded-xl bg-[var(--ink)] px-5 py-3 text-[15px] font-extrabold text-white transition-transform active:scale-[0.98]"
             >
-              {p.id === 'premium' && sub ? '✓ 구독 중' : p.id === 'pass' ? '이 계약 지키기' : '구독 시작하기'}
+              {p.id === 'pass' ? '이 계약 지키기' : '시작하기'}
             </button>
           </section>
         ))}
@@ -312,9 +221,9 @@ export default function PremiumPage() {
                   결제 완료 (데모)
                 </h3>
                 <p className="mt-1 text-[14px] leading-relaxed text-[var(--ink-soft)]">
-                  {plan.id === 'premium'
-                    ? <>구독이 시작됐어요. 다음 결제일은 <b>{sub ? addMonth(sub.since) : ''}</b>이고, 언제든 버튼 하나로 해지돼요.</>
-                    : <>전세 계약 패스가 담겼어요. 이제 숨은 위험을 먼저 보세요.</>}
+                  {plan.name} 이용이 시작됐어요.
+                  <br />
+                  이제 숨은 위험을 먼저 보세요.
                 </p>
                 <Link
                   href="/scan"
