@@ -3,6 +3,7 @@
 import { useState } from 'react';
 import Image from 'next/image';
 import Link from 'next/link';
+import { useRouter } from 'next/navigation';
 import { ShieldCheck } from 'lucide-react';
 import { Avatar } from '@astryxdesign/core/Avatar';
 import { Badge } from '@astryxdesign/core/Badge';
@@ -34,6 +35,7 @@ export default function MePage() {
   const signOut = useAuthStore((s) => s.signOut);
   const profile = useAppStore((s) => s.profile);
   const toast = useToast();
+  const router = useRouter();
   const [isSheetOpen, setIsSheetOpen] = useState(false);
 
   if (!user) {
@@ -55,7 +57,11 @@ export default function MePage() {
           </div>
           <p className={styles.guestNote}>지금은 로그인 없이 둘러보는 중이에요</p>
         </section>
-        <LoginSheet isOpen={isSheetOpen} onOpenChange={setIsSheetOpen} />
+        <LoginSheet
+          isOpen={isSheetOpen}
+          onOpenChange={setIsSheetOpen}
+          onSuccess={() => router.push('/start')}
+        />
       </main>
     );
   }
@@ -149,6 +155,7 @@ export default function MePage() {
           설정
         </h2>
         <List hasDividers density="spacious">
+          <ListItem label="프리미엄 구독" onClick={() => router.push('/premium')} />
           <ListItem
             label="알림 설정"
             onClick={() => toast({ body: '준비 중이에요', uniqueID: 'me-settings' })}
