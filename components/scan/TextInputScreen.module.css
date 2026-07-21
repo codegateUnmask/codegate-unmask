@@ -5,8 +5,8 @@
   min-height: 100dvh;
   margin: 0 auto;
   overflow-x: hidden;
-  background: #f7f7f2;
-  color: #202124;
+  background: var(--color-background-body);
+  color: var(--color-text-primary);
 }
 
 .header {
@@ -21,7 +21,7 @@
   align-items: center;
   padding: 0 12px;
   transform: translateX(-50%);
-  background: #f7f7f2;
+  background: var(--color-background-body);
 }
 
 .iconButton {
@@ -33,7 +33,7 @@
   border: 0;
   border-radius: 50%;
   background: transparent;
-  color: #202124;
+  color: var(--color-text-primary);
   cursor: pointer;
 }
 
@@ -65,7 +65,7 @@ span.iconButton {
 
 .intro p {
   margin: 8px 0 0;
-  color: #484944;
+  color: var(--color-text-secondary);
   font-size: 16px;
   line-height: 24px;
 }
@@ -79,7 +79,7 @@ span.iconButton {
 .docTypeLegend {
   margin-bottom: 10px;
   padding: 0;
-  color: #484944;
+  color: var(--color-text-secondary);
   font-size: 13px;
   font-weight: 700;
 }
@@ -94,10 +94,10 @@ span.iconButton {
 .docChipSelected {
   min-height: 48px;
   padding: 12px 14px;
-  border: 1px solid #c6c7c1;
+  border: 1px solid var(--color-border-emphasized);
   border-radius: 12px;
   background: #fff;
-  color: #202124;
+  color: var(--color-text-primary);
   font: inherit;
   font-size: 14px;
   font-weight: 700;
@@ -109,8 +109,8 @@ span.iconButton {
 }
 
 .docChipSelected {
-  border-color: #202124;
-  background: #e1f88a;
+  border-color: var(--color-text-primary);
+  background: var(--unmask-accent-selected);
 }
 
 .editorBlock {
@@ -120,7 +120,7 @@ span.iconButton {
 .editorLabel {
   display: block;
   margin-bottom: 10px;
-  color: #484944;
+  color: var(--color-text-secondary);
   font-size: 13px;
   font-weight: 700;
 }
@@ -129,10 +129,10 @@ span.iconButton {
   width: 100%;
   min-height: 280px;
   padding: 16px;
-  border: 1px solid #c6c7c1;
+  border: 1px solid var(--color-border-emphasized);
   border-radius: 12px;
   background: #fff;
-  color: #202124;
+  color: var(--color-text-primary);
   font: inherit;
   font-size: 15px;
   line-height: 1.7;
@@ -146,7 +146,7 @@ span.iconButton {
 
 .charCount {
   margin: 8px 0 0;
-  color: #484944;
+  color: var(--color-text-secondary);
   font-size: 13px;
   font-weight: 600;
   text-align: right;
@@ -158,10 +158,10 @@ span.iconButton {
   gap: 8px;
   margin: 20px 0 0;
   padding: 14px 16px;
-  border: 1px solid #e5e5df;
+  border: 1px solid var(--color-border);
   border-radius: 12px;
   background: #fff;
-  color: #484944;
+  color: var(--color-text-secondary);
   font-size: 14px;
   line-height: 21px;
   word-break: keep-all;
@@ -173,7 +173,7 @@ span.iconButton {
   width: 18px;
   height: 21px;
   place-items: center;
-  color: #202124;
+  color: var(--color-text-primary);
 }
 
 .footer {
@@ -184,8 +184,8 @@ span.iconButton {
   width: min(100%, 480px);
   padding: 12px 20px calc(16px + env(safe-area-inset-bottom));
   transform: translateX(-50%);
-  border-top: 1px solid #e5e5df;
-  background: #f7f7f2;
+  border-top: 1px solid var(--color-border);
+  background: var(--color-background-body);
 }
 
 .cta {
@@ -196,8 +196,8 @@ span.iconButton {
   justify-content: center;
   border: 0;
   border-radius: 12px;
-  background: #c8f04b;
-  color: #202124;
+  background: var(--color-accent);
+  color: var(--color-on-accent);
   font: inherit;
   font-size: 16px;
   font-weight: 800;
@@ -206,7 +206,7 @@ span.iconButton {
 }
 
 .cta:hover:not(:disabled) {
-  background: #b1d83b;
+  background: var(--unmask-accent-hover);
 }
 
 .cta:disabled {
@@ -219,7 +219,7 @@ span.iconButton {
 .docChipSelected:focus-visible,
 .textarea:focus-visible,
 .cta:focus-visible {
-  outline: 3px solid #b1d83b;
+  outline: 3px solid var(--unmask-accent-hover);
   outline-offset: 2px;
 }
 

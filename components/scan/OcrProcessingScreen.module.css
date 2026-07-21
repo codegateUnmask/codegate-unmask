@@ -5,8 +5,8 @@
   min-height: 100dvh;
   margin: 0 auto;
   overflow-x: hidden;
-  background: #f7f7f2;
-  color: #202124;
+  background: var(--color-background-body);
+  color: var(--color-text-primary);
 }
 
 .header {
@@ -21,7 +21,7 @@
   align-items: center;
   padding: 0 12px;
   transform: translateX(-50%);
-  background: #f7f7f2;
+  background: var(--color-background-body);
 }
 
 .iconButton {
@@ -33,7 +33,7 @@
   border: 0;
   border-radius: 50%;
   background: transparent;
-  color: #202124;
+  color: var(--color-text-primary);
   cursor: pointer;
 }
 
@@ -65,7 +65,7 @@ span.iconButton {
 
 .intro p {
   margin: 8px 0 0;
-  color: #484944;
+  color: var(--color-text-secondary);
   font-size: 16px;
   line-height: 24px;
   word-break: keep-all;
@@ -78,7 +78,7 @@ span.iconButton {
   column-gap: 10px;
   margin-top: 24px;
   padding: 16px;
-  border: 1px solid #c6c7c1;
+  border: 1px solid var(--color-border-emphasized);
   border-radius: 12px;
   background: #fff;
 }
@@ -88,7 +88,7 @@ span.iconButton {
   width: 22px;
   height: 22px;
   place-items: center;
-  color: #202124;
+  color: var(--color-text-primary);
 }
 
 .fileName {
@@ -104,10 +104,10 @@ span.iconButton {
   min-height: 44px;
   margin-top: 12px;
   padding: 10px 14px;
-  border: 1px solid #c6c7c1;
+  border: 1px solid var(--color-border-emphasized);
   border-radius: 10px;
   background: transparent;
-  color: #202124;
+  color: var(--color-text-primary);
   font: inherit;
   font-size: 14px;
   font-weight: 700;
@@ -117,7 +117,7 @@ span.iconButton {
 .changeImageHint {
   grid-column: 1 / -1;
   margin: 8px 0 0;
-  color: #484944;
+  color: var(--color-text-secondary);
   font-size: 13px;
   line-height: 19px;
 }
@@ -139,14 +139,14 @@ span.iconButton {
   gap: 12px;
   min-height: 56px;
   padding: 14px 16px;
-  border: 1px solid #e5e5df;
+  border: 1px solid var(--color-border);
   border-radius: 12px;
   background: #fff;
 }
 
 .stageActive {
-  border-color: #c8f04b;
-  background: #efffc0;
+  border-color: var(--color-accent);
+  background: var(--color-accent-muted);
 }
 
 .stageMark {
@@ -157,25 +157,25 @@ span.iconButton {
 }
 
 .stage .stageMark {
-  color: #c6c7c1;
+  color: var(--color-border-emphasized);
 }
 
 .stageDone .stageMark {
-  color: #202124;
+  color: var(--color-text-primary);
 }
 
 .dot {
   width: 8px;
   height: 8px;
   border-radius: 50%;
-  background: #c6c7c1;
+  background: var(--color-border-emphasized);
 }
 
 .spinner {
   width: 18px;
   height: 18px;
-  border: 3px solid #e1f88a;
-  border-top-color: #151618;
+  border: 3px solid var(--unmask-accent-selected);
+  border-top-color: var(--unmask-ink-deep);
   border-radius: 50%;
   animation: spin 0.9s linear infinite;
 }
@@ -200,7 +200,7 @@ span.iconButton {
 }
 
 .stage .stageLabel {
-  color: #484944;
+  color: var(--color-text-secondary);
   font-weight: 500;
 }
 
@@ -221,7 +221,7 @@ span.iconButton {
 
 .privacyNote {
   margin: 20px 0 0;
-  color: #484944;
+  color: var(--color-text-secondary);
   font-size: 14px;
   line-height: 21px;
   text-align: center;
@@ -230,7 +230,7 @@ span.iconButton {
 
 .iconButton:focus-visible,
 .changeImage:focus-visible {
-  outline: 3px solid #b1d83b;
+  outline: 3px solid var(--unmask-accent-hover);
   outline-offset: 2px;
 }
 

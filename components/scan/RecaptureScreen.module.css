@@ -7,8 +7,8 @@
   flex-direction: column;
   margin: 0 auto;
   overflow-x: hidden;
-  background: #f7f7f2;
-  color: #202124;
+  background: var(--color-background-body);
+  color: var(--color-text-primary);
 }
 
 .header {
@@ -23,7 +23,7 @@
   align-items: center;
   padding: 0 12px;
   transform: translateX(-50%);
-  background: #f7f7f2;
+  background: var(--color-background-body);
 }
 
 .iconButton {
@@ -35,7 +35,7 @@
   border: 0;
   border-radius: 50%;
   background: transparent;
-  color: #202124;
+  color: var(--color-text-primary);
   cursor: pointer;
 }
 
@@ -62,7 +62,7 @@ span.iconButton {
 
 .notice {
   padding: 24px 20px;
-  border: 1px solid #ffdcc4;
+  border: 1px solid var(--color-warning-muted);
   border-radius: 12px;
   background: #fff;
   text-align: center;
@@ -75,8 +75,8 @@ span.iconButton {
   margin: 0 auto;
   place-items: center;
   border-radius: 50%;
-  background: #ffdcc4;
-  color: #8f4a00;
+  background: var(--color-warning-muted);
+  color: var(--color-warning);
 }
 
 .notice h2 {
@@ -90,7 +90,7 @@ span.iconButton {
 
 .notice p {
   margin: 8px 0 0;
-  color: #484944;
+  color: var(--color-text-secondary);
   font-size: 15px;
   line-height: 23px;
   word-break: keep-all;
@@ -99,7 +99,7 @@ span.iconButton {
 .guideCard {
   margin-top: 16px;
   padding: 18px 20px;
-  border: 1px solid #e5e5df;
+  border: 1px solid var(--color-border);
   border-radius: 12px;
   background: #fff;
 }
@@ -123,7 +123,7 @@ span.iconButton {
   grid-template-columns: 18px minmax(0, 1fr);
   align-items: start;
   gap: 10px;
-  color: #484944;
+  color: var(--color-text-secondary);
   font-size: 14.5px;
   line-height: 22px;
   word-break: keep-all;
@@ -134,7 +134,7 @@ span.iconButton {
   width: 18px;
   height: 22px;
   place-items: center;
-  color: #202124;
+  color: var(--color-text-primary);
 }
 
 .actions {
@@ -152,8 +152,8 @@ span.iconButton {
   justify-content: center;
   border: 0;
   border-radius: 12px;
-  background: #c8f04b;
-  color: #202124;
+  background: var(--color-accent);
+  color: var(--color-on-accent);
   font: inherit;
   font-size: 16px;
   font-weight: 800;
@@ -162,7 +162,7 @@ span.iconButton {
 }
 
 .primaryAction:hover {
-  background: #b1d83b;
+  background: var(--unmask-accent-hover);
 }
 
 .secondaryAction {
@@ -171,10 +171,10 @@ span.iconButton {
   height: 56px;
   align-items: center;
   justify-content: center;
-  border: 1px solid #c6c7c1;
+  border: 1px solid var(--color-border-emphasized);
   border-radius: 12px;
   background: #fff;
-  color: #202124;
+  color: var(--color-text-primary);
   font: inherit;
   font-size: 16px;
   font-weight: 700;
@@ -187,7 +187,7 @@ span.iconButton {
   padding: 10px;
   border: 0;
   background: transparent;
-  color: #484944;
+  color: var(--color-text-secondary);
   font: inherit;
   font-size: 14.5px;
   font-weight: 700;
@@ -200,7 +200,7 @@ span.iconButton {
 .primaryAction:focus-visible,
 .secondaryAction:focus-visible,
 .textAction:focus-visible {
-  outline: 3px solid #b1d83b;
+  outline: 3px solid var(--unmask-accent-hover);
   outline-offset: 2px;
 }
 
