@@ -138,6 +138,23 @@ export const PROFILE_TYPES: Record<string, ProfileTypeDef> = {
     characterAccessories: ['authority', 'urgency', 'greed'],
   },
 
+  // ================= 특수 유형 · 17번째 =================
+  // 취약 3축이 전부 매우 높고(>=75) 검증이 매우 낮을 때(<=25)만 나오는 극단 유형.
+  // 판정 규칙은 scoring.ts determineType() 상단에 있습니다. 임계값 판정이라 항상 결정적입니다.
+  HEUKWOO: {
+    typeCode: 'HEUKWOO',
+    typeName: '전설의 흑우형',
+    tagline: '권위도, 재촉도, 공짜도 다 믿는 당신 — 사기꾼들의 VIP',
+    description:
+      '권위·시간압박·이득 세 자극 모두에 최고 수준으로 반응하면서 확인 습관은 거의 없는, 이 진단이 찾아낼 수 있는 가장 극단적인 조합입니다. 나쁜 뜻이 아니라 그만큼 사람을 잘 믿는다는 뜻이기도 합니다. 다만 그 믿음을 노리는 사람들이 있으니, 서명·송금 전에 딱 한 번만 확인하는 습관부터 시작해 보세요. 흑우를 벗어나는 가장 빠른 길입니다.',
+    weakAgainst: ['기관 사칭', '마감 압박', '고수익 미끼', '낯선 링크', '확인 없는 서명'],
+    strengths: [],
+    mbtiMatch: '흑우',
+    characterTitle: '전설의 흑우',
+    category: 'vulnerable',
+    characterAccessories: ['authority', 'urgency', 'greed'],
+  },
+
   // ================= 방어형 8종 (verify = 1) =================
   ISTJ: {
     typeCode: 'ISTJ',
@@ -145,7 +162,7 @@ export const PROFILE_TYPES: Record<string, ProfileTypeDef> = {
     tagline: '어느 쪽으로도 기울지 않는, 흔들림 없는 균형의 소유자',
     description:
       '권위·시간압박·이득 어느 자극에도 고르게 낮은 반응을 보이면서 검증 습관은 확실한 유형입니다. 특정 약점이 없어 사기꾼 입장에서 가장 공략하기 어려운 상대이며, 침착함과 꼼꼼함을 동시에 갖췄습니다.',
-    weakAgainst: ['너무 신중해 좋은 기회도 신중히 살피느라 늦게 잡을 수 있음'],
+    weakAgainst: ['너무 신중한 나머지 좋은 기회를 놓칠 수 있음'],
     strengths: ['모든 유형의 압박에 균형 잡힌 대응', '감정에 휘둘리지 않는 판단력', '주변에 사기 경보를 잘 알려주는 편'],
     mbtiMatch: 'ISTJ',
     characterTitle: '강철 방패 수호자',
@@ -167,7 +184,7 @@ export const PROFILE_TYPES: Record<string, ProfileTypeDef> = {
   },
   ESTJ: {
     typeCode: 'ESTJ',
-    typeName: '규율가형 (마감엔 살짝 약함)',
+    typeName: '마감 앞의 규율가형',
     tagline: '원칙대로 확인하지만, "마감"이라는 말엔 조금 서두르게 되는 당신',
     description:
       '권위나 이득 미끼에는 거의 반응하지 않고 검증 습관도 좋지만, 시간 압박이 강하게 들어오면 확인 절차를 살짝 서두르는 유형입니다. 전반적으로 단단하지만 "지금 당장"이라는 말엔 예외적으로 취약할 수 있습니다.',
@@ -180,7 +197,7 @@ export const PROFILE_TYPES: Record<string, ProfileTypeDef> = {
   },
   ENTP: {
     typeCode: 'ENTP',
-    typeName: '논리적 전략가형 (두 유혹에 살짝 흔들림)',
+    typeName: '유혹을 계산하는 전략가형',
     tagline: '대체로 의심이 많지만, 급하면서 이득까지 있으면 살짝 혹하는 당신',
     description:
       '권위에는 잘 흔들리지 않고 검증 습관도 좋은 편이지만, 시간 압박과 이득이 동시에 들어오면 판단이 조금 빨라지는 유형입니다. 평소엔 논리적으로 따지지만 이 조합 앞에서는 예외적으로 서두를 수 있습니다.',
@@ -219,7 +236,7 @@ export const PROFILE_TYPES: Record<string, ProfileTypeDef> = {
   },
   INTP: {
     typeCode: 'INTP',
-    typeName: '이론가형 (권위+재촉엔 살짝 약함)',
+    typeName: '재촉에 흔들리는 이론가형',
     tagline: '이득 앞에서는 냉정하지만, 권위와 재촉이 겹치면 살짝 흔들리는 당신',
     description:
       '이득 유혹에는 거의 반응하지 않고 검증 습관도 좋은 편이지만, 권위 있는 상대가 시간까지 압박하면 판단이 조금 빨라지는 유형입니다. 평소엔 이론적으로 따지지만 이 조합에서는 예외적으로 서두를 수 있습니다.',

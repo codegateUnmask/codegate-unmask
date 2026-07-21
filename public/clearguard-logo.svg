@@ -1,0 +1,44 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 700 700" width="700" height="700">
+  <defs>
+    <style>
+      .accent { fill: #d7e21e; }
+      .accent-stroke { fill: none; stroke: #d7e21e; stroke-width: 16; stroke-linejoin: round; stroke-linecap: round; }
+      .wordmark { font-family: Arial, Helvetica, sans-serif; font-weight: 700; }
+    </style>
+  </defs>
+
+  <rect width="700" height="700" fill="#ffffff"/>
+
+  <!-- 방패 외곽선: 위는 각지고 아래는 뾰족하게 -->
+  <path class="accent-stroke"
+    d="M 350 40
+       L 545 105
+       L 545 290
+       C 545 400 470 470 350 525
+       C 230 470 155 400 155 290
+       L 155 105
+       Z" />
+
+  <!-- 문서: 왼쪽 위 모서리부터, 오른쪽 아래 모서리 접힘 -->
+  <path class="accent" d="M 255 150 L 445 150 L 445 340 L 400 385 L 255 385 Z" />
+  <path fill="#ffffff" d="M 400 340 L 445 340 L 400 385 Z" />
+
+  <!-- 문서 안 텍스트 라인 3개 -->
+  <rect x="285" y="195" width="130" height="18" fill="#111111"/>
+  <rect x="285" y="235" width="130" height="18" fill="#111111"/>
+  <rect x="285" y="275" width="85" height="18" fill="#111111"/>
+
+  <!-- 체크마크: 방패 테두리를 가로질러 바깥으로 삐져나오게 -->
+  <path class="accent-stroke" stroke-width="32"
+    d="M 335 390 L 405 450 L 560 310" />
+
+  <!-- 워드마크 -->
+  <text x="350" y="600" text-anchor="middle" class="wordmark" font-size="86">
+    <tspan fill="#000000">Clear</tspan><tspan fill="#d7e21e">Guard</tspan>
+  </text>
+
+  <!-- 태그라인 -->
+  <text x="350" y="645" text-anchor="middle" class="wordmark" font-size="24" letter-spacing="6" fill="#d7e21e">
+    SCAN · VERIFY · PROTECT
+  </text>
+</svg>

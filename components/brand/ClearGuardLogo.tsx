@@ -1,6 +1,10 @@
 import type { CSSProperties } from 'react';
 import styles from './ClearGuardLogo.module.css';
 
+// 최종 로고 (현찬 확정, "찐 clearguard 로고.svg" 기준):
+// 라임(#d7e21e) 방패 외곽선 + 문서 + 테두리를 뚫고 나가는 체크마크.
+// 앱의 Acid Lime 액센트와 같은 계열이라 화면 어디에 놓아도 어울립니다.
+
 type ClearGuardLogoProps = {
   variant?: 'lockup' | 'mark';
   size?: number;
@@ -8,31 +12,40 @@ type ClearGuardLogoProps = {
   tone?: 'default' | 'light';
 };
 
+const ACCENT = '#d7e21e';
+
 function ShieldMark({ size = 32 }: { size?: number }) {
   return (
     <svg
-      viewBox="0 0 120 120"
+      viewBox="125 10 465 545"
       aria-hidden="true"
       className={styles.svg}
       style={{ width: size, height: size }}
     >
+      {/* 방패 외곽선: 위는 각지고 아래는 뾰족하게 */}
       <path
-        d="M68 14c10 4 18 7 28 10v31c0 24-14 43-36 56-22-13-36-32-36-56V24c10-3 18-6 28-10h16Z"
-        fill="#06B6D4"
-        opacity="0.82"
-        transform="translate(10 0)"
-      />
-      <path
-        d="M60 12c10 4 18 7 28 10v31c0 24-14 43-36 56-22-13-36-32-36-56V22c10-3 18-6 28-10h16Z"
-        fill="#2563EB"
-      />
-      <path
-        d="M40 67.5 53.5 81 88 45"
+        d="M 350 40 L 545 105 L 545 290 C 545 400 470 470 350 525 C 230 470 155 400 155 290 L 155 105 Z"
         fill="none"
-        stroke="white"
-        strokeLinecap="round"
+        stroke={ACCENT}
+        strokeWidth="16"
         strokeLinejoin="round"
-        strokeWidth="9.5"
+        strokeLinecap="round"
+      />
+      {/* 문서 (오른쪽 아래 모서리 접힘) */}
+      <path d="M 255 150 L 445 150 L 445 340 L 400 385 L 255 385 Z" fill={ACCENT} />
+      <path d="M 400 340 L 445 340 L 400 385 Z" fill="#ffffff" />
+      {/* 문서 안 텍스트 라인 */}
+      <rect x="285" y="195" width="130" height="18" fill="#111111" />
+      <rect x="285" y="235" width="130" height="18" fill="#111111" />
+      <rect x="285" y="275" width="85" height="18" fill="#111111" />
+      {/* 체크마크: 방패 테두리를 가로질러 바깥으로 */}
+      <path
+        d="M 335 390 L 405 450 L 560 310"
+        fill="none"
+        stroke={ACCENT}
+        strokeWidth="32"
+        strokeLinejoin="round"
+        strokeLinecap="round"
       />
     </svg>
   );
@@ -68,7 +81,9 @@ export function ClearGuardLogo({
       <span className={styles.mark}>
         <ShieldMark size={size} />
       </span>
-      <span className={styles.wordmark}>ClearGuard</span>
+      <span className={styles.wordmark}>
+        Clear<span className={styles.wordmarkAccent}>Guard</span>
+      </span>
     </span>
   );
 }
