@@ -1,0 +1,148 @@
+.screen {
+  width: 100%;
+  min-height: calc(100dvh - env(safe-area-inset-top) - env(safe-area-inset-bottom));
+  margin: 0 auto;
+  background: var(--app-background);
+}
+
+.header {
+  display: flex;
+  width: 100%;
+  min-height: max(56px, calc(104px - env(safe-area-inset-top)));
+  align-items: flex-end;
+  gap: 8px;
+  padding: max(16px, calc(48px - env(safe-area-inset-top))) 20px 16px;
+}
+
+.brandIcon {
+  display: grid;
+  width: 32px;
+  height: 32px;
+  place-items: center;
+  border-radius: 10px;
+  background: var(--app-text-primary);
+  color: var(--app-accent);
+}
+
+.brandIcon svg {
+  width: 20px;
+  height: 20px;
+  fill: none;
+  stroke: currentColor;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  stroke-width: 2;
+}
+
+.brand {
+  color: var(--app-text-primary);
+  font-size: 20px;
+  font-weight: 800;
+  letter-spacing: -0.04em;
+  line-height: 32px;
+}
+
+.hero {
+  display: flex;
+  width: 100%;
+  min-height: calc(100dvh - 104px - env(safe-area-inset-bottom));
+  flex-direction: column;
+  justify-content: space-between;
+  gap: 64px;
+  padding: clamp(72px, 18dvh, 220px) 20px 36px;
+}
+
+.copy {
+  max-width: 350px;
+}
+
+.eyebrow {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin: 0 0 18px;
+  color: var(--app-text-secondary);
+  font-size: 13px;
+  font-weight: 700;
+  letter-spacing: 0.01em;
+  line-height: 20px;
+}
+
+.eyebrow span {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: var(--app-accent);
+  box-shadow: 0 0 0 4px var(--app-accent-soft);
+}
+
+.copy h1 {
+  max-width: 340px;
+  margin: 0;
+  color: var(--app-text-primary);
+  font-size: 22px;
+  font-weight: 700;
+  letter-spacing: -0.025em;
+  line-height: 30px;
+  text-wrap: balance;
+  word-break: keep-all;
+}
+
+.description {
+  max-width: 330px;
+  margin: 16px 0 0;
+  color: var(--app-text-secondary);
+  font-size: 15px;
+  font-weight: 450;
+  letter-spacing: -0.01em;
+  line-height: 23px;
+  word-break: keep-all;
+}
+
+.actions {
+  display: flex;
+  width: 100%;
+  max-width: 350px;
+  flex-direction: column;
+  align-self: center;
+  gap: 16px;
+}
+
+.cta {
+  letter-spacing: -0.01em;
+}
+
+.login {
+  margin: 0;
+  color: var(--app-text-secondary);
+  font-size: 13px;
+  line-height: 20px;
+  text-align: center;
+}
+
+.login span {
+  color: var(--app-text-primary);
+  font-weight: 700;
+}
+
+@media (min-width: 640px) {
+  .screen {
+    max-width: 430px;
+    border-right: 1px solid var(--app-border);
+    border-left: 1px solid var(--app-border);
+  }
+}
+
+@media (max-height: 680px) {
+  .hero {
+    gap: 40px;
+    padding-top: 48px;
+    padding-bottom: 24px;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .cta {
+    transform: none !important;
+  }
+}
