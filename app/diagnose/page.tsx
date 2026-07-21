@@ -43,12 +43,33 @@ export default function DiagnosePage() {
     }
   }
 
+  async function handleShare() {
+    if (!result) return;
+    const text = `[unmask 사기 취약 유형 진단]\n나는 「${result.typeName}」 — ${result.tagline}\n1분 진단하기: ${window.location.origin}/diagnose`;
+    try {
+      if (navigator.share) {
+        await navigator.share({ title: 'unmask 유형 진단', text });
+      } else {
+        await navigator.clipboard.writeText(text);
+        alert('결과가 복사됐어요! 원하는 곳에 붙여넣어 공유하세요.');
+      }
+    } catch {
+      /* 사용자가 공유 시트를 닫은 경우 등 — 무시 */
+    }
+  }
+
+  function handleRetake() {
+    setResult(null);
+    setAnswers(new Array(QUESTIONS.length).fill(-1));
+    window.scrollTo({ top: 0 });
+  }
+
   if (result) {
     const isDefensive = result.category === 'defensive';
     return (
       <main className="mx-auto flex w-full max-w-[480px] flex-1 flex-col items-center justify-center gap-6 px-6 py-12">
         <div className="w-full rounded-2xl border border-neutral-200 p-6 dark:border-neutral-800">
-          {/* 분류 배지 + MBTI 칩 */}
+          {/* 분류 배지 */}
           <div className="flex items-center justify-between">
             <span
               className={`rounded-full px-3 py-1 text-xs font-bold ${
@@ -59,11 +80,6 @@ export default function DiagnosePage() {
             >
               {isDefensive ? '🛡️ 방어형' : '⚠️ 취약형'}
             </span>
-            {result.mbtiMatch && (
-              <span className="rounded-full border border-neutral-300 px-3 py-1 font-mono text-xs font-bold text-neutral-500 dark:border-neutral-700">
-                {result.mbtiMatch}
-              </span>
-            )}
           </div>
 
           {/* eslint-disable-next-line @next/next/no-img-element -- 16종 캐릭터마다 원본 크기가 달라 next/image의 고정 width/height 요건과 안 맞음 */}
@@ -127,7 +143,23 @@ export default function DiagnosePage() {
             </div>
           )}
         </div>
-        <Button label="내 유형 맞춤 계약서 판독하러 가기" variant="primary" size="lg" href="/scan" />
+        <div className="flex w-full flex-col items-stretch gap-2 sm:flex-row sm:justify-center">
+          <Button label="내 유형 맞춤 계약서 판독하러 가기" variant="primary" size="lg" href="/scan" />
+          <button
+            type="button"
+            onClick={handleShare}
+            className="rounded-xl border border-neutral-300 px-5 py-3 text-sm font-bold text-neutral-700 dark:border-neutral-700 dark:text-neutral-300"
+          >
+            결과 공유하기
+          </button>
+          <button
+            type="button"
+            onClick={handleRetake}
+            className="rounded-xl border border-neutral-300 px-5 py-3 text-sm font-bold text-neutral-700 dark:border-neutral-700 dark:text-neutral-300"
+          >
+            다시 검사하기
+          </button>
+        </div>
       </main>
     );
   }
