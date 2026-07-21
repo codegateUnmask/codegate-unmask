@@ -65,7 +65,7 @@ export default function ScanPage() {
 }
 
 function ScanFlow() {
-  const { text, docType, status, stage, result, setText, setDocType, applySample, start, reset } =
+  const { text, docType, status, stage, srcText, result, setText, setDocType, applySample, start, reset } =
     useScanStore();
   const profile = useAppStore((state) => state.profile);
   const searchParams = useSearchParams();
@@ -310,6 +310,7 @@ function ScanFlow() {
         <AnalysisResultScreen
           result={result}
           docTypeLabel={DOC_LABELS[docType]}
+          srcText={srcText}
           onBack={handleReset}
           onShowDetail={() => setStep('report')}
           onShowRequests={() => setStep('requests')}
