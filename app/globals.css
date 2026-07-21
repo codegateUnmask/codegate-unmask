@@ -1,5 +1,15 @@
-@import "tailwindcss";
+@layer reset, theme, base, astryx-base, astryx-theme, components, utilities;
 
+@import 'tailwindcss/theme.css' layer(theme);
+@import 'tailwindcss/preflight.css' layer(base);
+@import '@astryxdesign/core/reset.css';
+@import '@astryxdesign/core/astryx.css';
+@import '@astryxdesign/theme-neutral/theme.css';
+@import './brand.css';
+@import '@astryxdesign/core/tailwind-theme.css';
+@import 'tailwindcss/utilities.css' layer(utilities);
+
+/* ── unmask 레거시 토큰 (기존 화면들이 사용, astryx 도입 후에도 유지) ── */
 :root {
   --ink: #16202c; --ink-soft: #5d6a7a; --paper: #f7f6f2; --field: #fdfdfb;
   --seg: #ebe9e2; --line: #e2e0d7;

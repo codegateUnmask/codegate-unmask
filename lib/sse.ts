@@ -47,7 +47,8 @@ async function mockStream(
   signal?: AbortSignal,
   mockSample?: Sample,
 ) {
-  const s = mockSample ?? SAMPLES[req.docType][0];
+  const s = mockSample ?? SAMPLES[req.docType]?.[0];
+  if (!s) return;
   const meta = { docType: req.docType, scannedAt: new Date().toISOString() };
   const wait = (ms: number) =>
     new Promise<void>((r, j) => {

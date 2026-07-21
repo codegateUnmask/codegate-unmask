@@ -9,22 +9,21 @@
 
 export const CHARACTER_IMAGE: Record<string, string> = {
   // 취약형
-  INFP: '/characters/INFP.png',
-  ENFP: '/characters/ENFP.png',
-  ESFP: '/characters/ESFP.png',
-  ESTP: '/characters/ESTP.png',
-  ISFJ: '/characters/ISFJ.png',
-  ESFJ: '/characters/ESFJ.png',
-  ENFJ: '/characters/ENFJ.png',
-  ISFP: '/characters/ISFP.png',
-
+  INFP: '/characters/INFP.svg',
+  ENFP: '/characters/ENFP.svg',
+  ESFP: '/characters/ESFP.svg',
+  ESTP: '/characters/ESTP.svg',
+  ISFJ: '/characters/ISFJ.svg',
+  ESFJ: '/characters/ESFJ.svg',
+  ENFJ: '/characters/ENFJ.svg',
+  ISFP: '/characters/ISFP.svg',
   // 방어형
-  ISTJ: '/characters/ISTJ.png',
-  ENTJ: '/characters/ENTJ.png',
-  ESTJ: '/characters/ESTJ.png',
-  ENTP: '/characters/ENTP.png',
-  INTJ: '/characters/INTJ.png',
-  INFJ: '/characters/INFJ.png',
-  INTP: '/characters/INTP.png',
-  ISTP: '/characters/ISTP.png',
+  ISTJ: '/characters/ISTJ.svg',
+  ENTJ: '/characters/ENTJ.svg',
+  ESTJ: '/characters/ESTJ.svg',
+  ENTP: '/characters/ENTP.svg',
+  INTJ: '/characters/INTJ.svg',
+  INFJ: '/characters/INFJ.svg',
+  INTP: '/characters/INTP.svg',
+  ISTP: '/characters/ISTP.svg',
 };

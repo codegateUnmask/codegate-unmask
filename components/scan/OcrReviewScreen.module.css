@@ -1,0 +1,360 @@
+.screen {
+  position: relative;
+  width: min(100%, 480px);
+  min-height: 1386px;
+  margin: 0 auto;
+  overflow-x: hidden;
+  background: #f7f7f2;
+  color: #202124;
+  font-family: "Noto Sans KR", "Apple SD Gothic Neo", -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+}
+
+.header {
+  position: sticky;
+  top: 0;
+  z-index: 10;
+  display: grid;
+  grid-template-columns: 40px 1fr 40px;
+  align-items: center;
+  height: 64px;
+  padding: 12px 20px;
+  background: #f7f7f2;
+}
+
+.iconButton {
+  display: grid;
+  width: 40px;
+  height: 40px;
+  place-items: center;
+  padding: 0;
+  border: 0;
+  border-radius: 50%;
+  background: transparent;
+  color: #202124;
+  cursor: pointer;
+}
+
+.logo {
+  justify-self: center;
+  width: 109px;
+  margin: 0;
+  font-size: 28px;
+  font-weight: 900;
+  line-height: 40px;
+  letter-spacing: -1.2px;
+  text-align: center;
+}
+
+.main {
+  padding: 24px 20px 200px;
+}
+
+.intro {
+  height: 160px;
+}
+
+.stepChip {
+  display: inline-flex;
+  align-items: center;
+  width: 183px;
+  height: 34px;
+  gap: 6px;
+  padding: 0 12px;
+  border-radius: 999px;
+  background: #e5e9dc;
+  color: #40433f;
+  font-size: 13px;
+  font-weight: 700;
+  line-height: 18px;
+}
+
+.intro h2 {
+  margin: 16px 0 0;
+  font-size: 24px;
+  font-weight: 800;
+  line-height: 30px;
+  letter-spacing: -0.6px;
+}
+
+.intro p {
+  margin: 8px 0 0;
+  color: #5f6368;
+  font-size: 16px;
+  font-weight: 400;
+  line-height: 24px;
+  letter-spacing: -0.1px;
+}
+
+.documentCard {
+  min-height: 1035px;
+  margin-top: 24px;
+  overflow: hidden;
+  border: 1px solid #c4c7c5;
+  border-radius: 12px;
+  background: #fff;
+}
+
+.documentHeader {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  height: 57px;
+  padding: 0 16px;
+  border-bottom: 1px solid #e1e3df;
+}
+
+.fileName {
+  display: flex;
+  min-width: 0;
+  align-items: center;
+  gap: 6px;
+  font-size: 14px;
+  font-weight: 700;
+  line-height: 20px;
+}
+
+.fileName span {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.editHint {
+  display: inline-flex;
+  flex: 0 0 auto;
+  align-items: center;
+  gap: 4px;
+  padding: 4px 10px;
+  border: 1px solid #c6c7c1;
+  border-radius: 999px;
+  color: #484944;
+  font-size: 12px;
+  font-weight: 700;
+  white-space: nowrap;
+}
+
+.documentText {
+  min-height: 320px;
+  padding: 18px 16px 24px;
+  color: #303134;
+  font-size: 14px;
+  font-weight: 400;
+  line-height: 1.78;
+  letter-spacing: -0.12px;
+  outline: none;
+}
+
+.editableText {
+  width: 100%;
+  min-height: 300px;
+  border: 0;
+  background: transparent;
+  color: inherit;
+  font: inherit;
+  line-height: inherit;
+  letter-spacing: inherit;
+  resize: vertical;
+  outline: none;
+}
+
+.reviewPanel {
+  margin: 0 16px 20px;
+  padding: 14px;
+  border: 1px solid #ffdcc4;
+  border-radius: 12px;
+  background: #fff8ef;
+}
+
+.reviewTitle {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin: 0 0 8px;
+  color: #8f4a00;
+  font-size: 13px;
+  font-weight: 800;
+}
+
+.reviewList {
+  display: grid;
+  gap: 6px;
+  margin: 0 0 10px;
+  padding: 0;
+  list-style: none;
+}
+
+.reviewItem {
+  padding: 8px 10px;
+  border-radius: 8px;
+  background: #fff;
+  color: #303134;
+  font-size: 13px;
+  line-height: 1.6;
+}
+
+.reviewEmpty {
+  margin: 0 0 10px;
+  padding: 8px 10px;
+  border-radius: 8px;
+  background: #fff;
+  color: #5f6368;
+  font-size: 13px;
+  line-height: 1.6;
+}
+
+.criticalBadge,
+.lowConfidenceBadge {
+  display: inline-block;
+  margin-right: 6px;
+  padding: 2px 8px;
+  border-radius: 999px;
+  font-size: 11px;
+  font-weight: 800;
+  color: #fff;
+}
+
+.criticalBadge {
+  background: #ba1a1a;
+}
+
+.lowConfidenceBadge {
+  background: #8f4a00;
+}
+
+.confirmRow {
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+  padding: 8px 10px;
+  border-radius: 8px;
+  background: #fff;
+  color: #202124;
+  font-size: 13px;
+  font-weight: 700;
+  line-height: 1.55;
+  cursor: pointer;
+}
+
+.confirmRow input {
+  margin-top: 3px;
+  flex: 0 0 auto;
+  width: 18px;
+  height: 18px;
+  accent-color: #151618;
+}
+
+.confirmNotice {
+  margin: 8px 0 0;
+  color: #8f4a00;
+  font-size: 12.5px;
+  font-weight: 800;
+}
+
+.documentText p {
+  margin: 0 0 18px;
+}
+
+.documentText p:last-child {
+  margin-bottom: 0;
+}
+
+.documentText strong {
+  color: #202124;
+  font-weight: 800;
+}
+
+.documentText mark {
+  padding: 1px 2px;
+  border-radius: 2px;
+  box-decoration-break: clone;
+  -webkit-box-decoration-break: clone;
+}
+
+.actions {
+  position: fixed;
+  right: 0;
+  bottom: 0;
+  left: 0;
+  z-index: 20;
+  display: grid;
+  width: min(100%, 480px);
+  margin: 0 auto;
+  padding: 12px 20px calc(16px + env(safe-area-inset-bottom));
+  gap: 10px;
+  border-top: 1px solid rgba(196, 199, 197, 0.55);
+  background: rgba(247, 247, 242, 0.98);
+}
+
+.primaryAction {
+  width: 100%;
+  border: 0;
+  font-family: inherit;
+  font-weight: 800;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 60px;
+  gap: 8px;
+  border-radius: 8px;
+  background: #c8f04b;
+  color: #202124;
+  font-size: 16px;
+  line-height: 20px;
+  box-shadow: 0 2px 0 rgba(32, 33, 36, 0.16);
+}
+
+.primaryAction:disabled {
+  opacity: 0.4;
+  box-shadow: none;
+}
+
+.primaryAction:hover:not(:disabled) {
+  background: #b1d83b;
+}
+
+.secondaryAction {
+  display: flex;
+  width: 100%;
+  height: 48px;
+  align-items: center;
+  justify-content: center;
+  border: 1px solid #c6c7c1;
+  border-radius: 8px;
+  background: #fff;
+  color: #202124;
+  font-family: inherit;
+  font-size: 15px;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.secondaryAction:disabled {
+  opacity: 0.4;
+  cursor: default;
+}
+
+.iconButton:focus-visible,
+.primaryAction:focus-visible,
+.secondaryAction:focus-visible,
+.editableText:focus-visible,
+.confirmRow input:focus-visible {
+  outline: 3px solid #b1d83b;
+  outline-offset: 2px;
+}
+
+@media (max-width: 359px) {
+  .main,
+  .actions {
+    padding-right: 16px;
+    padding-left: 16px;
+  }
+
+  .header {
+    padding-right: 16px;
+    padding-left: 16px;
+  }
+
+  .fileName {
+    max-width: 190px;
+  }
+}
