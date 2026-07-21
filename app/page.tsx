@@ -77,18 +77,18 @@ export default function Home() {
           <div className={styles.logoHero} role="img" aria-label="ClearGuard 로고">
             <ClearGuardLogo variant="mark" size={156} className={styles.logoHeroMark} />
           </div>
-          {/* 후킹: "흑우" 자문 → 커서를 따라다니는 흑우와 세트 */}
+          {/* "여러분은 흑우신가요?" 후킹은 발표 멘트로만 — 화면엔 커서 흑우(CowCursor)가 그 역할 */}
           <h1 id="start-title">
-            여러분은
+            어려운 계약서,
             <br />
-            흑우신가요? <span aria-hidden="true">🐂</span>
+            서명하기 전에 숨겨진
+            <br />
+            위험부터 확인하세요.
           </h1>
           <p className={styles.description}>
-            확인 없이 서명하고, 무심코 링크를 누른다면 — 아직은요.
+            복잡한 법률 용어를 분석하여
             <br />
-            어려운 계약서와 수상한 문자의 숨은 위험,
-            <br />
-            서명하기 전에 ClearGuard가 근거와 함께 벗겨드립니다.
+            안전한 거래를 돕는 AI 가이드
           </p>
         </div>
 
