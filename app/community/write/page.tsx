@@ -54,7 +54,7 @@ function WriteForm() {
         {BOARD_ORDER.map((b) => (
           <button key={b} type="button" onClick={() => setBoardType(b)}
             className={`rounded-full border px-3 py-1.5 text-xs font-medium ${
-              boardType === b ? 'border-neutral-900 bg-neutral-900 text-white dark:border-white dark:bg-white dark:text-neutral-900' : 'border-neutral-300 text-neutral-600 dark:border-neutral-700 dark:text-neutral-400'
+              boardType === b ? 'border-neutral-900 bg-neutral-900 text-white' : 'border-neutral-300 text-neutral-600'
             }`}
           >
             {BOARD_META[b].label}
@@ -63,18 +63,18 @@ function WriteForm() {
       </div>
 
       <input value={title} onChange={(e) => setTitle(e.target.value)} placeholder="제목" maxLength={100}
-        className="rounded-lg border border-neutral-300 px-4 py-2 text-sm dark:border-neutral-700 dark:bg-neutral-900" />
+        className="rounded-lg border border-neutral-300 px-4 py-2 text-sm" />
 
       <textarea value={content} onChange={(e) => setContent(e.target.value)} placeholder="내용을 입력하세요" rows={10} maxLength={5000}
-        className="resize-none rounded-lg border border-neutral-300 px-4 py-3 text-sm dark:border-neutral-700 dark:bg-neutral-900" />
+        className="resize-none rounded-lg border border-neutral-300 px-4 py-3 text-sm" />
 
       <input value={nickname} onChange={(e) => setNickname(e.target.value)} placeholder="닉네임 (비워두면 자동 생성)" maxLength={20}
-        className="rounded-lg border border-neutral-300 px-4 py-2 text-sm dark:border-neutral-700 dark:bg-neutral-900" />
+        className="rounded-lg border border-neutral-300 px-4 py-2 text-sm" />
 
       {error && <p className="text-sm text-rose-500">{error}</p>}
 
       <button type="button" onClick={handleSubmit} disabled={submitting}
-        className="self-start rounded-full bg-neutral-900 px-6 py-3 text-white disabled:opacity-40 dark:bg-white dark:text-neutral-900">
+        className="self-start rounded-full bg-neutral-900 px-6 py-3 text-white disabled:opacity-40">
         {submitting ? '등록 중...' : '등록하기'}
       </button>
     </main>
