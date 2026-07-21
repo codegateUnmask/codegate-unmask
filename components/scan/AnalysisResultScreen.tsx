@@ -1,3 +1,4 @@
+import type { RiskLevel, ScanResult } from '@/lib/types';
 import styles from './AnalysisResultScreen.module.css';
 
 function BackIcon() {
@@ -36,6 +37,14 @@ function AlertIcon() {
   );
 }
 
+function CheckCircleIcon() {
+  return (
+    <svg viewBox="0 0 24 24" aria-hidden="true">
+      <path d="M12 2a10 10 0 1 0 .01 20.01A10 10 0 0 0 12 2Zm-2 15-5-5 1.41-1.41L10 14.17l7.59-7.58L19 8l-9 9Z" />
+    </svg>
+  );
+}
+
 function BookIcon() {
   return (
     <svg viewBox="0 0 24 24" aria-hidden="true">
@@ -62,31 +71,58 @@ function HomeIcon() {
   );
 }
 
-function HistoryIcon() {
-  return (
-    <svg viewBox="0 0 24 24" aria-hidden="true">
-      <path d="M4 12a8 8 0 1 0 2.35-5.65L4 8.7" />
-      <path d="M4 4v4.7h4.7M12 7.5V12l3 2" />
-    </svg>
-  );
+const SUMMARY_STYLE: Record<RiskLevel, { bg: string; iconBg: string; eyebrow: string; title: string }> = {
+  danger: { bg: '#ffdad6', iconBg: '#ba1a1a', eyebrow: '#8c1515', title: '#5f1111' },
+  warning: { bg: '#ffe9d1', iconBg: '#8f4a00', eyebrow: '#6b3800', title: '#4a2600' },
+  safe: { bg: '#e1f5d8', iconBg: '#2e6b1f', eyebrow: '#245416', title: '#1c400f' },
+};
+
+const OVERALL_TITLE: Record<RiskLevel, string> = {
+  danger: '서명을 권하지 않아요',
+  warning: '주의가 필요해요',
+  safe: '비교적 안전해요',
+};
+
+const BADGE_CLASS: Record<'danger' | 'warning', string> = {
+  danger: styles.dangerBadge,
+  warning: styles.warningBadge,
+};
+
+const MARK_CLASS: Record<'danger' | 'warning', string> = {
+  danger: styles.dangerMark,
+  warning: styles.warningMark,
+};
+
+const BADGE_LABEL: Record<'danger' | 'warning', string> = {
+  danger: '위험',
+  warning: '주의',
+};
+
+export interface AnalysisResultScreenProps {
+  result: ScanResult;
+  docTypeLabel: string;
+  onBack: () => void;
+  onShowRequests?: () => void;
 }
 
-function SettingsIcon() {
-  return (
-    <svg viewBox="0 0 24 24" aria-hidden="true">
-      <circle cx="12" cy="12" r="3" />
-      <path d="M19.4 15a1.7 1.7 0 0 0 .34 1.87l.06.06-2.83 2.83-.06-.06a1.7 1.7 0 0 0-1.87-.34 1.7 1.7 0 0 0-1.04 1.56V21h-4v-.08A1.7 1.7 0 0 0 8.96 19.4a1.7 1.7 0 0 0-1.87.34l-.06.06-2.83-2.83.06-.06A1.7 1.7 0 0 0 4.6 15 1.7 1.7 0 0 0 3.08 14H3v-4h.08A1.7 1.7 0 0 0 4.6 8.96a1.7 1.7 0 0 0-.34-1.87l-.06-.06L7.03 4.2l.06.06a1.7 1.7 0 0 0 1.87.34A1.7 1.7 0 0 0 10 3.08V3h4v.08a1.7 1.7 0 0 0 1.04 1.52 1.7 1.7 0 0 0 1.87-.34l.06-.06 2.83 2.83-.06.06a1.7 1.7 0 0 0-.34 1.87A1.7 1.7 0 0 0 20.92 10H21v4h-.08A1.7 1.7 0 0 0 19.4 15Z" />
-    </svg>
+export default function AnalysisResultScreen({
+  result,
+  docTypeLabel,
+  onBack,
+  onShowRequests,
+}: AnalysisResultScreenProps) {
+  const style = SUMMARY_STYLE[result.overallLevel];
+  const explained = result.findings.filter(
+    (f): f is typeof f & { level: 'danger' | 'warning' } => f.level !== 'safe',
   );
-}
+  const hasRequests = (result.requestPhrases?.length ?? 0) > 0;
 
-export default function AnalysisResultScreen() {
   return (
     <div className={styles.screen}>
       <header className={styles.header}>
-        <span className={styles.headerIcon} aria-hidden="true">
+        <button type="button" className={styles.headerIcon} onClick={onBack} aria-label="뒤로가기">
           <BackIcon />
-        </span>
+        </button>
         <span className={styles.brand}>
           <span className={styles.brandIcon}>
             <ShieldIcon />
@@ -99,106 +135,91 @@ export default function AnalysisResultScreen() {
       </header>
 
       <main className={styles.content}>
-        <section className={styles.summary} aria-labelledby="analysis-summary-title">
-          <span className={styles.summaryIcon}>
-            <AlertIcon />
+        <section
+          className={styles.summary}
+          style={{ background: style.bg }}
+          aria-labelledby="analysis-summary-title"
+        >
+          <span className={styles.summaryIcon} style={{ background: style.iconBg }}>
+            {result.overallLevel === 'safe' ? <CheckCircleIcon /> : <AlertIcon />}
           </span>
           <div>
-            <p className={styles.eyebrow}>계약서 분석 결과</p>
-            <h1 id="analysis-summary-title">서명을 권하지 않아요</h1>
-            <p className={styles.summaryCopy}>
-              심각한 독소조항 2개가 발견되었습니다. 특히 위약금 관련 조항이 임차인에게
-              매우 불리하게 작성되어 있어 수정이 필요합니다.
+            <p className={styles.eyebrow} style={{ color: style.eyebrow }}>
+              {docTypeLabel} 분석 결과
+            </p>
+            <h1 id="analysis-summary-title" style={{ color: style.title }}>
+              {OVERALL_TITLE[result.overallLevel]}
+            </h1>
+            <p className={styles.summaryCopy} style={{ color: style.title }}>
+              {result.summary}
             </p>
           </div>
         </section>
 
-        <section className={styles.findings} aria-label="발견된 독소조항">
-          <article className={styles.findingCard}>
-            <header className={styles.findingHeader}>
-              <span className={`${styles.badge} ${styles.dangerBadge}`}>위험</span>
-              <h2>위약금 조항</h2>
-            </header>
+        {explained.length > 0 && (
+          <section className={styles.findings} aria-label="발견된 독소조항">
+            {explained.map((f) => {
+              const level = f.level as 'danger' | 'warning';
+              return (
+                <article key={f.id} className={styles.findingCard}>
+                  <header className={styles.findingHeader}>
+                    <span className={`${styles.badge} ${BADGE_CLASS[level]}`}>{BADGE_LABEL[level]}</span>
+                    <h2>{f.clauseTitle || '확인이 필요한 조항'}</h2>
+                  </header>
 
-            <blockquote className={styles.quote}>
-              &ldquo;제 7조 (계약의 해지) 임차인이 본 계약을 중도 해지할 경우,{' '}
-              <mark className={styles.dangerMark}>
-                남은 계약 기간의 월세 전액을 위약금으로 지불
-              </mark>
-              해야 한다.&rdquo;
-            </blockquote>
+                  <blockquote className={styles.quote}>
+                    &ldquo;<mark className={MARK_CLASS[level]}>{f.quote}</mark>&rdquo;
+                  </blockquote>
 
-            <div className={styles.explanation}>
-              <h3>왜 위험한가요?</h3>
-              <p>
-                통상적인 위약금은 월세의 1~2개월치 또는 보증금의 10% 수준입니다. 남은 기간
-                전액을 요구하는 것은 과도하며 법적 분쟁의 소지가 높습니다.
-              </p>
-            </div>
+                  <div className={styles.explanation}>
+                    <h3>왜 {BADGE_LABEL[level]}한가요?</h3>
+                    <p>{f.detailedReason || f.reason}</p>
+                  </div>
 
-            <div className={styles.suggestion}>
-              <span>특약 문구 제안</span>
-              <p>
-                &ldquo;임차인의 사정으로 중도 해지 시, 위약금은 월세의 1개월분으로 한다. 단,
-                새로운 임차인을 주선한 경우 위약금을 면제한다.&rdquo;
-              </p>
-            </div>
+                  {f.action && (
+                    <div className={styles.suggestion}>
+                      <span>지금 할 일</span>
+                      <p>{f.action}</p>
+                    </div>
+                  )}
 
-            <span className={styles.sourceChip}>
-              <BookIcon />
-              국토교통부 표준임대차계약서 확인
-            </span>
-          </article>
+                  {f.legalBasis && (
+                    <span className={styles.sourceChip}>
+                      <BookIcon />
+                      {f.legalBasis}
+                    </span>
+                  )}
+                </article>
+              );
+            })}
+          </section>
+        )}
 
-          <article className={styles.findingCard}>
-            <header className={styles.findingHeader}>
-              <span className={`${styles.badge} ${styles.warningBadge}`}>주의</span>
-              <h2>원상복구 조항</h2>
-            </header>
-
-            <blockquote className={styles.quote}>
-              &ldquo;제 8조 (원상복구) 임대차 계약 종료 시, 임차인은{' '}
-              <mark className={styles.warningMark}>새로운 상태로 원상복구</mark>하여
-              반환한다.&rdquo;
-            </blockquote>
-
-            <div className={styles.explanation}>
-              <h3>왜 주의해야 하나요?</h3>
-              <p>
-                &apos;새로운 상태&apos;라는 표현이 모호합니다. 통상적인 마모(자연 손실)에 대한
-                책임까지 임차인에게 전가될 수 있습니다.
-              </p>
-            </div>
-
-            <div className={styles.suggestion}>
-              <span>특약 문구 제안</span>
-              <p>
-                &ldquo;원상복구의 범위는 입주 당시의 상태를 기준으로 하되, 시간 경과에 따른
-                통상적인 마모 및 자연 훼손은 제외한다.&rdquo;
-              </p>
-            </div>
-          </article>
-        </section>
+        {result.personalized && (
+          <section className={styles.personalized} aria-label="내 취약 유형 맞춤 조언">
+            <p className={styles.personalizedLabel}>내 취약 유형 맞춤 조언</p>
+            <p className={styles.personalizedText}>{result.personalized}</p>
+          </section>
+        )}
       </main>
 
       <div className={styles.bottomDock}>
-        <span className={styles.cta}>
-          임대인에게 물어볼 질문 보기
-          <ArrowIcon />
-        </span>
+        {hasRequests ? (
+          <button type="button" className={styles.cta} onClick={onShowRequests}>
+            상대에게 요청할 문구 보기
+            <ArrowIcon />
+          </button>
+        ) : (
+          <button type="button" className={styles.cta} onClick={onBack}>
+            새 문서 판독하기
+            <ArrowIcon />
+          </button>
+        )}
         <nav className={styles.navigation} aria-label="주요 메뉴">
-          <span className={`${styles.navItem} ${styles.navItemActive}`}>
+          <button type="button" className={`${styles.navItem} ${styles.navItemActive}`} onClick={onBack}>
             <HomeIcon />
             홈
-          </span>
-          <span className={styles.navItem}>
-            <HistoryIcon />
-            히스토리
-          </span>
-          <span className={styles.navItem}>
-            <SettingsIcon />
-            설정
-          </span>
+          </button>
         </nav>
       </div>
     </div>

@@ -29,7 +29,10 @@
   width: 44px;
   height: 44px;
   place-items: center;
+  border: 0;
+  background: transparent;
   color: #202124;
+  cursor: pointer;
 }
 
 .headerIcon svg,
@@ -277,6 +280,31 @@
   stroke-width: 1.8;
 }
 
+.personalized {
+  margin-top: 20px;
+  padding: 18px 20px;
+  border: 2px solid #202124;
+  border-radius: 16px;
+  background: #fff;
+}
+
+.personalizedLabel {
+  margin: 0 0 6px;
+  color: #57624a;
+  font-size: 11px;
+  font-weight: 800;
+  letter-spacing: 0.02em;
+}
+
+.personalizedText {
+  margin: 0;
+  color: #202124;
+  font-size: 15px;
+  font-weight: 600;
+  line-height: 1.6;
+  word-break: keep-all;
+}
+
 .bottomDock {
   position: fixed;
   z-index: 20;
@@ -299,12 +327,15 @@
   align-items: center;
   justify-content: center;
   gap: 8px;
+  border: 0;
   border-radius: 12px;
   background: #c8f04b;
   color: #202124;
+  font: inherit;
   font-size: 15px;
   font-weight: 800;
   letter-spacing: -0.015em;
+  cursor: pointer;
 }
 
 .cta svg {
@@ -323,9 +354,13 @@
   align-items: center;
   justify-content: center;
   gap: 5px;
+  border: 0;
+  background: transparent;
   color: #777584;
+  font: inherit;
   font-size: 11px;
   font-weight: 600;
+  cursor: pointer;
 }
 
 .navItem svg {
