@@ -4,6 +4,7 @@
 import { useState } from 'react';
 import { RISK_LABEL } from '@/lib/config';
 import type { Finding } from '@/lib/types';
+import GlossaryText from './GlossaryText';
 import type { ScanFinding } from '@/lib/mock.scan';
 
 const STYLE: Record<Finding['level'], { border: string; chip: string; mark: string }> = {
@@ -31,13 +32,13 @@ export default function ClauseCard({ finding }: { finding: Finding }) {
 
       <blockquote className="mb-3 text-[17px] leading-[1.9] text-[var(--ink)]">
         <span className={`hl-sweep box-decoration-clone rounded-sm px-1 py-0.5 ${s.mark}`}>
-          “{finding.quote}”
+          “<GlossaryText text={finding.quote} />”
         </span>
       </blockquote>
 
       <p className="mb-2 text-[15.5px] leading-relaxed text-[var(--ink)]">
         <strong className="font-bold">왜 {label} 판정인가요? </strong>
-        {finding.reason}
+        <GlossaryText text={finding.reason} />
       </p>
 
       {finding.detailedReason && (

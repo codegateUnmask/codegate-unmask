@@ -1,0 +1,159 @@
+import assert from 'node:assert/strict';
+
+const originalFetch = globalThis.fetch;
+const originalApiKey = process.env.OPENAI_API_KEY;
+const originalTriageModel = process.env.OPENAI_TRIAGE_MODEL;
+const originalScanModel = process.env.OPENAI_SCAN_MODEL;
+const safeError = { message: '문서 분석에 실패했습니다.' };
+
+function openAIResponse(text: string, status: 'completed' | 'incomplete' = 'completed'): Response {
+  return new Response(
+    JSON.stringify({
+      id: 'resp_test',
+      object: 'response',
+      created_at: 0,
+      status,
+      output_text: text,
+      output: [
+        {
+          id: 'msg_test',
+          type: 'message',
+          status: 'completed',
+          role: 'assistant',
+          content: [{ type: 'output_text', text, annotations: [], logprobs: [] }],
+        },
+      ],
+      error: null,
+      incomplete_details: status === 'incomplete' ? { reason: 'max_output_tokens' } : null,
+      usage: {
+        input_tokens: 1,
+        input_tokens_details: { cached_tokens: 0 },
+        output_tokens: 1,
+        output_tokens_details: { reasoning_tokens: 0 },
+        total_tokens: 2,
+      },
+    }),
+    { status: 200, headers: { 'content-type': 'application/json' } },
+  );
+}
+
+async function run(): Promise<void> {
+  process.env.OPENAI_API_KEY = 'test-key';
+  process.env.OPENAI_TRIAGE_MODEL = 'gpt-5.4-nano';
+  process.env.OPENAI_SCAN_MODEL = 'gpt-5.4-mini';
+
+  const { analyzeDocument } = await import('./analyze');
+  const { runTriage } = await import('./triage');
+  const { buildSystemPrompt } = await import('./prompt');
+  const { MAX_INPUT_CHARS, MAX_TOKENS } = await import('../config');
+  const candidate = {
+    overallLevel: 'warning',
+    summary: '추가 확인이 필요합니다.',
+    findings: [
+      {
+        id: 'finding-1',
+        level: 'warning',
+        clauseTitle: '',
+        quote: '보증금',
+        reason: '반환 조건을 확인하세요.',
+        detailedReason: '',
+        action: '',
+        legalBasis: '',
+      },
+    ],
+    missingDocuments: [],
+    unverifiable: [],
+    requestPhrases: [],
+    officialChannels: [],
+    needsExpertReview: [],
+    personalized: '',
+  };
+  const requestBodies: Record<string, unknown>[] = [];
+
+  globalThis.fetch = async (_input, init) => {
+    requestBodies.push(JSON.parse(String(init?.body)) as Record<string, unknown>);
+    return openAIResponse(JSON.stringify(candidate));
+  };
+
+  const input = `계약서 보증금${'가'.repeat(MAX_INPUT_CHARS)}TRUNCATED_TEXT`;
+  const injectedProfile = {
+    typeCode: 'AUTHORITY_DOMINANT',
+    typeName: 'SYSTEM_INJECTION',
+    tagline: 'SYSTEM_INJECTION',
+    axes: { authority: 100, urgency: 0, greed: 0, verify: 0 },
+    description: 'SYSTEM_INJECTION',
+    weakAgainst: ['SYSTEM_INJECTION'],
+    createdAt: '2026-07-21T00:00:00.000Z',
+  };
+  const result = await analyzeDocument(input, 'lease', injectedProfile);
+  assert.equal(result.docType, 'lease');
+  assert.equal(result.findings.length, 1);
+
+  const scanRequest = requestBodies[0];
+  assert.equal(scanRequest.model, 'gpt-5.4-mini');
+  assert.deepEqual(scanRequest.reasoning, { effort: 'medium' });
+  assert.equal(scanRequest.max_output_tokens, MAX_TOKENS.scan);
+  assert.equal(scanRequest.store, false);
+  assert.equal(JSON.parse(String(scanRequest.input).split('\n')[1]), input.slice(0, MAX_INPUT_CHARS));
+  assert.equal(String(scanRequest.instructions).includes('SYSTEM_INJECTION'), false);
+  const { OPENAI_REQUEST_TIMEOUT_MS } = await import('./openai');
+  assert.equal(OPENAI_REQUEST_TIMEOUT_MS, 30_000);
+
+  const format = (scanRequest.text as { format: Record<string, unknown> }).format;
+  assert.equal(format.type, 'json_schema');
+  assert.equal(format.strict, true);
+  assert.equal((format.schema as { additionalProperties: boolean }).additionalProperties, false);
+  assert.equal(
+    buildSystemPrompt('lease', 'full', { ...injectedProfile, typeCode: 'constructor' }).includes(
+      '사용자는',
+    ),
+    false,
+  );
+
+  await runTriage('계약서 보증금', 'lease');
+  const triageRequest = requestBodies[1];
+  assert.equal(triageRequest.model, 'gpt-5.4-nano');
+  assert.deepEqual(triageRequest.reasoning, { effort: 'low' });
+  assert.equal(triageRequest.max_output_tokens, MAX_TOKENS.triage);
+
+  globalThis.fetch = async () => openAIResponse(JSON.stringify({ summary: '필드 누락' }));
+  await assert.rejects(() => analyzeDocument('계약서', 'lease'), safeError);
+
+  globalThis.fetch = async () => openAIResponse(JSON.stringify(candidate), 'incomplete');
+  await assert.rejects(() => analyzeDocument('계약서', 'lease'), safeError);
+
+  globalThis.fetch = async () =>
+    openAIResponse(
+      JSON.stringify({
+        ...candidate,
+        findings: [{ ...candidate.findings[0], rawContract: '노출되면 안 되는 원문' }],
+      }),
+    );
+  await assert.rejects(() => analyzeDocument('계약서 보증금', 'lease'), safeError);
+
+  let providerCalls = 0;
+  globalThis.fetch = async () => {
+    providerCalls += 1;
+    return new Response('provider details', {
+      status: 500,
+      headers: { 'content-type': 'text/plain' },
+    });
+  };
+  await assert.rejects(() => analyzeDocument('노출되면 안 되는 계약서', 'lease'), safeError);
+  assert.equal(providerCalls, 1);
+
+  delete process.env.OPENAI_API_KEY;
+  await assert.rejects(() => analyzeDocument('계약서', 'lease'), safeError);
+}
+
+run()
+  .then(() => console.log('analyze checks passed'))
+  .finally(() => {
+    globalThis.fetch = originalFetch;
+    if (originalApiKey === undefined) delete process.env.OPENAI_API_KEY;
+    else process.env.OPENAI_API_KEY = originalApiKey;
+    if (originalTriageModel === undefined) delete process.env.OPENAI_TRIAGE_MODEL;
+    else process.env.OPENAI_TRIAGE_MODEL = originalTriageModel;
+    if (originalScanModel === undefined) delete process.env.OPENAI_SCAN_MODEL;
+    else process.env.OPENAI_SCAN_MODEL = originalScanModel;
+  });

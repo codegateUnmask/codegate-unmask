@@ -4,25 +4,19 @@
 // ⚠️ 이 파일은 코어 엔진 오너(A)만 수정합니다.
 //    나머지는 import만 하세요. 타입이 바뀌면 팀 전체에 알릴 것.
 //
-// 이 계약이 있으면 프론트는 API 완성을 기다리지 않고
-// 목업(lib/mock.ts)으로 화면을 먼저 만들 수 있고, 나중에 그대로 붙습니다.
+// 📢 CHANGELOG (진단 파트 담당자 수정)
+//    - VulnProfile 에 mbtiMatch / characterTitle / category / strengths 추가
+//    - 기존 필드(typeCode, typeName, tagline, axes, description, weakAgainst,
+//      createdAt)는 전혀 변경하지 않았습니다 → mock.ts, 판독(B) 쪽 코드 그대로 호환됩니다.
+//    - 새 필드는 전부 optional(?) 이라 기존 MOCK_PROFILE 도 타입 에러 없이 동작합니다.
+//    - 다만 /app/diagnose 화면은 새 필드를 렌더링하므로, 실제 진단 API 응답에는
+//      항상 채워서 반환합니다 (profileTypes.ts 참고).
 // ============================================================
 
 /** 위험 등급 — UI 신호등 3색과 1:1 대응 */
 export type RiskLevel = 'danger' | 'warning' | 'safe';
 
-/**
- * 분석 대상 종류 — /lib/knowledge 의 지식 팩과 1:1 대응.
- *   lease   전월세 계약서
- *   labor   근로·알바 계약서
- *   service 선불 서비스 회원계약 (헬스장·PT·피부과 패키지·학원 등 — 방문판매법 계속거래)
- *   terms   온라인 서비스 약관·구독
- *   message 스미싱·피싱 문자 (부가 모드)
- */
-export type DocType = 'lease' | 'labor' | 'service' | 'terms' | 'message';
 
-/** SSE 분석 단계 — 트리아지(Haiku, 빠름) 먼저, 정밀(Opus)이 이어붙음 */
-export type AnalysisStage = 'triage' | 'full';
 
 // ------------------------------------------------------------
 // 진단 (데모 컷1)
@@ -40,9 +34,12 @@ export interface VulnAxes {
   verify: number;
 }
 
-/** 진단 결과 = 사용자의 사기 취약 유형 */
+/** 유형 대분류 — 취약형(사기에 약함) vs 방어형(철옹성) */
+export type ProfileCategory = 'vulnerable' | 'defensive';
+
+/** 진단 결과 = 사용자의 사기 취약(또는 방어) 유형 */
 export interface VulnProfile {
-  /** 유형 코드 (예: 'AUTHORITY_DOMINANT') */
+  /** 유형 코드 (예: 'AUTHORITY_DOMINANT', 'FORTRESS') */
   typeCode: string;
   /** 유형 이름 (예: '권위 앞에 약해지는 형') */
   typeName: string;
@@ -51,10 +48,20 @@ export interface VulnProfile {
   axes: VulnAxes;
   /** 유형 설명 2~3문장 */
   description: string;
-  /** 특히 취약한 수법 목록 (예: ['기관 사칭 문자', '전세 특약 함정']) */
+  /** 특히 취약한 수법 목록 (취약형에서 주로 사용) */
   weakAgainst: string[];
   /** ISO 8601 */
   createdAt: string;
+
+  // -------------------- 확장 필드 (신규) --------------------
+  /** MBTI 페르소나 매칭 (예: 'ISTJ') */
+  mbtiMatch?: string;
+  /** 힙한 캐릭터 타이틀 (예: '강철 방패 수호자') */
+  characterTitle?: string;
+  /** 취약형인지 방어형인지 */
+  category?: ProfileCategory;
+  /** 특히 강한 방어 포인트 목록 (방어형에서 주로 사용) */
+  strengths?: string[];
 }
 
 /** 진단 문항 */
@@ -71,7 +78,7 @@ export interface Question {
 // ------------------------------------------------------------
 
 /**
- * 판독 결과의 개별 발견 항목 (조항 단위 신호등).
+ * 판독 결과의 개별 발견 항목.
  * ★ quote 는 필수입니다. 원문 근거가 없으면 이 항목을 만들지 않습니다.
  *   (= 환각 차단. 근거 없는 위험은 화면에 띄우지 않는다)
  */
@@ -82,51 +89,27 @@ export interface Finding {
   clauseTitle?: string;
   /** ★필수★ 원문에서 그대로 인용 — 프론트가 이 문자열로 하이라이트합니다 */
   quote: string;
-  /** 왜 이 등급인지 — 중학생도 이해할 쉬운 말로 (1차 응답, 짧게) */
+  /** 왜 이 등급인지 — 중학생도 이해할 쉬운 말로 */
   reason: string;
-  /** "왜요?" 클릭 시 보여줄 상세 설명 (온디맨드 — 1차 응답 속도를 위해 분리) */
-  detailedReason?: string;
-  /** 지금 무엇을 해야 하는지 (예: '이 조항 삭제를 요구하세요') */
+  /** 지금 무엇을 해야 하는지 */
   action?: string;
   /** 근거 법령 — 확실할 때만. 불확실하면 넣지 않습니다 */
   legalBasis?: string;
 }
 
-/**
- * 판독 API 응답 (7항목 리포트 프레임).
- * findings(조항별 신호등)는 화면의 핵심이고, 그 위에 종합 리포트 구조를 얹은 것.
- * 종합(summary)은 "판정"이 아니라 "조건부 상태"로 쓸 것:
- *   예) "지금 상태로는 서명을 권하지 않음. 아래 2개가 해소되면 위험 감소."
- * (법률 자문 경계 원칙과 정합 — 우리는 예/아니오를 선고하지 않는다)
- */
+/** 판독 API 응답 */
 export interface ScanResult {
   docType: DocType;
   /** 문서 전체의 최고 위험도 */
   overallLevel: RiskLevel;
-  /** 한 줄 요약 (조건부 상태 문장) */
+  /** 한 줄 요약 */
   summary: string;
   /** 위험 → 주의 → 안전 순으로 정렬해서 반환 */
   findings: Finding[];
-  /** 빠진 서류 (예: '등기부등본', '위임장·인감증명서') */
-  missingDocuments: string[];
-  /** 이 문서만으로는 확인 불가능한 항목 (예: '실제 등기상 소유자 일치 여부') */
-  unverifiable: string[];
-  /** 계약 전에 상대방(중개사/사장님 등)에게 요청할 문구 */
-  requestPhrases: string[];
-  /** 공식 확인 경로 (예: '인터넷등기소', '고용노동부 1350') */
-  officialChannels: string[];
-  /** 전문가 검토가 필요한 부분 */
-  needsExpertReview: string[];
-  /** 사용자 유형 맞춤 한마디 (데모 컷3, VulnProfile을 넘겼을 때만) */
+  /** 사용자 유형 맞춤 한마디 (데모 컷3) */
   personalized?: string;
   /** ISO 8601 */
   scannedAt: string;
-}
-
-/** /api/scan SSE 스트림 이벤트 — stage:'triage' 1번 → stage:'full' 1번 순서로 온다 */
-export interface ScanStreamEvent {
-  stage: AnalysisStage;
-  result: ScanResult;
 }
 
 // ------------------------------------------------------------

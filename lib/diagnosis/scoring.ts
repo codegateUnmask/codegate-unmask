@@ -1,75 +1,99 @@
 // ============================================================
-// 진단 채점 · 유형 판정 — [담당: 지식·프롬프트]
-// TODO: 유형을 더 다양하게 늘릴 것 (지금은 축당 1개, 4개뿐 — "공유하고 싶게" 다듬기)
+// 채점 로직
+//
+// scoreAnswers(): answers(0~3 점수 배열) → VulnAxes(0~100 정규화)
+// determineType(): VulnAxes → PROFILE_TYPES 의 typeCode (MBTI 16종)
+// buildProfile(): 위 둘을 합쳐 완성된 VulnProfile 반환 (API가 이 함수만 호출하면 됨)
+//
+// 16유형 판정 원리:
+//  4축(authority/urgency/greed/verify)을 각각 50점 기준 고(1)/저(0)로
+//  나누면 2^4=16가지 조합이 나옵니다. 이 조합을 그대로 MBTI 16유형에
+//  1:1 매칭했습니다 (PATTERN_TO_TYPE 참고). verify가 높으면(1) 방어형,
+//  낮으면(0) 취약형이 되고, 나머지 3축의 고/저 조합이 세부 유형을 정합니다.
 // ============================================================
 
 import type { VulnAxes, VulnProfile } from '../types';
 import { QUESTIONS } from './questions';
+import { PROFILE_TYPES } from './profileTypes';
 
-interface TypeDef {
-  typeCode: string;
-  typeName: string;
-  tagline: string;
-  description: string;
-  weakAgainst: string[];
-}
+const AXES: (keyof VulnAxes)[] = ['authority', 'urgency', 'greed', 'verify'];
+const MAX_OPTION_SCORE = 3;
+const THRESHOLD = 50;
 
-/** 축(verify 제외) 별 지배 유형 정의 — TODO: 조합형 유형까지 확장 */
-const TYPE_DEFS: Record<Exclude<keyof VulnAxes, 'verify'>, TypeDef> = {
-  authority: {
-    typeCode: 'AUTHORITY_DOMINANT',
-    typeName: '권위 앞에 약해지는 형',
-    tagline: '"기관에서 왔다"는 말 한마디에 마음이 놓이는 당신',
-    description:
-      '공공기관·은행·회사 이름이 붙으면 의심의 문턱이 크게 낮아지는 유형입니다. 직함이나 기관명만으로 신뢰하는 경향이 있어 사칭형 수법에 특히 취약합니다.',
-    weakAgainst: ['기관 사칭 문자', '중개사·집주인 구두 약속'],
-  },
-  urgency: {
-    typeCode: 'URGENCY_DOMINANT',
-    typeName: '시간 압박에 서두르는 형',
-    tagline: '"지금 아니면 끝"이라는 말에 판단이 빨라지는 당신',
-    description:
-      '마감·긴급성이 강조되면 검토를 건너뛰고 결정하는 경향이 있습니다. 급전 대출, 한정 특가형 수법에 취약합니다.',
-    weakAgainst: ['가계약금 선입금 유도', '한정 특가·마감 임박형 제안'],
-  },
-  greed: {
-    typeCode: 'GREED_DOMINANT',
-    typeName: '이득 유혹에 끌리는 형',
-    tagline: '높은 수익률 앞에서 의심보다 기대가 앞서는 당신',
-    description:
-      '고수익·환급·보너스 같은 이득 제안에 판단 기준이 느슨해지는 유형입니다. 투자 리딩방, 환급 사기에 취약합니다.',
-    weakAgainst: ['고수익 보장 투자 제안', '환급·리베이트 사기'],
-  },
+/** 비트 순서: authority, urgency, greed, verify → 문자열 키(예: '1010') */
+const PATTERN_TO_TYPE: Record<string, string> = {
+  // 취약형 (verify = 0)
+  '0000': 'INFP', // 전부 낮음, 검증도 없음 → 무기력 방관자형
+  '0010': 'ENFP', // 이득만 높음
+  '0100': 'ESFP', // 시간압박만 높음
+  '0110': 'ESTP', // 시간압박+이득
+  '1000': 'ISFJ', // 권위만 높음
+  '1010': 'ESFJ', // 권위+이득
+  '1100': 'ENFJ', // 권위+시간압박
+  '1110': 'ISFP', // 셋 다 높음 → 총체적 무방비형
+
+  // 방어형 (verify = 1)
+  '0001': 'ISTJ', // 전부 낮음 + 검증 높음 → 철옹성
+  '0011': 'ENTJ', // 이득만 남은 빈틈
+  '0101': 'ESTJ', // 시간압박만 남은 빈틈
+  '0111': 'ENTP', // 시간압박+이득 빈틈
+  '1001': 'INTJ', // 권위만 남은 빈틈
+  '1011': 'INFJ', // 권위+이득 빈틈
+  '1101': 'INTP', // 권위+시간압박 빈틈
+  '1111': 'ISTP', // 셋 다 높지만 검증으로 버팀
 };
 
-/** 문항 순서대로 받은 answers(각 문항의 score)를 축별로 합산해 0~100으로 정규화 */
-export function scoreDiagnosis(answers: number[]): VulnProfile {
-  const totals: Record<keyof VulnAxes, { sum: number; count: number }> = {
-    authority: { sum: 0, count: 0 },
-    urgency: { sum: 0, count: 0 },
-    greed: { sum: 0, count: 0 },
-    verify: { sum: 0, count: 0 },
-  };
+/**
+ * answers 는 QUESTIONS 배열과 같은 길이·같은 순서여야 합니다.
+ * 각 값은 해당 문항에서 고른 옵션의 score(0~3) 입니다.
+ */
+export function scoreAnswers(answers: number[]): VulnAxes {
+  if (answers.length !== QUESTIONS.length) {
+    throw new Error(
+      `answers 길이가 올바르지 않습니다. 기대: ${QUESTIONS.length}, 받음: ${answers.length}`
+    );
+  }
+
+  const sums: Record<keyof VulnAxes, number> = { authority: 0, urgency: 0, greed: 0, verify: 0 };
+  const counts: Record<keyof VulnAxes, number> = { authority: 0, urgency: 0, greed: 0, verify: 0 };
 
   QUESTIONS.forEach((q, i) => {
-    const score = answers[i] ?? 0;
-    totals[q.axis].sum += score;
-    totals[q.axis].count += 1;
+    const raw = answers[i];
+    const clamped = Math.min(Math.max(raw, 0), MAX_OPTION_SCORE);
+    sums[q.axis] += clamped;
+    counts[q.axis] += 1;
   });
 
-  const axes: VulnAxes = {
-    authority: totals.authority.count ? Math.round(totals.authority.sum / totals.authority.count) : 0,
-    urgency: totals.urgency.count ? Math.round(totals.urgency.sum / totals.urgency.count) : 0,
-    greed: totals.greed.count ? Math.round(totals.greed.sum / totals.greed.count) : 0,
-    verify: totals.verify.count ? Math.round(totals.verify.sum / totals.verify.count) : 0,
-  };
+  const axes = {} as VulnAxes;
+  for (const axis of AXES) {
+    const maxPossible = counts[axis] * MAX_OPTION_SCORE;
+    axes[axis] = maxPossible === 0 ? 0 : Math.round((sums[axis] / maxPossible) * 100);
+  }
+  return axes;
+}
 
-  // verify는 높을수록 안전(역방향)이라 지배 유형 후보에서 제외
-  const dominant = (['authority', 'urgency', 'greed'] as const).reduce((max, axis) =>
-    axes[axis] > axes[max] ? axis : max,
-  );
+/** 4축 점수 → 16유형(MBTI 코드) 판정 */
+export function determineType(axes: VulnAxes): string {
+  const bit = (v: number) => (v >= THRESHOLD ? '1' : '0');
+  const key = `${bit(axes.authority)}${bit(axes.urgency)}${bit(axes.greed)}${bit(axes.verify)}`;
+  const typeCode = PATTERN_TO_TYPE[key];
 
-  const def = TYPE_DEFS[dominant];
+  if (!typeCode) {
+    // 이론상 16개 조합을 모두 정의했으므로 도달하지 않지만, 방어적으로 처리
+    throw new Error(`매칭되는 유형이 없습니다 (pattern: ${key})`);
+  }
+  return typeCode;
+}
+
+/** answers → 완성된 VulnProfile. /api/diagnose 는 이 함수 하나만 호출하면 됩니다. */
+export function buildProfile(answers: number[]): VulnProfile {
+  const axes = scoreAnswers(answers);
+  const typeCode = determineType(axes);
+  const def = PROFILE_TYPES[typeCode];
+
+  if (!def) {
+    throw new Error(`알 수 없는 유형 코드: ${typeCode}`);
+  }
 
   return {
     typeCode: def.typeCode,
@@ -79,5 +103,9 @@ export function scoreDiagnosis(answers: number[]): VulnProfile {
     description: def.description,
     weakAgainst: def.weakAgainst,
     createdAt: new Date().toISOString(),
+    mbtiMatch: def.mbtiMatch,
+    characterTitle: def.characterTitle,
+    category: def.category,
+    strengths: def.strengths,
   };
 }
