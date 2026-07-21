@@ -20,28 +20,57 @@
   color: #484944;
 }
 
-.googleButton {
+.socialButton {
   display: flex;
   align-items: center;
   justify-content: center;
   gap: 10px;
   height: 52px;
-  border: 1px solid #c6c7c1;
+  border: none;
   border-radius: 12px;
-  background: #ffffff;
   font-size: 15px;
   font-weight: 700;
-  color: #202124;
   cursor: pointer;
+}
+
+.socialButton:focus-visible {
+  outline: 2px solid var(--color-accent, #c8f04b);
+  outline-offset: 2px;
+}
+
+.googleButton {
+  border: 1px solid var(--color-border-emphasized, #c6c7c1);
+  background: #ffffff;
+  color: #202124;
 }
 
 .googleButton:hover {
   background: #f7f7f2;
 }
 
-.googleButton:focus-visible {
+.kakaoButton {
+  background: #fee500;
+  color: #191919;
+}
+
+.naverButton {
+  background: #03c75a;
+  color: #ffffff;
+}
+
+.guestLink {
+  align-self: center;
+  padding: 12px 8px;
+  font-size: 13px;
+  color: #484944;
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+
+.guestLink:focus-visible {
   outline: 2px solid var(--color-accent, #c8f04b);
   outline-offset: 2px;
+  border-radius: 6px;
 }
 
 .notice {
