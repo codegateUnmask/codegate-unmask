@@ -1,0 +1,364 @@
+.screen {
+  width: 100%;
+  min-height: calc(100dvh - env(safe-area-inset-top) - env(safe-area-inset-bottom));
+  margin: 0 auto;
+  background: var(--app-background);
+}
+
+.header {
+  display: flex;
+  min-height: 64px;
+  align-items: center;
+  justify-content: space-between;
+  padding: 10px 20px;
+}
+
+.brand {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  color: var(--app-text-primary);
+  font-size: 20px;
+  font-weight: 800;
+  letter-spacing: -0.04em;
+}
+
+.brandIcon {
+  display: grid;
+  width: 32px;
+  height: 32px;
+  place-items: center;
+  border-radius: 10px;
+  background: var(--app-text-primary);
+  color: var(--app-accent);
+}
+
+.brandIcon svg,
+.privacyIcon svg {
+  width: 20px;
+  height: 20px;
+  fill: none;
+  stroke: currentColor;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  stroke-width: 2;
+}
+
+.iconButton {
+  display: grid;
+  width: 44px;
+  height: 44px;
+  place-items: center;
+  border: 0;
+  border-radius: 50%;
+  background: transparent;
+  color: var(--app-text-primary);
+}
+
+.iconButton svg,
+.modeIcon svg,
+.backButton svg,
+.arrow svg {
+  width: 24px;
+  height: 24px;
+  fill: none;
+  stroke: currentColor;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  stroke-width: 1.9;
+}
+
+.content,
+.editor {
+  padding: 28px 20px 40px;
+}
+
+.heading h1,
+.editorHeading h1 {
+  margin: 0;
+  color: var(--app-text-primary);
+  font-size: 24px;
+  font-weight: 800;
+  letter-spacing: -0.035em;
+  line-height: 1.28;
+}
+
+.heading p,
+.editorHeading p {
+  margin: 8px 0 0;
+  color: var(--app-text-secondary);
+  font-size: 14px;
+  line-height: 22px;
+}
+
+.modeGroup {
+  display: grid;
+  margin: 28px 0 0;
+  padding: 0;
+  border: 0;
+  gap: 16px;
+}
+
+.modeGroup legend {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+}
+
+.modeCard,
+.modeCardSelected {
+  position: relative;
+  display: grid;
+  width: 100%;
+  min-height: 120px;
+  grid-template-columns: 48px minmax(0, 1fr) 20px;
+  align-items: center;
+  gap: 16px;
+  padding: 20px;
+  border: 1px solid var(--app-border);
+  border-radius: 12px;
+  background: var(--app-surface);
+  cursor: pointer;
+  transition: border-color var(--app-motion-fast) var(--app-ease-standard), background var(--app-motion-fast) var(--app-ease-standard);
+}
+
+.modeCardSelected {
+  border: 2px solid var(--app-text-primary);
+  padding: 19px;
+}
+
+.modeCard input,
+.modeCardSelected input {
+  position: absolute;
+  opacity: 0;
+  pointer-events: none;
+}
+
+.modeCard:focus-within,
+.modeCardSelected:focus-within {
+  outline: 2px solid var(--app-text-primary);
+  outline-offset: 2px;
+  box-shadow: 0 0 0 4px var(--app-accent);
+}
+
+.modeIcon {
+  display: grid;
+  width: 48px;
+  height: 48px;
+  place-items: center;
+  border-radius: 50%;
+  background: #ebece6;
+  color: var(--app-text-primary);
+}
+
+.modeCardSelected .modeIcon {
+  background: var(--app-accent);
+}
+
+.modeCopy {
+  display: flex;
+  min-width: 0;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.modeCopy strong {
+  color: var(--app-text-primary);
+  font-size: 16px;
+  font-weight: 700;
+  line-height: 22px;
+}
+
+.modeCopy > span {
+  color: var(--app-text-secondary);
+  font-size: 14px;
+  letter-spacing: -0.01em;
+  line-height: 22px;
+  word-break: keep-all;
+}
+
+.radio {
+  display: grid;
+  width: 20px;
+  height: 20px;
+  place-items: center;
+  border: 1.5px solid var(--app-border);
+  border-radius: 50%;
+}
+
+.modeCardSelected .radio {
+  border: 6px solid var(--app-text-primary);
+}
+
+.bottom {
+  display: grid;
+  margin-top: 60px;
+  gap: 24px;
+}
+
+.privacy {
+  display: grid;
+  min-height: 76px;
+  grid-template-columns: 36px minmax(0, 1fr);
+  align-items: center;
+  gap: 12px;
+  padding: 16px;
+  border: 1px solid var(--app-border);
+  border-radius: 12px;
+}
+
+.privacyIcon {
+  display: grid;
+  width: 36px;
+  height: 36px;
+  place-items: center;
+  color: var(--app-text-primary);
+}
+
+.privacy p {
+  margin: 0;
+  color: var(--app-text-secondary);
+  font-size: 13px;
+  line-height: 19px;
+  word-break: keep-all;
+}
+
+.primaryButton {
+  letter-spacing: -0.01em;
+}
+
+.arrow {
+  display: grid;
+}
+
+.arrow svg {
+  width: 20px;
+  height: 20px;
+}
+
+.modeMessage,
+.error {
+  margin: 18px 0 0;
+  padding: 12px 14px;
+  border: 1px solid var(--app-border);
+  border-radius: 12px;
+  color: var(--app-text-primary);
+  font-size: 13px;
+  line-height: 20px;
+}
+
+.editor {
+  max-width: 390px;
+  margin: 0 auto;
+}
+
+.backButton {
+  display: inline-flex;
+  min-height: 44px;
+  align-items: center;
+  gap: 6px;
+  margin: -8px 0 24px;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  color: var(--app-text-primary);
+  font-size: 14px;
+  font-weight: 700;
+}
+
+.editorHeading {
+  margin-bottom: 28px;
+}
+
+.docTypes {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 4px;
+  padding: 4px;
+  border-radius: 12px;
+  background: #ebece6;
+}
+
+.docType,
+.docTypeActive {
+  min-height: 40px;
+  padding: 0 6px;
+  border: 0;
+  border-radius: 9px;
+  background: transparent;
+  color: var(--app-text-secondary);
+  font-size: 13px;
+  font-weight: 700;
+}
+
+.docTypeActive {
+  background: var(--app-surface);
+  color: var(--app-text-primary);
+  box-shadow: var(--app-shadow-low);
+}
+
+.textField {
+  display: grid;
+  margin: 20px 0;
+  gap: 8px;
+  color: var(--app-text-primary);
+  font-size: 14px;
+  font-weight: 700;
+}
+
+.textField textarea {
+  width: 100%;
+  min-height: 260px;
+  resize: vertical;
+  padding: 16px;
+  border: 1px solid var(--app-border);
+  border-radius: 12px;
+  background: var(--app-surface);
+  color: var(--app-text-primary);
+  font-size: 15px;
+  font-weight: 400;
+  line-height: 24px;
+}
+
+.reportShell {
+  width: min(100%, 760px);
+  min-height: 100dvh;
+  margin: 0 auto;
+  padding: 32px 20px 72px;
+  background: var(--app-background);
+}
+
+.reportReset {
+  margin-top: 24px;
+}
+
+@media (min-width: 640px) {
+  .screen {
+    max-width: 430px;
+    border-right: 1px solid var(--app-border);
+    border-left: 1px solid var(--app-border);
+  }
+}
+
+@media (max-width: 360px) {
+  .modeCard,
+  .modeCardSelected {
+    grid-template-columns: 44px minmax(0, 1fr) 18px;
+    gap: 12px;
+    padding: 16px;
+  }
+
+  .modeCardSelected {
+    padding: 15px;
+  }
+
+  .modeIcon {
+    width: 44px;
+    height: 44px;
+  }
+}
