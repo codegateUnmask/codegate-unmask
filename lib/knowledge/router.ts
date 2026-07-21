@@ -20,8 +20,55 @@ const SIGNALS: Record<DocType, string[]> = {
   labor: ['근로자', '사용자', '사업주', '시급', '월급', '소정근로시간', '주휴', '수습', '연차', '퇴사', '근로계약'],
   service: ['회원권', '이용권', '헬스', '피트니스', 'PT', '필라테스', '피부', '시술', '패키지', '학원', '수강', '중도해지', '환불', '가입비', '등록비', '회차'],
   terms: ['이용약관', '회원가입', '서비스 이용', '청약철회', '자동갱신', '구독', '개인정보 처리', '제3자 제공', '관할법원'],
-  message: ['http', 'https', '고객님', '안내드립니다', '클릭', '인증번호', '미납', '배송', '조회', '로그인', '계정'],
+  message: [
+    // 링크·인증 유도형 (기존)
+    'http', 'https', '고객님', '안내드립니다', '클릭', '인증번호', '미납', '배송', '조회', '로그인', '계정',
+    // 협박·납치 빙자형 — 계약서 어휘와 겹치지 않는 것만 신호로 씀
+    '납치', '감금', '데리고 있다', '신고하면', '알리지 마', '입금해', '송금해', '몸값',
+  ],
 };
+
+/**
+ * 긴급 위협 신호 — 판독보다 신고가 급한 경우를 가려냅니다.
+ *
+ * ⚠️ 오탐 방지: 계약서에도 '협박'·'해지' 같은 단어는 등장하므로 단일 단어로는 판정하지 않고,
+ *    서로 다른 범주의 신호가 2개 이상 동시에 나올 때만 긴급으로 봅니다.
+ *    (예: "납치" 하나만으로는 부족 — "납치" + "신고하지 마라"처럼 겹쳐야 함)
+ */
+const THREAT_SIGNALS = {
+  /** 신체 억류·위해 */
+  harm: ['납치', '감금', '데리고 있다', '데리고있다', '죽인다', '죽여', '해친다', '손가락', '장기를', '팔아넘'],
+  /** 신고·주변 차단 — 협박범의 전형적 고립 시도 */
+  isolate: ['신고하면', '신고하지 마', '경찰에 알리', '알리지 마', '아무에게도', '혼자 와', '전화 끊지'],
+  /** 즉시 금전 요구 */
+  extort: ['몸값', '지금 즉시 입금', '입금해', '송금해', '계좌로 보내', '시간 안에'],
+} as const;
+
+export interface ThreatAssessment {
+  /** 긴급 위협으로 판단되는가 (판독 대신 신고 안내를 먼저 노출) */
+  isEmergency: boolean;
+  /** 어떤 범주의 신호가 잡혔는지 — 사용자에게 근거를 보여줄 때 씁니다 */
+  matched: string[];
+}
+
+/**
+ * 협박·납치 빙자 등 "판독 대상이 아니라 즉시 신고 대상"인 텍스트인지 판정합니다.
+ * LLM 호출 없이 동기로 동작합니다.
+ */
+export function assessThreat(text: string): ThreatAssessment {
+  const matched: string[] = [];
+  let categories = 0;
+
+  for (const [, words] of Object.entries(THREAT_SIGNALS)) {
+    const hits = words.filter((w) => text.includes(w));
+    if (hits.length > 0) {
+      categories += 1;
+      matched.push(...hits);
+    }
+  }
+
+  return { isEmergency: categories >= 2, matched };
+}
 
 /** 1차 힌트: 본문에서 각 유형의 키워드가 몇 개나 등장하는지 세어 후보 순위를 매깁니다. */
 export function guessDocType(text: string): { docType: DocType; score: number }[] {
@@ -31,6 +78,58 @@ export function guessDocType(text: string): { docType: DocType; score: number }[
       score: SIGNALS[docType].filter((kw) => text.includes(kw)).length,
     }))
     .sort((a, b) => b.score - a.score);
+}
+
+/** 유형 판정을 시도하기에 충분한 길이 (이보다 짧으면 아직 입력 중으로 봄) */
+const MIN_TEXT_LENGTH = 20;
+/** 다른 유형이 이만큼 더 높으면 "탭을 잘못 골랐다"고 안내 */
+const MISMATCH_MARGIN = 2;
+
+export type MatchStatus =
+  /** 선택한 유형과 본문이 어울림 */
+  | 'ok'
+  /** 다른 유형의 신호가 뚜렷하게 강함 — 전환 안내 */
+  | 'mismatch'
+  /** 어느 유형의 신호도 없음 — 단정하지 않고 넘어감 */
+  | 'unknown'
+  /** 아직 판단하기엔 너무 짧음 */
+  | 'too-short';
+
+export interface DocTypeMatch {
+  status: MatchStatus;
+  /** mismatch일 때 권하는 유형 */
+  suggested: DocType | null;
+  /** 긴급 위협 판정 (판독보다 신고가 급한 경우) */
+  threat: ThreatAssessment;
+}
+
+/**
+ * 사용자가 고른 유형과 붙여넣은 본문이 어울리는지 확인합니다.
+ *
+ * 설계 원칙 — **막지 않고 안내만 합니다.**
+ * 키워드 신호는 어디까지나 힌트라서, 오탐으로 정상 이용을 가로막는 쪽이
+ * 놓치는 쪽보다 나쁩니다. 그래서 신호가 아예 없으면(unknown) 아무 말도 하지 않고,
+ * 다른 유형이 뚜렷하게 우세할 때만 전환을 권합니다.
+ */
+export function checkDocTypeMatch(text: string, selected: DocType): DocTypeMatch {
+  const threat = assessThreat(text);
+  const trimmed = text.trim();
+
+  if (trimmed.length < MIN_TEXT_LENGTH) {
+    return { status: 'too-short', suggested: null, threat };
+  }
+
+  const ranked = guessDocType(trimmed);
+  const top = ranked[0];
+  const selectedScore = ranked.find((r) => r.docType === selected)?.score ?? 0;
+
+  if (top.score === 0) {
+    return { status: 'unknown', suggested: null, threat };
+  }
+  if (top.docType === selected || top.score - selectedScore < MISMATCH_MARGIN) {
+    return { status: 'ok', suggested: null, threat };
+  }
+  return { status: 'mismatch', suggested: top.docType, threat };
 }
 
 /**

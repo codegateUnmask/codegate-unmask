@@ -1,0 +1,166 @@
+/* 긴급 위협 배너 — 가장 강한 시각 위계 */
+.emergency {
+  margin-top: 20px;
+  padding: 18px;
+  border: 2px solid #ba1a1a;
+  border-radius: 14px;
+  background: #fff5f4;
+}
+
+.emergencyHead {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.emergencyIcon {
+  display: grid;
+  width: 34px;
+  height: 34px;
+  flex: 0 0 34px;
+  place-items: center;
+  border-radius: 50%;
+  background: #ba1a1a;
+  color: #fff;
+}
+
+.emergencyIcon svg {
+  width: 20px;
+  height: 20px;
+  fill: none;
+  stroke: currentColor;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  stroke-width: 2;
+}
+
+.emergencyHead h2 {
+  margin: 0;
+  color: #5f1111;
+  font-size: 17px;
+  font-weight: 800;
+  letter-spacing: -0.02em;
+}
+
+.emergencyLead {
+  margin: 12px 0 0;
+  color: #5f1111;
+  font-size: 14px;
+  line-height: 1.6;
+  word-break: keep-all;
+}
+
+.steps {
+  margin: 14px 0 0;
+  padding-left: 20px;
+  display: grid;
+  gap: 8px;
+}
+
+.steps li {
+  color: #4a1010;
+  font-size: 14px;
+  line-height: 1.6;
+  word-break: keep-all;
+}
+
+.callRow {
+  display: flex;
+  gap: 8px;
+  margin-top: 16px;
+}
+
+.callPrimary,
+.callSecondary {
+  display: flex;
+  height: 48px;
+  flex: 1;
+  align-items: center;
+  justify-content: center;
+  border-radius: 10px;
+  font-size: 15px;
+  font-weight: 800;
+  text-decoration: none;
+}
+
+.callPrimary {
+  background: #ba1a1a;
+  color: #fff;
+}
+
+.callSecondary {
+  border: 1.5px solid #ba1a1a;
+  background: #fff;
+  color: #ba1a1a;
+}
+
+.emergencyFoot {
+  margin: 12px 0 0;
+  color: #8c1515;
+  font-size: 12.5px;
+  line-height: 1.5;
+}
+
+/* 문서 유형 불일치 안내 — 부드러운 위계 (막지 않음) */
+.mismatch {
+  display: grid;
+  grid-template-columns: 32px minmax(0, 1fr);
+  gap: 12px;
+  margin-top: 20px;
+  padding: 14px;
+  border: 1px solid #ffdcc4;
+  border-radius: 12px;
+  background: #fff8ef;
+}
+
+.mismatchIcon {
+  display: grid;
+  width: 32px;
+  height: 32px;
+  place-items: center;
+  border-radius: 50%;
+  background: #ffdcc4;
+  color: #8f4a00;
+}
+
+.mismatchIcon svg {
+  width: 18px;
+  height: 18px;
+  fill: none;
+  stroke: currentColor;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  stroke-width: 2;
+}
+
+.mismatchBody {
+  min-width: 0;
+}
+
+.mismatchText {
+  margin: 0;
+  color: #6b3800;
+  font-size: 13.5px;
+  line-height: 1.6;
+  word-break: keep-all;
+}
+
+.switchButton {
+  margin-top: 10px;
+  padding: 9px 14px;
+  border: 0;
+  border-radius: 9px;
+  background: #8f4a00;
+  color: #fff;
+  font: inherit;
+  font-size: 13px;
+  font-weight: 800;
+  cursor: pointer;
+}
+
+.switchButton:focus-visible,
+.callPrimary:focus-visible,
+.callSecondary:focus-visible {
+  outline: 3px solid #202124;
+  outline-offset: 2px;
+}
