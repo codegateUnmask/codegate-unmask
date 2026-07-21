@@ -45,10 +45,10 @@ export default function DiagnosePage() {
 
   async function handleShare() {
     if (!result) return;
-    const text = `[unmask 사기 취약 유형 진단]\n나는 「${result.typeName}」 — ${result.tagline}\n1분 진단하기: ${window.location.origin}/diagnose`;
+    const text = `[ClearGuard 사기 취약 유형 진단]\n나는 「${result.typeName}」 — ${result.tagline}\n1분 진단하기: ${window.location.origin}/diagnose`;
     try {
       if (navigator.share) {
-        await navigator.share({ title: 'unmask 유형 진단', text });
+        await navigator.share({ title: 'ClearGuard 유형 진단', text });
       } else {
         await navigator.clipboard.writeText(text);
         alert('결과가 복사됐어요! 원하는 곳에 붙여넣어 공유하세요.');

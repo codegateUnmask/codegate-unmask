@@ -84,7 +84,7 @@ export function OcrProcessingScreen({
     <div className={styles.screen}>
       <header className={styles.header}>
         <span className={styles.iconButton} aria-hidden="true" />
-        <h1 className={styles.logo}>unmask</h1>
+        <h1 className={styles.logo}>ClearGuard</h1>
         <button
           type="button"
           className={styles.iconButton}
