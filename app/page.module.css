@@ -68,8 +68,9 @@
 
 .introduction h1 {
   margin: 24px 0 0;
+  font-family: 'MaruBuriBold', 'Pretendard Variable', serif;
   font-size: 22px;
-  font-weight: 700;
+  font-weight: 400;
   letter-spacing: -0.025em;
   line-height: 30px;
   word-break: keep-all;
