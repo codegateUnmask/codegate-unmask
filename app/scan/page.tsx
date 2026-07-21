@@ -11,6 +11,7 @@ import type { DocType, ScanResult, ScanStreamEvent } from '@/lib/types';
 import { useAppStore } from '@/lib/store';
 import { getKnowledgePack } from '@/lib/knowledge';
 import { MOCK_SCAN_RESULT } from '@/lib/mock';
+import { RISKY_LEASE_SAMPLE, SAFE_LEASE_SAMPLE } from '@/lib/samples/lease';
 import { AnalysisChecklist } from '@/components/viewer/AnalysisChecklist';
 import { ScanReport } from '@/components/viewer/ScanReport';
 
@@ -50,6 +51,7 @@ export default function ScanPage() {
       const reader = res.body.getReader();
       const decoder = new TextDecoder();
       let buffer = '';
+      let lastStage: Stage = 'idle';
 
       while (true) {
         const { done, value } = await reader.read();
@@ -61,10 +63,18 @@ export default function ScanPage() {
         for (const chunk of chunks) {
           if (!chunk.startsWith('data: ')) continue;
           const event = JSON.parse(chunk.slice(6)) as ScanStreamEvent;
+          lastStage = event.stage;
           setStage(event.stage);
           setResult(event.result);
         }
       }
+
+      // 서버가 에러를 삼키고 빈 스트림으로 닫는 경우가 있어(API 키 누락·호출 실패 등),
+      // 이벤트가 하나도 안 온 상태로 스트림이 끝나면 실패로 처리한다.
+      // 이 처리가 없으면 화면이 "검사 중"에서 영원히 멈춘다.
+      if (lastStage === 'idle') throw new Error('스트림이 결과 없이 종료됨');
+      // 트리아지까지만 오고 정밀 분석이 실패한 경우 — 있는 결과라도 완료로 마감한다.
+      if (lastStage !== 'full') setStage('full');
     } catch (err) {
       console.error('[scan] falling back to mock:', err);
       setStage('full');
@@ -100,6 +110,27 @@ export default function ScanPage() {
         placeholder="계약서 조항을 붙여넣으세요 (핵심 조항 위주로, 전문을 다 넣지 않아도 됩니다)"
         className="h-40 rounded-xl border border-neutral-300 p-3 text-sm dark:border-neutral-700 dark:bg-neutral-950"
       />
+
+      {/* 데모용 샘플 불러오기 — 발표 때 붙여넣기 실수를 없애기 위한 버튼 */}
+      {docType === 'lease' && (
+        <div className="flex items-center gap-2 text-xs">
+          <span className="text-neutral-400">샘플:</span>
+          <button
+            type="button"
+            onClick={() => setText(RISKY_LEASE_SAMPLE)}
+            className="rounded-full border border-neutral-300 px-3 py-1 hover:bg-neutral-100 dark:border-neutral-700 dark:hover:bg-neutral-900"
+          >
+            위험한 계약서
+          </button>
+          <button
+            type="button"
+            onClick={() => setText(SAFE_LEASE_SAMPLE)}
+            className="rounded-full border border-neutral-300 px-3 py-1 hover:bg-neutral-100 dark:border-neutral-700 dark:hover:bg-neutral-900"
+          >
+            안전한 계약서
+          </button>
+        </div>
+      )}
 
       <button
         type="button"
