@@ -56,9 +56,6 @@ export default function Home() {
             <DocumentScannerIcon />
             계약서 확인하기
           </Link>
-          <p className={styles.login}>
-            이미 가입하셨나요? <span>로그인하기</span>
-          </p>
         </div>
       </section>
     </main>
