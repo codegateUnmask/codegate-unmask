@@ -1,5 +1,8 @@
 'use client';
 
+import { useMemo } from 'react';
+import InputGuidance from './InputGuidance';
+import { checkDocTypeMatch } from '@/lib/knowledge/router';
 import type { DocType } from '@/lib/types';
 import styles from './TextInputScreen.module.css';
 
@@ -65,6 +68,10 @@ export function TextInputScreen({
   disabled = false,
 }: TextInputScreenProps) {
   const canAnalyze = !disabled && docType !== null && text.trim().length > 0;
+  const match = useMemo(
+    () => (docType ? checkDocTypeMatch(text, docType) : null),
+    [text, docType],
+  );
 
   return (
     <div className={styles.screen}>
@@ -125,6 +132,8 @@ export function TextInputScreen({
             {text.length.toLocaleString('ko-KR')} / {maxChars.toLocaleString('ko-KR')}자
           </p>
         </div>
+
+        {match && <InputGuidance match={match} onSwitch={onDocTypeChange} />}
 
         <p className={styles.privacyNote}>
           <span className={styles.privacyIcon}>
