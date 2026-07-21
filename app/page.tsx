@@ -75,10 +75,13 @@ export default function Home() {
   return (
     <main className={styles.screen}>
       <header className={styles.header}>
-        <span className={styles.brandIcon}>
-          <ShieldLockedIcon />
-        </span>
-        <span className={styles.brand}>unmask</span>
+        {/* 로고 탭 → 첫 화면. display:contents로 감싸 기존 flex 레이아웃 무변경. */}
+        <Link href="/" aria-label="클리어가드 홈으로" style={{ display: 'contents', color: 'inherit', textDecoration: 'none' }}>
+          <span className={styles.brandIcon}>
+            <ShieldLockedIcon />
+          </span>
+          <span className={styles.brand}>클리어가드</span>
+        </Link>
       </header>
 
       <section className={styles.hero} aria-labelledby="start-title">

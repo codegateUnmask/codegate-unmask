@@ -38,7 +38,7 @@ export async function POST(req: NextRequest) {
         fail_url: `${back}&result=fail`,
       }),
     });
-    if (!res.ok) return NextResponse.json({ demo: true }); // API 실패 → 목업 폴백
+    if (!res.ok) { console.error('KAKAO READY FAIL', res.status, await res.text()); return NextResponse.json({ demo: true }); }
     const data = await res.json();
     return NextResponse.json({
       demo: false,
