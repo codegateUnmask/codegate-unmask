@@ -12,6 +12,7 @@ import type { DocType } from '@/lib/types';
 const DOC_TABS: { key: DocType; label: string }[] = [
   { key: 'lease', label: '전월세' },
   { key: 'labor', label: '근로계약' },
+  { key: 'service', label: '선불서비스' },
   { key: 'terms', label: '약관' },
   { key: 'message', label: '문자' },
 ];
@@ -79,7 +80,7 @@ export default function ScanPage() {
                   </button>
                 </>
               )}
-              {SAMPLES[docType].map((s) => (
+              {(SAMPLES[docType] ?? []).map((s) => (
                 <button key={s.name} onClick={() => applySample(s)} disabled={running}
                   className="flex-1 rounded-xl border-[1.5px] border-dashed border-[var(--line)] px-3 py-3 text-[13px] font-bold text-[var(--ink-soft)]">
                   {s.name}
