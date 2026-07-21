@@ -46,7 +46,7 @@ span.iconButton {
 }
 
 .iconButton svg,
-.modeIcon svg,
+.primaryIcon svg,
 .cta svg {
   width: 24px;
   height: 24px;
@@ -73,40 +73,43 @@ span.iconButton {
   display: flex;
   min-height: 100dvh;
   flex-direction: column;
-  padding: 88px 20px 32px;
+  padding: 88px 20px 140px;
 }
 
 .heading h1 {
   margin: 0;
   color: var(--color-text-primary);
-  font-size: 22px;
+  font-size: 24px;
   font-weight: 800;
-  letter-spacing: -0.55px;
-  line-height: 30px;
+  letter-spacing: -0.6px;
+  line-height: 32px;
+  word-break: keep-all;
 }
 
 .heading p {
   margin: 8px 0 0;
   color: var(--color-text-secondary);
-  font-size: 16px;
-  line-height: 24px;
+  font-size: 15px;
+  letter-spacing: -0.01em;
+  line-height: 22px;
+  word-break: keep-all;
 }
 
-.docTypeGroup {
+.section {
+  min-width: 0;
   margin: 28px 0 0;
   padding: 0;
   border: 0;
 }
 
-.docTypeGroup legend {
-  position: absolute;
-  width: 1px;
-  height: 1px;
+.sectionLabel {
+  margin: 0 0 10px;
   padding: 0;
-  overflow: hidden;
-  clip: rect(0, 0, 0, 0);
-  white-space: nowrap;
-  border: 0;
+  color: var(--color-text-secondary);
+  font-size: 13px;
+  font-weight: 800;
+  letter-spacing: -0.01em;
+  line-height: 18px;
 }
 
 .docTypeTabs {
@@ -114,232 +117,230 @@ span.iconButton {
   gap: 6px;
   padding: 4px;
   border-radius: 12px;
-  background: #ebece6;
+  background: var(--color-border);
   overflow-x: auto;
 }
 
 .docTypeTab,
 .docTypeTabActive {
   flex: 1 0 auto;
+  min-height: 36px;
   padding: 8px 10px;
   border: 0;
   border-radius: 9px;
   background: transparent;
-  color: #57624a;
+  color: var(--color-text-secondary);
   font-size: 13px;
   font-weight: 700;
   white-space: nowrap;
+  cursor: pointer;
 }
 
 .docTypeTabActive {
   background: #fff;
   color: var(--color-text-primary);
-  box-shadow: 0 1px 2px rgba(32, 33, 36, 0.12);
 }
 
-.modeGroup {
-  display: grid;
-  margin: 24px 0 0;
-  padding: 0;
-  border: 0;
-  gap: 16px;
-}
-
-.modeGroup legend {
-  position: absolute;
-  width: 1px;
-  height: 1px;
-  padding: 0;
-  overflow: hidden;
-  clip: rect(0, 0, 0, 0);
-  white-space: nowrap;
-  border: 0;
-}
-
-.modeCard,
-.modeCardSelected {
+.primaryMode,
+.primaryModeSelected {
   position: relative;
   display: grid;
   width: 100%;
-  height: 126px;
-  grid-template-columns: 48px minmax(0, 1fr);
+  grid-template-columns: 52px minmax(0, 1fr);
   align-items: center;
   gap: 16px;
   padding: 20px;
-  border: 1px solid var(--color-border-emphasized);
-  border-radius: 12px;
-  background: #fff;
+  border: 1.5px solid var(--color-border-emphasized);
+  border-radius: 14px;
+  background: var(--color-accent-muted);
   cursor: pointer;
 }
 
-.modeCardSelected {
-  padding: 20px;
+.primaryModeSelected {
+  border-color: var(--unmask-ink-deep);
+  background: var(--color-accent);
 }
 
-.modeCard input,
-.modeCardSelected input {
+.primaryMode input,
+.primaryModeSelected input,
+.subMode input,
+.subModeSelected input {
   position: absolute;
   opacity: 0;
 }
 
-.modeCard:focus-within,
-.modeCardSelected:focus-within {
+.primaryMode:focus-within,
+.primaryModeSelected:focus-within,
+.subMode:focus-within,
+.subModeSelected:focus-within {
   outline: 2px solid var(--color-text-primary);
   outline-offset: 2px;
-  box-shadow: 0 0 0 4px var(--color-accent);
 }
 
-.modeIcon {
+.primaryMode:has(input:disabled),
+.subMode:has(input:disabled) {
+  opacity: 0.45;
+  cursor: default;
+}
+
+.primaryIcon {
   display: grid;
-  width: 48px;
-  height: 48px;
+  width: 52px;
+  height: 52px;
   place-items: center;
   border-radius: 50%;
-  background: #ebece6;
+  background: #fff;
   color: var(--color-text-primary);
 }
 
-.modeCardSelected .modeIcon {
-  background: var(--unmask-accent-selected);
-}
-
-.modeCard .modeIcon {
-  background: #e6e6e1;
-}
-
-.modeCopy {
+.primaryCopy {
   display: flex;
   min-width: 0;
   flex-direction: column;
-  gap: 4px;
+  gap: 3px;
 }
 
-.modeCopy strong {
+.primaryCopy strong {
   color: var(--color-text-primary);
-  font-size: 20px;
-  font-weight: 700;
-  line-height: 28px;
+  font-size: 18px;
+  font-weight: 800;
+  letter-spacing: -0.02em;
+  line-height: 25px;
 }
 
-.modeCopy > span {
+.primaryCopy > span {
   color: var(--color-text-secondary);
-  font-size: 16px;
+  font-size: 14px;
   letter-spacing: -0.01em;
-  line-height: 24px;
+  line-height: 20px;
   word-break: keep-all;
 }
 
-.textPanel {
+.primaryModeSelected .primaryCopy strong,
+.primaryModeSelected .primaryCopy > span {
+  color: var(--color-on-accent);
+}
+
+.subModes {
   display: grid;
-  margin-top: 20px;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+  margin-top: 10px;
+}
+
+.subMode,
+.subModeSelected {
+  position: relative;
+  display: flex;
+  min-height: 52px;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 12px 10px;
+  border: 1.5px solid var(--color-border-emphasized);
+  border-radius: 12px;
+  background: #fff;
+  color: var(--color-text-primary);
+  font-size: 14px;
+  font-weight: 700;
+  letter-spacing: -0.01em;
+  cursor: pointer;
+}
+
+.subModeSelected {
+  border-color: var(--unmask-ink-deep);
+  background: var(--unmask-accent-selected);
+}
+
+.subMode svg,
+.subModeSelected svg {
+  width: 20px;
+  height: 20px;
+  flex: 0 0 20px;
+  fill: none;
+  stroke: currentColor;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  stroke-width: 1.9;
+}
+
+.subMode span,
+.subModeSelected span {
+  white-space: nowrap;
+}
+
+.ocrDisabledNotice {
+  margin: 12px 0 0;
+  color: var(--color-warning);
+  font-size: 13px;
+  font-weight: 600;
+  line-height: 19px;
+}
+
+.sampleRow {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
   gap: 10px;
 }
 
-.textarea {
-  width: 100%;
-  min-height: 180px;
-  padding: 14px;
+.sampleButton {
+  min-height: 52px;
+  padding: 12px;
   border: 1px solid var(--color-border-emphasized);
   border-radius: 12px;
   background: #fff;
   color: var(--color-text-primary);
-  font: inherit;
-  font-size: 15px;
-  line-height: 1.6;
-  resize: vertical;
-}
-
-.textarea:focus {
-  outline: 2px solid var(--color-text-primary);
-  outline-offset: 1px;
-}
-
-.sampleRow {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 8px;
-}
-
-.sampleButton {
-  flex: 1 0 auto;
-  padding: 10px 12px;
-  border: 1.5px dashed var(--color-border-emphasized);
-  border-radius: 10px;
-  background: transparent;
-  color: #57624a;
-  font-size: 12.5px;
+  font-size: 13.5px;
   font-weight: 700;
+  letter-spacing: -0.01em;
+  line-height: 19px;
+  word-break: keep-all;
+  cursor: pointer;
 }
 
-.ocrPanel {
-  margin-top: 20px;
-}
-
-.ocrDisabledNotice {
-  margin: 20px 0 0;
-  color: var(--color-warning);
-  font-size: 13px;
-  font-weight: 600;
+.sampleButton:focus-visible {
+  outline: 2px solid var(--color-text-primary);
+  outline-offset: 2px;
 }
 
 .bottom {
-  display: grid;
   margin-top: auto;
   padding-top: 32px;
 }
 
-.cta:disabled {
-  opacity: 0.4;
-}
-
 .privacy {
-  display: grid;
-  width: 100%;
-  height: 80px;
-  grid-template-columns: 20px minmax(0, 1fr);
+  display: flex;
   align-items: center;
-  gap: 12px;
-  padding: 16px;
-  border: 1px solid var(--color-border-emphasized);
-  border-radius: 8px;
-  background: var(--color-background-body);
-}
-
-.privacyIcon {
-  display: grid;
-  width: 20px;
-  height: 20px;
-  place-items: center;
-  color: var(--color-text-primary);
-}
-
-.privacyIcon svg {
-  width: 20px;
-  height: 20px;
-  fill: currentColor;
-}
-
-.privacy p {
+  gap: 6px;
   margin: 0;
   color: var(--color-text-secondary);
-  font-size: 15px;
-  line-height: 23px;
+  font-size: 12.5px;
+  line-height: 18px;
   word-break: keep-all;
 }
 
+.privacy svg {
+  width: 14px;
+  height: 14px;
+  flex: 0 0 14px;
+  fill: currentColor;
+}
+
 .personalizedNotice {
-  margin: 12px 0 0;
+  margin: 6px 0 0;
   color: var(--color-text-primary);
-  font-size: 13px;
+  font-size: 12.5px;
   font-weight: 800;
+  line-height: 18px;
 }
 
 .personalizedLink {
   display: block;
-  margin: 12px 0 0;
+  margin: 6px 0 0;
   color: var(--color-text-secondary);
-  font-size: 13px;
+  font-size: 12.5px;
   font-weight: 700;
+  line-height: 18px;
   text-decoration: underline;
   text-underline-offset: 2px;
 }
@@ -351,16 +352,27 @@ span.iconButton {
   align-items: center;
   justify-content: center;
   gap: 8px;
-  margin-top: 24px;
+  margin-top: 16px;
   padding: 16px 20px;
   border: 0;
   border-radius: 12px;
   background: var(--color-accent);
-  color: #1c2200;
+  color: var(--color-on-accent);
   font: inherit;
   font-size: 16px;
   font-weight: 700;
   letter-spacing: -0.01em;
+  cursor: pointer;
+}
+
+.cta:disabled {
+  opacity: 0.4;
+  cursor: default;
+}
+
+.cta:focus-visible {
+  outline: 2px solid var(--color-text-primary);
+  outline-offset: 3px;
 }
 
 .cta svg {
@@ -369,15 +381,25 @@ span.iconButton {
 }
 
 @media (max-width: 360px) {
-  .modeCard,
-  .modeCardSelected {
+  .content {
+    padding-right: 16px;
+    padding-left: 16px;
+  }
+
+  .primaryMode,
+  .primaryModeSelected {
     grid-template-columns: 44px minmax(0, 1fr);
     gap: 12px;
     padding: 16px;
   }
 
-  .modeIcon {
+  .primaryIcon {
     width: 44px;
     height: 44px;
+  }
+
+  .subMode span,
+  .subModeSelected span {
+    white-space: normal;
   }
 }
