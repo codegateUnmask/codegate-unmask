@@ -65,6 +65,13 @@ export default function DiagnosePage() {
             )}
           </div>
 
+          {/* eslint-disable-next-line @next/next/no-img-element -- 16종 캐릭터마다 원본 크기가 달라 next/image의 고정 width/height 요건과 안 맞음 */}
+          <img
+            src={`/${result.typeCode}.png`}
+            alt={`${result.characterTitle ?? result.typeName} 캐릭터`}
+            className="mx-auto mt-4 h-40 w-40 object-contain"
+          />
+
           <p className="mt-4 text-center text-sm text-neutral-500">당신의 사기 취약 유형은</p>
           <h2 className="my-1 text-center text-2xl font-bold">{result.typeName}</h2>
           {result.characterTitle && (
