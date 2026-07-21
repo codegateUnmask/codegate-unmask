@@ -35,6 +35,15 @@
   white-space: nowrap;
 }
 
+/* 워드마크 'Guard' 부분 — 로고 원본과 동일한 라임 액센트 */
+.wordmarkAccent {
+  color: #a8b312; /* 밝은 배경에서 대비가 살도록 원본 라임(#d7e21e)보다 한 톤 어둡게 */
+}
+
 .light {
   color: #ffffff;
+}
+
+.light .wordmarkAccent {
+  color: #d7e21e;
 }

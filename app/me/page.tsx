@@ -97,7 +97,7 @@ export default function MePage() {
           <div className={styles.profileBody}>
             {profile.mbtiMatch && (
               <Image
-                src={`/${profile.mbtiMatch}.png`}
+                src={`/${profile.typeCode}.png`}
                 alt=""
                 width={72}
                 height={72}
