@@ -7,6 +7,7 @@
     "build": "next build",
     "start": "next start",
     "lint": "eslint",
+    "test:mask": "tsc lib/config.ts lib/engine/mask.ts lib/engine/mask.test.ts --target ES2022 --module commonjs --moduleResolution node --outDir .next/mask-test --esModuleInterop --skipLibCheck && node .next/mask-test/engine/mask.test.js",
     "sync-deploy": "git pull origin main && git push personal main"
   },
   "dependencies": {
