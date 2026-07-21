@@ -102,3 +102,5 @@ export const STORE_ORIGINAL_TEXT = false;
  * 입력은 PDF 텍스트 추출 또는 직접 붙여넣기만 지원합니다.
  */
 export const USE_OCR = false;
+
+export const USE_MOCK_STREAM = true;

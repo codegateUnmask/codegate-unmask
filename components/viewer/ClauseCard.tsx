@@ -1,62 +1,82 @@
-// ============================================================
-// 조항 1개 카드 — [담당: 프론트(B)]
-// 신호등 색 + 원문 인용 + 1차 짧은 이유 + "왜요?" 클릭 시 상세 설명.
-// ============================================================
+// [B 담당] 조항 1개 카드 — 신호등 색 + 형광펜 인용 + 해설(+자세히) + 개선안 + 근거
 'use client';
 
 import { useState } from 'react';
-import type { Finding } from '@/lib/types';
 import { RISK_LABEL } from '@/lib/config';
+import type { Finding } from '@/lib/types';
+import type { ScanFinding } from '@/lib/mock.scan';
 
-const LEVEL_STYLE: Record<Finding['level'], string> = {
-  danger: 'border-red-300 bg-red-50 dark:border-red-900 dark:bg-red-950/40',
-  warning: 'border-amber-300 bg-amber-50 dark:border-amber-900 dark:bg-amber-950/40',
-  safe: 'border-emerald-300 bg-emerald-50 dark:border-emerald-900 dark:bg-emerald-950/40',
+const STYLE: Record<Finding['level'], { border: string; chip: string; mark: string }> = {
+  danger:  { border: 'border-l-[var(--danger)]',  chip: 'bg-[var(--danger)]',  mark: 'bg-[var(--danger-hl)]' },
+  warning: { border: 'border-l-[var(--warning)]', chip: 'bg-[var(--warning)]', mark: 'bg-[var(--warning-hl)]' },
+  safe:    { border: 'border-l-[var(--safe)]',    chip: 'bg-[var(--safe)]',    mark: 'bg-[var(--safe-hl)]' },
 };
 
-const LEVEL_BADGE: Record<Finding['level'], string> = {
-  danger: 'bg-red-600 text-white',
-  warning: 'bg-amber-500 text-white',
-  safe: 'bg-emerald-600 text-white',
-};
-
-export function ClauseCard({ finding }: { finding: Finding }) {
-  const [expanded, setExpanded] = useState(false);
+export default function ClauseCard({ finding }: { finding: Finding }) {
+  const s = STYLE[finding.level];
+  const compromise = (finding as ScanFinding).compromise;
+  const label = RISK_LABEL[finding.level];
+  const [open, setOpen] = useState(false);
 
   return (
-    <div className={`rounded-xl border p-4 ${LEVEL_STYLE[finding.level]}`}>
-      <div className="mb-2 flex items-center gap-2">
-        <span className={`rounded-full px-2 py-0.5 text-xs font-medium ${LEVEL_BADGE[finding.level]}`}>
-          {RISK_LABEL[finding.level]}
+    <article className={`card-in rounded-2xl border border-[var(--line)] border-l-4 ${s.border} bg-white p-5 shadow-[0_1px_4px_rgba(22,32,44,0.06)]`}>
+      <div className="mb-3 flex items-center gap-2.5">
+        <span className={`rounded-md px-2.5 py-1 font-mono text-[13px] font-bold tracking-wider text-white ${s.chip}`}>
+          {label}
         </span>
-        {finding.clauseTitle && <span className="text-sm text-neutral-500">{finding.clauseTitle}</span>}
+        {finding.clauseTitle && (
+          <h3 className="text-[17px] font-extrabold text-[var(--ink)]">{finding.clauseTitle}</h3>
+        )}
       </div>
 
-      <blockquote className="mb-2 border-l-2 border-neutral-300 pl-3 text-sm italic text-neutral-700 dark:border-neutral-700 dark:text-neutral-300">
-        “{finding.quote}”
+      <blockquote className="mb-3 text-[17px] leading-[1.9] text-[var(--ink)]">
+        <span className={`hl-sweep box-decoration-clone rounded-sm px-1 py-0.5 ${s.mark}`}>
+          “{finding.quote}”
+        </span>
       </blockquote>
 
-      <p className="text-sm">{finding.reason}</p>
+      <p className="mb-2 text-[15.5px] leading-relaxed text-[var(--ink)]">
+        <strong className="font-bold">왜 {label} 판정인가요? </strong>
+        {finding.reason}
+      </p>
 
       {finding.detailedReason && (
-        <button
-          type="button"
-          onClick={() => setExpanded((v) => !v)}
-          className="mt-2 text-xs font-medium text-neutral-500 underline underline-offset-2 hover:text-neutral-800 dark:hover:text-neutral-200"
-        >
-          {expanded ? '접기' : '왜요?'}
-        </button>
-      )}
-      {expanded && finding.detailedReason && (
-        <p className="mt-2 text-sm text-neutral-600 dark:text-neutral-400">{finding.detailedReason}</p>
+        <div className="mb-2">
+          {open && (
+            <p className="mb-2 rounded-xl bg-[var(--paper)] px-3.5 py-3 text-[14.5px] leading-relaxed text-[var(--ink)]">
+              {finding.detailedReason}
+            </p>
+          )}
+          <button
+            onClick={() => setOpen((v) => !v)}
+            className="font-mono text-[12.5px] font-bold text-[var(--ink-soft)] underline underline-offset-2"
+          >
+            {open ? '접기' : '자세히'}
+          </button>
+        </div>
       )}
 
       {finding.action && (
-        <p className="mt-3 text-sm font-medium">👉 {finding.action}</p>
+        <p className="mb-2 flex gap-2.5 rounded-xl bg-[var(--paper)] px-3.5 py-3 text-[15px] leading-relaxed text-[var(--ink)]">
+          <span className="shrink-0 pt-0.5 font-mono text-[12px] font-bold tracking-wider text-[var(--ink-soft)]">
+            개선안
+          </span>
+          <span>{finding.action}</span>
+        </p>
       )}
+
+      {compromise && (
+        <p className="mb-2 flex gap-2.5 rounded-xl border-[1.5px] border-dashed border-[var(--line)] px-3.5 py-3 text-[15px] leading-relaxed text-[var(--ink)]">
+          <span className="shrink-0 pt-0.5 font-mono text-[12px] font-bold tracking-wider text-[var(--ink-soft)]">
+            절충안
+          </span>
+          <span>{compromise}</span>
+        </p>
+      )}
+
       {finding.legalBasis && (
-        <p className="mt-1 text-xs text-neutral-400">근거: {finding.legalBasis}</p>
+        <p className="text-[13px] leading-relaxed text-[var(--ink-soft)]">근거 · {finding.legalBasis}</p>
       )}
-    </div>
+    </article>
   );
 }

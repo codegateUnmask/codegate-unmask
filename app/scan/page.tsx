@@ -1,165 +1,112 @@
-// ============================================================
-// 판독 화면 (데모 컷2) — [담당: 프론트(B)]
-// 텍스트 붙여넣기 → SSE로 트리아지 → 정밀 결과를 받아 렌더링합니다.
-// API 호출이 실패하면(예: 아직 ANTHROPIC_API_KEY 미설정) 목업으로 대체하고
-// 명시적으로 "목업 데이터" 라벨을 붙입니다 (진짜인 척 두지 않는다 — 팀 CLAUDE.md §7③).
-// ============================================================
+// [B 담당] /scan — 판독 화면 (데모 컷2)
 'use client';
 
-import { useState } from 'react';
-import type { DocType, ScanResult, ScanStreamEvent } from '@/lib/types';
-import { useAppStore } from '@/lib/store';
-import { getKnowledgePack } from '@/lib/knowledge';
-import { MOCK_SCAN_RESULT } from '@/lib/mock';
-import { RISKY_LEASE_SAMPLE, SAFE_LEASE_SAMPLE } from '@/lib/samples/lease';
-import { AnalysisChecklist } from '@/components/viewer/AnalysisChecklist';
-import { ScanReport } from '@/components/viewer/ScanReport';
+import { useScanStore } from '@/stores/scanStore';
+import ScanReport from '@/components/viewer/ScanReport';
+import { SAMPLES, MOCK_PROFILE } from '@/lib/mock.scan';
+import { USE_OCR } from '@/lib/config';
+import { imagesToText } from '@/lib/ocr';
+import { useRef, useState } from 'react';
+import type { DocType } from '@/lib/types';
 
-const DOC_TYPE_LABEL: Record<DocType, string> = {
-  lease: '전월세 계약서',
-  labor: '근로·알바 계약서',
-  terms: '약관·독소조항',
-  message: '문자 (스미싱/피싱)',
-};
-
-type Stage = 'idle' | 'triage' | 'full';
+const DOC_TABS: { key: DocType; label: string }[] = [
+  { key: 'lease', label: '전월세' },
+  { key: 'labor', label: '근로계약' },
+  { key: 'terms', label: '약관' },
+  { key: 'message', label: '문자' },
+];
 
 export default function ScanPage() {
-  const profile = useAppStore((s) => s.profile);
-  const [docType, setDocType] = useState<DocType>('lease');
-  const [text, setText] = useState('');
-  const [stage, setStage] = useState<Stage>('idle');
-  const [result, setResult] = useState<ScanResult | null>(null);
-  const [isMock, setIsMock] = useState(false);
+  const {
+    text, docType, status, stage, srcText, result, error,
+    setText, setDocType, applySample, start, reset,
+  } = useScanStore();
+  const running = status === 'triage' || status === 'full';
+  const fileRef = useRef<HTMLInputElement>(null);
+  const [ocrMsg, setOcrMsg] = useState<string | null>(null);
 
-  const pack = getKnowledgePack(docType);
-  const loading = stage === 'triage';
-
-  async function handleSubmit() {
-    setStage('triage');
-    setResult(null);
-    setIsMock(false);
-
+  async function handlePhotos(files: FileList | null) {
+    if (!files || files.length === 0) return;
     try {
-      const res = await fetch('/api/scan', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ text, docType, profile: profile ?? undefined }),
-      });
-      if (!res.body) throw new Error('no stream body');
-
-      const reader = res.body.getReader();
-      const decoder = new TextDecoder();
-      let buffer = '';
-      let lastStage: Stage = 'idle';
-
-      while (true) {
-        const { done, value } = await reader.read();
-        if (done) break;
-        buffer += decoder.decode(value, { stream: true });
-
-        const chunks = buffer.split('\n\n');
-        buffer = chunks.pop() ?? '';
-        for (const chunk of chunks) {
-          if (!chunk.startsWith('data: ')) continue;
-          const event = JSON.parse(chunk.slice(6)) as ScanStreamEvent;
-          lastStage = event.stage;
-          setStage(event.stage);
-          setResult(event.result);
-        }
-      }
-
-      // 서버가 에러를 삼키고 빈 스트림으로 닫는 경우가 있어(API 키 누락·호출 실패 등),
-      // 이벤트가 하나도 안 온 상태로 스트림이 끝나면 실패로 처리한다.
-      // 이 처리가 없으면 화면이 "검사 중"에서 영원히 멈춘다.
-      if (lastStage === 'idle') throw new Error('스트림이 결과 없이 종료됨');
-      // 트리아지까지만 오고 정밀 분석이 실패한 경우 — 있는 결과라도 완료로 마감한다.
-      if (lastStage !== 'full') setStage('full');
-    } catch (err) {
-      console.error('[scan] falling back to mock:', err);
-      setStage('full');
-      setResult(MOCK_SCAN_RESULT);
-      setIsMock(true);
+      const extracted = await imagesToText(Array.from(files), setOcrMsg);
+      setText(text ? text + '\n\n' + extracted : extracted);
+      setOcrMsg(null);
+    } catch {
+      setOcrMsg('사진에서 글자를 읽지 못했어요. 더 밝고 정면에서 찍은 사진으로 다시 시도해주세요.');
     }
   }
 
   return (
-    <main className="mx-auto flex w-full max-w-2xl flex-1 flex-col gap-6 px-6 py-12">
-      <h1 className="text-2xl font-bold">계약서 판독</h1>
+    <main className="mx-auto max-w-6xl px-5 pb-24 pt-9">
+      <header className="mb-7">
+        <h1 className="text-[30px] font-extrabold leading-tight text-[var(--ink)]">
+          숨은 위험을 <span className="hl-brand">막아</span>드립니다
+        </h1>
+        <p className="mt-1.5 text-[15px] text-[var(--ink-soft)]">
+          계약서를 붙여넣으면 조항별로 위험·주의·안전을 근거와 함께 보여드려요.
+        </p>
+      </header>
 
-      <div className="flex gap-2">
-        {(Object.keys(DOC_TYPE_LABEL) as DocType[]).map((dt) => (
-          <button
-            key={dt}
-            type="button"
-            onClick={() => setDocType(dt)}
-            className={`rounded-full px-3 py-1 text-sm ${
-              docType === dt
-                ? 'bg-neutral-900 text-white dark:bg-white dark:text-neutral-900'
-                : 'border border-neutral-300 dark:border-neutral-700'
-            }`}
-          >
-            {DOC_TYPE_LABEL[dt]}
-          </button>
-        ))}
-      </div>
+      <div className="grid gap-6 lg:grid-cols-[minmax(0,5fr)_minmax(0,7fr)]">
+        <section className="h-fit rounded-2xl border border-[var(--line)] bg-white p-5 lg:sticky lg:top-6">
+          <div className="mb-3 flex gap-1.5 rounded-xl bg-[var(--seg)] p-1">
+            {DOC_TABS.map((t) => (
+              <button key={t.key} onClick={() => setDocType(t.key)} disabled={running}
+                className={`flex-1 rounded-lg px-2 py-2 text-[13px] font-bold transition-colors ${
+                  docType === t.key ? 'bg-white text-[var(--ink)] shadow-sm' : 'text-[var(--ink-soft)]'}`}>
+                {t.label}
+              </button>
+            ))}
+          </div>
 
-      <textarea
-        value={text}
-        onChange={(e) => setText(e.target.value)}
-        placeholder="계약서 조항을 붙여넣으세요 (핵심 조항 위주로, 전문을 다 넣지 않아도 됩니다)"
-        className="h-40 rounded-xl border border-neutral-300 p-3 text-sm dark:border-neutral-700 dark:bg-neutral-950"
-      />
+          <textarea value={text} onChange={(e) => setText(e.target.value)} disabled={running}
+            placeholder="계약서 내용을 여기에 붙여넣으세요" rows={13}
+            className="w-full resize-y rounded-xl border border-[var(--line)] bg-[var(--field)] p-4 text-[15.5px] leading-relaxed text-[var(--ink)] outline-none focus:border-[var(--ink)]" />
 
-      {/* 데모용 샘플 불러오기 — 발표 때 붙여넣기 실수를 없애기 위한 버튼 */}
-      {docType === 'lease' && (
-        <div className="flex items-center gap-2 text-xs">
-          <span className="text-neutral-400">샘플:</span>
-          <button
-            type="button"
-            onClick={() => setText(RISKY_LEASE_SAMPLE)}
-            className="rounded-full border border-neutral-300 px-3 py-1 hover:bg-neutral-100 dark:border-neutral-700 dark:hover:bg-neutral-900"
-          >
-            위험한 계약서
-          </button>
-          <button
-            type="button"
-            onClick={() => setText(SAFE_LEASE_SAMPLE)}
-            className="rounded-full border border-neutral-300 px-3 py-1 hover:bg-neutral-100 dark:border-neutral-700 dark:hover:bg-neutral-900"
-          >
-            안전한 계약서
-          </button>
-        </div>
-      )}
+          <div className="mt-3 space-y-2">
+            <button onClick={() => start(MOCK_PROFILE)} disabled={running || !text.trim()}
+              className="w-full rounded-xl bg-[var(--ink)] px-5 py-3.5 text-[16px] font-extrabold text-white transition-transform active:scale-[0.98] disabled:opacity-40">
+              {running ? '판독 중…' : '판독 시작'}
+            </button>
+            <div className="flex flex-wrap gap-2">
+              {USE_OCR && (
+                <>
+                  <input ref={fileRef} type="file" accept="image/*" capture="environment"
+                    multiple hidden onChange={(e) => { handlePhotos(e.target.files); e.target.value = ''; }} />
+                  <button onClick={() => fileRef.current?.click()} disabled={running || !!ocrMsg}
+                    className="flex-1 rounded-xl border-[1.5px] border-dashed border-[var(--ink)] px-3 py-3 text-[13px] font-bold text-[var(--ink)]">
+                    📷 사진으로 넣기
+                  </button>
+                </>
+              )}
+              {SAMPLES[docType].map((s) => (
+                <button key={s.name} onClick={() => applySample(s)} disabled={running}
+                  className="flex-1 rounded-xl border-[1.5px] border-dashed border-[var(--line)] px-3 py-3 text-[13px] font-bold text-[var(--ink-soft)]">
+                  {s.name}
+                </button>
+              ))}
+              {(status === 'done' || status === 'error') && (
+                <button onClick={reset}
+                  className="rounded-xl border border-[var(--line)] px-4 py-3 text-[13px] font-bold text-[var(--ink-soft)]">
+                  초기화
+                </button>
+              )}
+            </div>
+          </div>
 
-      <button
-        type="button"
-        onClick={handleSubmit}
-        disabled={!text.trim() || loading}
-        className="self-start rounded-full bg-neutral-900 px-6 py-3 text-white disabled:opacity-40 dark:bg-white dark:text-neutral-900"
-      >
-        판독하기
-      </button>
-
-      {stage !== 'idle' && (
-        <div className="rounded-xl border border-neutral-200 p-4 dark:border-neutral-800">
-          <p className="mb-3 text-sm font-medium text-neutral-500">
-            {loading ? '검사 중입니다…' : '검사 완료'}
-          </p>
-          <AnalysisChecklist tasks={pack.tasks} stage={stage} />
-        </div>
-      )}
-
-      {result && (
-        <>
-          {isMock && (
-            <p className="rounded-lg bg-yellow-100 px-3 py-2 text-xs text-yellow-800 dark:bg-yellow-950 dark:text-yellow-300">
-              ⚠️ 목업 데이터입니다 (API 연결 전 화면 확인용)
-            </p>
+          {ocrMsg && (
+            <p className="mt-2 font-mono text-[12.5px] font-bold text-[var(--ink)]">{ocrMsg}</p>
           )}
-          <ScanReport result={result} />
-        </>
-      )}
+          <p className="mt-3 text-[12px] leading-relaxed text-[var(--ink-soft)]">
+            입력한 문서는 개인정보 마스킹 후 분석되며 원문은 저장하지 않습니다.
+            {USE_OCR && ' 사진은 브라우저 안에서만 글자로 변환되고 밖으로 전송되지 않아요.'}
+          </p>
+        </section>
+
+        <section>
+          <ScanReport status={status} stage={stage} srcText={srcText} result={result} error={error} />
+        </section>
+      </div>
     </main>
   );
 }
