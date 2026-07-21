@@ -5,11 +5,13 @@
 'use client';
 
 import { useState } from 'react';
+import { useSession } from 'next-auth/react';
 import { Button } from '@astryxdesign/core/Button';
 import { SelectableCard } from '@astryxdesign/core/SelectableCard';
 import type { VulnAxes, VulnProfile } from '@/lib/types';
 import { QUESTIONS } from '@/lib/diagnosis/questions';
 import { useAppStore } from '@/lib/store';
+import { ANON_OWNER, FRESH_DIAGNOSIS_KEY, identityKey } from '@/components/auth/identity';
 
 // 4축 그래프 라벨 — verify만 "높을수록 안전"인 역방향 축이라 색을 달리 칠한다
 const AXIS_LABELS: { key: keyof VulnAxes; label: string; safe: boolean }[] = [
@@ -20,6 +22,7 @@ const AXIS_LABELS: { key: keyof VulnAxes; label: string; safe: boolean }[] = [
 ];
 
 export default function DiagnosePage() {
+  const { data: session } = useSession();
   const setProfile = useAppStore((s) => s.setProfile);
   const [answers, setAnswers] = useState<number[]>(new Array(QUESTIONS.length).fill(-1));
   const [result, setResult] = useState<VulnProfile | null>(null);
@@ -37,7 +40,11 @@ export default function DiagnosePage() {
       });
       const profile = (await res.json()) as VulnProfile;
       setResult(profile);
-      setProfile(profile);
+      // 로그인 상태면 그 계정 소유로, 아니면 이 기기(anon) 소유로 저장.
+      // anon일 땐 "방금 진단함" 플래그를 남겨, 이어서 로그인하면 결과를 이어받게 합니다.
+      const owner = identityKey(session) ?? ANON_OWNER;
+      setProfile(profile, owner);
+      if (owner === ANON_OWNER) sessionStorage.setItem(FRESH_DIAGNOSIS_KEY, '1');
     } finally {
       setLoading(false);
     }

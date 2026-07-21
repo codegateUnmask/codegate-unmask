@@ -77,6 +77,7 @@ export default function Home() {
           <div className={styles.logoHero} role="img" aria-label="ClearGuard 로고">
             <ClearGuardLogo variant="mark" size={156} className={styles.logoHeroMark} />
           </div>
+          {/* "여러분은 흑우신가요?" 후킹은 발표 멘트로만 — 화면엔 커서 흑우(CowCursor)가 그 역할 */}
           <h1 id="start-title">
             어려운 계약서,
             <br />
