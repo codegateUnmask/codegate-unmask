@@ -12,6 +12,8 @@ import { EmptyState } from '@astryxdesign/core/EmptyState';
 import { List, ListItem } from '@astryxdesign/core/List';
 import { useToast } from '@astryxdesign/core/Toast';
 import LoginSheet from '@/components/auth/LoginSheet';
+import ProfileEditor from '@/components/profile/ProfileEditor';
+import { useProfileStore } from '@/stores/profileStore';
 import { useSession, signOut } from 'next-auth/react';
 import { useAppStore } from '@/lib/store';
 import { MOCK_SCAN_HISTORY } from '@/lib/mock.me';
@@ -37,6 +39,10 @@ export default function MePage() {
   const toast = useToast();
   const router = useRouter();
   const [isSheetOpen, setIsSheetOpen] = useState(false);
+  const [isEditOpen, setIsEditOpen] = useState(false);
+  // 표시 이름·사진은 이 기기에만 저장한 값을 우선합니다 (없으면 세션 값)
+  const localName = useProfileStore((s) => s.nickname);
+  const localAvatar = useProfileStore((s) => s.avatar);
 
   // 세션 확인 전에 로그아웃 화면을 그리면 로그인한 사용자에게 한 번 깜빡입니다.
   if (status === 'loading') return <main className={styles.page} aria-busy="true" />;
@@ -69,14 +75,27 @@ export default function MePage() {
     );
   }
 
+  const displayName = localName ?? user.name ?? '사용자';
+
   return (
     <main className={styles.page} aria-label="마이페이지">
       <h1 className="sr-only">마이페이지</h1>
 
       <header className={styles.profile}>
-        <Avatar name={user.name ?? '사용자'} size="large" />
+        {localAvatar ? (
+          // eslint-disable-next-line @next/next/no-img-element -- data URL이라 next/image 대상이 아닙니다
+          <img
+            src={localAvatar}
+            alt=""
+            width={64}
+            height={64}
+            style={{ width: 64, height: 64, borderRadius: '50%', objectFit: 'cover', flex: '0 0 auto' }}
+          />
+        ) : (
+          <Avatar name={displayName} size="large" />
+        )}
         <div>
-          <p className={styles.name}>{user.name ?? '사용자'}</p>
+          <p className={styles.name}>{displayName}</p>
           {/* 닉네임 체험 입장은 계정이 없어 이메일이 없습니다 */}
           <p className={styles.email}>{user.isGuest ? '닉네임 체험 모드' : user.email}</p>
         </div>
@@ -159,6 +178,7 @@ export default function MePage() {
         </h2>
         <List hasDividers density="spacious">
           <ListItem label="프리미엄 구독" onClick={() => router.push('/premium')} />
+          <ListItem label="프로필 편집" onClick={() => setIsEditOpen(true)} />
           <ListItem
             label="알림 설정"
             onClick={() => toast({ body: '준비 중이에요', uniqueID: 'me-settings' })}
@@ -171,7 +191,9 @@ export default function MePage() {
         </List>
       </section>
 
-      <p className={styles.version}>ClearGuard demo v0.1</p>
+      {isEditOpen && (
+        <ProfileEditor fallbackName={user.name ?? '사용자'} onClose={() => setIsEditOpen(false)} />
+      )}
     </main>
   );
 }

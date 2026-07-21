@@ -41,7 +41,8 @@ function ArrowIcon() {
 /** 목적별 진입 — "무엇을 하러 왔는지"로 나눕니다. */
 const ENTRIES = [
   {
-    href: '/scan',
+    // 마지막에 보던 유형이 남지 않도록 전월세로 명시합니다 (?type 없으면 이전 값 유지됨)
+    href: '/scan?type=lease',
     icon: DocumentScannerIcon,
     title: '계약서·약관 확인',
     description: '전월세·근로계약·헬스장 회원권·구독 약관의 불리한 조항을 근거와 함께 짚어드려요.',

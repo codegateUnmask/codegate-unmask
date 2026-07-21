@@ -3,7 +3,7 @@
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { motion, useReducedMotion } from 'motion/react';
-import { ClipboardList, Home, ScanLine, UserRound, Users } from 'lucide-react';
+import { ClipboardList, GraduationCap, Home, ScanLine, UserRound, Users } from 'lucide-react';
 import { useScanStore } from '@/stores/scanStore';
 import styles from './TabBar.module.css';
 
@@ -11,6 +11,7 @@ const TABS = [
   { href: '/diagnose', label: '유형분석', icon: ClipboardList },
   { href: '/scan', label: '계약서', icon: ScanLine },
   { href: '/', label: '홈', icon: Home },
+  { href: '/train', label: '훈련소', icon: GraduationCap },
   { href: '/community', label: '커뮤니티', icon: Users },
   { href: '/me', label: '마이', icon: UserRound },
 ] as const;

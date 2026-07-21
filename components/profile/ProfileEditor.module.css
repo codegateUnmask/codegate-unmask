@@ -1,0 +1,198 @@
+.backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 60;
+  display: flex;
+  align-items: flex-end;
+  justify-content: center;
+  background: rgba(0, 0, 0, 0.4);
+}
+
+@media (min-width: 640px) {
+  .backdrop {
+    align-items: center;
+  }
+}
+
+.sheet {
+  width: 100%;
+  max-width: 420px;
+  max-height: 92vh;
+  overflow-y: auto;
+  border-radius: 24px 24px 0 0;
+  background: #fff;
+  padding: 22px 22px 28px;
+}
+
+@media (min-width: 640px) {
+  .sheet {
+    border-radius: 24px;
+  }
+}
+
+.head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 18px;
+}
+
+.title {
+  margin: 0;
+  font-size: 18px;
+  font-weight: 800;
+  color: #202124;
+}
+
+.close {
+  border: 0;
+  background: none;
+  font-size: 22px;
+  line-height: 1;
+  color: #a0a09a;
+  cursor: pointer;
+  padding: 2px 6px;
+}
+
+.avatarRow {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  margin-bottom: 22px;
+}
+
+.avatarButton {
+  position: relative;
+  width: 80px;
+  height: 80px;
+  flex: 0 0 auto;
+  border: 0;
+  padding: 0;
+  border-radius: 50%;
+  background: #eef1e4;
+  cursor: pointer;
+  overflow: visible;
+}
+
+.avatarImg {
+  width: 100%;
+  height: 100%;
+  border-radius: 50%;
+  object-fit: cover;
+  display: block;
+}
+
+.avatarInitial {
+  display: grid;
+  place-items: center;
+  width: 100%;
+  height: 100%;
+  border-radius: 50%;
+  font-size: 30px;
+  font-weight: 800;
+  color: #5f6b0a;
+}
+
+.avatarBadge {
+  position: absolute;
+  right: -2px;
+  bottom: -2px;
+  width: 28px;
+  height: 28px;
+  display: grid;
+  place-items: center;
+  border-radius: 50%;
+  background: #fff;
+  border: 1px solid #e2e2da;
+  font-size: 13px;
+}
+
+.avatarActions {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  align-items: flex-start;
+}
+
+.linkButton,
+.linkButtonMuted {
+  border: 0;
+  background: none;
+  padding: 0;
+  font-size: 13.5px;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.linkButton {
+  color: #5f6b0a;
+  text-decoration: underline;
+}
+
+.linkButtonMuted {
+  color: #a0a09a;
+}
+
+.hiddenInput {
+  display: none;
+}
+
+.label {
+  display: block;
+  margin-bottom: 6px;
+  font-size: 13px;
+  font-weight: 700;
+  color: #484944;
+}
+
+.input {
+  width: 100%;
+  height: 48px;
+  padding: 0 14px;
+  border: 1px solid #d8dad3;
+  border-radius: 12px;
+  font-size: 15px;
+  background: #fff;
+  color: #202124;
+}
+
+.input:focus-visible {
+  outline: 2px solid #c8f04b;
+  outline-offset: 1px;
+}
+
+.hint {
+  margin: 8px 0 0;
+  font-size: 12px;
+  color: #8a8a80;
+}
+
+.error {
+  margin: 10px 0 0;
+  font-size: 13px;
+  font-weight: 600;
+  color: #e11d48;
+}
+
+.actions {
+  display: flex;
+  gap: 10px;
+  margin-top: 22px;
+}
+
+.cancel {
+  flex: 0 0 auto;
+  padding: 0 20px;
+  height: 48px;
+  border: 1px solid #d8dad3;
+  border-radius: 12px;
+  background: #fff;
+  font-size: 15px;
+  font-weight: 700;
+  color: #484944;
+  cursor: pointer;
+}
+
+.saveWrap {
+  flex: 1;
+}

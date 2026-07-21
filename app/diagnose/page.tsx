@@ -36,6 +36,14 @@ export default function DiagnosePage() {
   const advanceTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
   const reduced = useReducedMotion();
   const [saving, setSaving] = useState(false);
+  const [toast, setToast] = useState<string | null>(null);
+
+  // 토스트는 2.5초 뒤 사라집니다
+  useEffect(() => {
+    if (!toast) return;
+    const t = setTimeout(() => setToast(null), 2500);
+    return () => clearTimeout(t);
+  }, [toast]);
 
   async function handleSubmit() {
     setLoading(true);
@@ -87,45 +95,67 @@ export default function DiagnosePage() {
 
   async function handleShare() {
     if (!result) return;
-    const text = `[ClearGuard 사기 취약 유형 진단]\n나는 「${result.typeName}」 — ${result.tagline}\n1분 진단하기: ${profileToShareUrl(result)}`;
-    try {
-      if (navigator.share) {
+    const text = `[ClearGuard 사기 취약 유형 진단]
+나는 「${result.typeName}」 — ${result.tagline}
+1분 진단하기: ${profileToShareUrl(result)}`;
+
+    // 모바일에서는 공유 시트가 자연스럽지만, 데스크톱에서는 공유 시트에
+    // "복사"가 없어서 아무 일도 안 일어난 것처럼 보입니다.
+    // → 터치 기기에서만 공유 시트, 그 외에는 클립보드 복사.
+    const isTouch =
+      typeof window !== 'undefined' && window.matchMedia('(pointer: coarse)').matches;
+
+    if (isTouch && navigator.share) {
+      try {
         await navigator.share({ title: 'ClearGuard 유형 진단', text });
-      } else {
-        await navigator.clipboard.writeText(text);
-        alert('결과가 복사됐어요! 원하는 곳에 붙여넣어 공유하세요.');
+        return;
+      } catch {
+        /* 사용자가 시트를 닫음 — 아래 복사로 폴백 */
       }
+    }
+
+    try {
+      await navigator.clipboard.writeText(text);
+      setToast('결과가 복사됐어요! 원하는 곳에 붙여넣으세요.');
     } catch {
-      /* 사용자가 공유 시트를 닫은 경우 등 — 무시 */
+      // 클립보드 권한이 없는 경우까지 대비 (구형 브라우저·비보안 컨텍스트)
+      const ta = document.createElement('textarea');
+      ta.value = text;
+      ta.style.position = 'fixed';
+      ta.style.opacity = '0';
+      document.body.appendChild(ta);
+      ta.select();
+      const ok = document.execCommand('copy');
+      document.body.removeChild(ta);
+      setToast(ok ? '결과가 복사됐어요!' : '복사에 실패했어요. 화면을 캡처해 주세요.');
     }
   }
 
-  /** 결과 카드를 PNG로 저장 — 공유 시트에 파일까지 실어 보냅니다(지원 기기 한정). */
+  /** 결과 카드를 PNG 파일로 저장합니다 — 항상 다운로드(공유 시트 아님). */
   async function handleSaveImage() {
     if (!result || saving) return;
     setSaving(true);
     try {
       const blob = await renderResultCard(result);
       if (!blob) {
-        alert('이미지를 만들지 못했어요. 화면 캡처를 이용해 주세요.');
+        setToast('이미지를 만들지 못했어요. 화면 캡처를 이용해 주세요.');
         return;
       }
-      const file = new File([blob], `clearguard-${result.typeCode}.png`, { type: 'image/png' });
-
-      // 파일 공유를 지원하면 공유 시트로(카톡·인스타 바로 전송 가능)
-      if (navigator.canShare?.({ files: [file] })) {
-        await navigator.share({ files: [file], title: 'ClearGuard 유형 진단' });
-        return;
-      }
-      // 아니면 다운로드
+      // ⚠️ navigator.share 로 보내면 데스크톱에서 "저장"이 없는 공유 시트가 떠서
+      //    파일이 저장되지 않습니다. 버튼 이름이 '저장'이므로 항상 다운로드합니다.
       const url = URL.createObjectURL(blob);
       const a = document.createElement('a');
       a.href = url;
-      a.download = file.name;
+      a.download = `clearguard-${result.typeCode}.png`;
+      document.body.appendChild(a);
       a.click();
-      URL.revokeObjectURL(url);
-    } catch {
-      /* 사용자가 공유 시트를 닫은 경우 등 — 무시 */
+      document.body.removeChild(a);
+      // 브라우저가 다운로드를 시작할 시간을 준 뒤 해제
+      setTimeout(() => URL.revokeObjectURL(url), 1000);
+      setToast('이미지를 저장했어요. 다운로드 폴더를 확인해 주세요.');
+    } catch (e) {
+      setToast('저장에 실패했어요. 화면 캡처를 이용해 주세요.');
+      console.error('[diagnose] 결과 카드 저장 실패:', e instanceof Error ? e.name : typeof e);
     } finally {
       setSaving(false);
     }
@@ -142,6 +172,15 @@ export default function DiagnosePage() {
     const isDefensive = result.category === 'defensive';
     return (
       <main className="mx-auto flex w-full max-w-[480px] flex-1 flex-col items-center justify-center gap-6 px-6 py-12">
+        {/* 저장·복사 결과 안내 — 눌렀는데 아무 반응이 없으면 실패한 줄 압니다 */}
+        {toast && (
+          <div
+            role="status"
+            className="fixed bottom-24 left-1/2 z-50 -translate-x-1/2 rounded-full bg-neutral-900/92 px-5 py-3 text-sm font-semibold text-white shadow-lg"
+          >
+            {toast}
+          </div>
+        )}
         <div className="w-full rounded-2xl border border-neutral-200 p-6 dark:border-neutral-800">
           {/* 분류 배지 */}
           <div className="flex items-center justify-between">
