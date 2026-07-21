@@ -1,6 +1,6 @@
 import type { Metadata } from 'next';
 import './globals.css';
-import { Providers } from './providers';
+import ProfileMenu from '@/components/ProfileMenu';
 
 export const metadata: Metadata = {
   title: 'unmask — 사기 면역력 트레이너',
@@ -9,9 +9,10 @@ export const metadata: Metadata = {
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
-    <html lang="ko" data-theme="light">
+    <html lang="ko">
       <body className="antialiased">
-        <Providers>{children}</Providers>
+        {children}
+        <ProfileMenu />
       </body>
     </html>
   );
