@@ -13,6 +13,7 @@ import type { VulnAxes, VulnProfile } from '@/lib/types';
 import { QUESTIONS } from '@/lib/diagnosis/questions';
 import { useAppStore } from '@/lib/store';
 import { ANON_OWNER, FRESH_DIAGNOSIS_KEY, identityKey } from '@/components/auth/identity';
+import { profileToShareUrl } from '@/lib/share';
 import { renderResultCard } from '@/lib/diagnosis/resultCard';
 
 // 4축 그래프 라벨 — verify만 "높을수록 안전"인 역방향 축이라 색을 달리 칠한다
@@ -86,7 +87,7 @@ export default function DiagnosePage() {
 
   async function handleShare() {
     if (!result) return;
-    const text = `[ClearGuard 사기 취약 유형 진단]\n나는 「${result.typeName}」 — ${result.tagline}\n1분 진단하기: ${window.location.origin}/diagnose`;
+    const text = `[ClearGuard 사기 취약 유형 진단]\n나는 「${result.typeName}」 — ${result.tagline}\n1분 진단하기: ${profileToShareUrl(result)}`;
     try {
       if (navigator.share) {
         await navigator.share({ title: 'ClearGuard 유형 진단', text });
