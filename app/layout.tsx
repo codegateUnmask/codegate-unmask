@@ -1,4 +1,4 @@
-import type { Metadata } from 'next';
+import type { Metadata, Viewport } from 'next';
 import './globals.css';
 import { Providers } from './providers';
 import TabBar from '@/components/nav/TabBar';
@@ -19,6 +19,17 @@ export const metadata: Metadata = {
     locale: 'ko_KR',
     type: 'website',
   },
+  // PWA — iOS는 manifest 대신 이 메타로 홈 화면 설치를 인식합니다
+  appleWebApp: {
+    capable: true,
+    statusBarStyle: 'default',
+    title: 'ClearGuard',
+  },
+  icons: { apple: '/icon-192.png' },
+};
+
+export const viewport: Viewport = {
+  themeColor: '#f7f7f2',
 };
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
