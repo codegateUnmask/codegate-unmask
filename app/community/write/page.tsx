@@ -1,12 +1,12 @@
 'use client';
 
-import { useState } from 'react';
+import { Suspense, useState } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { BOARD_META, BOARD_ORDER } from '@/lib/community/shared';
 import type { BoardType } from '@/lib/community/shared';
 import { getClientToken } from '@/lib/community/client';
 
-export default function WritePage() {
+function WriteForm() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const initialBoard = (searchParams.get('board') as BoardType) || 'scam-case';
@@ -70,5 +70,14 @@ export default function WritePage() {
         {submitting ? '등록 중...' : '등록하기'}
       </button>
     </main>
+  );
+}
+
+// useSearchParams()는 Suspense 경계 안에서만 쓸 수 있습니다 (Next.js 15 정적 생성 요건)
+export default function WritePage() {
+  return (
+    <Suspense fallback={null}>
+      <WriteForm />
+    </Suspense>
   );
 }
