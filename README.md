@@ -1,4 +1,7 @@
-# unmask
+# ClearGuard
+
+> 서비스명 **ClearGuard** · 팀명 **unmask**.
+> GitHub 조직(`codegateUnmask`)과 배포 도메인(`unmask-sand.vercel.app`)은 팀 자산이라 unmask 표기를 유지합니다.
 
 계약서와 문자에 숨은 위험을 AI가 근거와 함께 벗겨내고, 사용자의 사기 취약 유형을 진단해 훈련시키는 자산 방어 서비스. 코드게이트 AI 스타트업 해커톤 2026 출품작.
 
