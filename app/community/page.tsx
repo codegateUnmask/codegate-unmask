@@ -6,8 +6,7 @@ import { useRouter } from 'next/navigation';
 import { motion } from 'motion/react';
 import { Button } from '@astryxdesign/core/Button';
 import { EmptyState } from '@astryxdesign/core/EmptyState';
-import LoginSheet from '@/components/auth/LoginSheet';
-import { useAuthStore } from '@/stores/authStore';
+import { useSession } from 'next-auth/react';
 import { BOARD_META, BOARD_ORDER } from '@/lib/community/shared';
 import type { BoardType, PostSummary } from '@/lib/community/shared';
 import { getClientToken } from '@/lib/community/client';
@@ -51,11 +50,10 @@ type FeedStatus = 'loading' | 'error' | 'ready';
 
 export default function CommunityPage() {
   const router = useRouter();
-  const user = useAuthStore((s) => s.user);
+  const { data: session } = useSession();
   const [board, setBoard] = useState<BoardType>('scam-case');
   const [posts, setPosts] = useState<PostSummary[]>([]);
   const [status, setStatus] = useState<FeedStatus>('loading');
-  const [isSheetOpen, setIsSheetOpen] = useState(false);
   const [reloadKey, setReloadKey] = useState(0);
 
   useEffect(() => {
@@ -82,11 +80,9 @@ export default function CommunityPage() {
   }, [board, reloadKey]);
 
   function handleWrite() {
-    if (user) {
-      router.push(`/community/write?board=${board}`);
-    } else {
-      setIsSheetOpen(true);
-    }
+    const target = `/community/write?board=${board}`;
+    if (session?.user) router.push(target);
+    else router.push(`/login?callbackUrl=${encodeURIComponent(target)}`);
   }
 
   return (
@@ -182,11 +178,6 @@ export default function CommunityPage() {
         제보하기
       </button>
 
-      <LoginSheet
-        isOpen={isSheetOpen}
-        onOpenChange={setIsSheetOpen}
-        onSuccess={() => router.push(`/community/write?board=${board}`)}
-      />
     </main>
   );
 }
