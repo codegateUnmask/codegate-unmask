@@ -1,5 +1,6 @@
 'use client';
 
+import { useEffect, useState } from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { motion, useReducedMotion } from 'motion/react';
@@ -25,28 +26,35 @@ export default function TabBar() {
   const pathname = usePathname();
   const scanStatus = useScanStore((s) => s.status);
   const reduceMotion = useReducedMotion();
+  const [pending, setPending] = useState<number | null>(null);
+
+  const pathnameIndex = TABS.findIndex((tab) =>
+    tab.href === '/' ? pathname === '/' : pathname.startsWith(tab.href),
+  );
+
+  useEffect(() => {
+    if (pathnameIndex !== -1) setPending(null);
+  }, [pathnameIndex]);
 
   // 판독 몰입 구간(progress→result→report)에서는 탭바를 숨긴다
   if (pathname.startsWith('/scan') && scanStatus !== 'idle') return null;
 
-  const activeIndex = TABS.findIndex((tab) =>
-    tab.href === '/' ? pathname === '/' : pathname.startsWith(tab.href),
-  );
+  const shownIndex = pending ?? pathnameIndex;
 
   return (
     <>
       <div className={styles.spacer} aria-hidden="true" />
       <nav className={styles.bar} aria-label="주요 메뉴">
-        {activeIndex >= 0 && (
+        {shownIndex >= 0 && (
           <div className={styles.track} aria-hidden="true">
             <motion.div
               className={styles.slider}
               initial={false}
-              animate={{ x: `${activeIndex * 100}%` }}
+              animate={{ x: `${shownIndex * 100}%` }}
               transition={{ type: 'spring', stiffness: 300, damping: 20 }}
             >
               <motion.div
-                key={activeIndex}
+                key={shownIndex}
                 className={styles.circle}
                 initial={false}
                 animate={reduceMotion ? undefined : SQUISH}
@@ -60,14 +68,15 @@ export default function TabBar() {
           </div>
         )}
         {TABS.map((tab, i) => {
-          const active = i === activeIndex;
+          const active = i === shownIndex;
           const Icon = tab.icon;
           return (
             <Link
               key={tab.href}
               href={tab.href}
               className={active ? styles.tabActive : styles.tab}
-              aria-current={active ? 'page' : undefined}
+              aria-current={i === pathnameIndex ? 'page' : undefined}
+              onClick={() => setPending(i)}
             >
               <span className={styles.iconWrap}>
                 <Icon
