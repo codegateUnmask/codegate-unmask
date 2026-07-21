@@ -6,8 +6,8 @@ import { useRouter } from 'next/navigation';
 import { motion } from 'motion/react';
 import { Badge } from '@astryxdesign/core/Badge';
 import { Banner } from '@astryxdesign/core/Banner';
+import { useSession } from 'next-auth/react';
 import LoginSheet from '@/components/auth/LoginSheet';
-import { useAuthStore } from '@/stores/authStore';
 import { useCommunityStore } from '@/stores/communityStore';
 import { KIND_LABEL } from '@/lib/mock.community';
 import styles from './community.module.css';
@@ -39,7 +39,8 @@ function PenIcon() {
 
 export default function CommunityPage() {
   const router = useRouter();
-  const user = useAuthStore((s) => s.user);
+  const { data: session } = useSession();
+  const user = session?.user;
   const posts = useCommunityStore((s) => s.posts);
   const [isSheetOpen, setIsSheetOpen] = useState(false);
 
@@ -107,7 +108,7 @@ export default function CommunityPage() {
       <LoginSheet
         isOpen={isSheetOpen}
         onOpenChange={setIsSheetOpen}
-        onSuccess={() => router.push('/community/new')}
+        callbackPath="/community/new"
       />
     </main>
   );

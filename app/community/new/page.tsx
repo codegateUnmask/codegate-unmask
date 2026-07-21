@@ -7,8 +7,8 @@ import { Button } from '@astryxdesign/core/Button';
 import { SegmentedControl, SegmentedControlItem } from '@astryxdesign/core/SegmentedControl';
 import { TextArea } from '@astryxdesign/core/TextArea';
 import { TextInput } from '@astryxdesign/core/TextInput';
+import { useSession } from 'next-auth/react';
 import LoginSheet from '@/components/auth/LoginSheet';
-import { useAuthStore } from '@/stores/authStore';
 import { useCommunityStore } from '@/stores/communityStore';
 import { DOC_TYPE_TAGS, type CommunityPost } from '@/lib/mock.community';
 import styles from '../community.module.css';
@@ -32,10 +32,10 @@ function LockIcon() {
 
 export default function CommunityNewPage() {
   const router = useRouter();
-  const user = useAuthStore((s) => s.user);
+  const { data: session, status } = useSession();
+  const user = session?.user;
   const addPost = useCommunityStore((s) => s.addPost);
 
-  const [isMounted, setIsMounted] = useState(false);
   const [isSheetOpen, setIsSheetOpen] = useState(false);
   const [kind, setKind] = useState<CommunityPost['kind']>('report');
   const [title, setTitle] = useState('');
@@ -43,12 +43,9 @@ export default function CommunityNewPage() {
   const [docTypeTag, setDocTypeTag] = useState<string | undefined>(undefined);
 
   useEffect(() => {
-    setIsMounted(true);
-  }, []);
-
-  useEffect(() => {
-    if (isMounted && !user) setIsSheetOpen(true);
-  }, [isMounted, user]);
+    // 세션 확인이 끝나고 '로그인 안 됨'이 확정됐을 때만 띄웁니다.
+    if (status === 'unauthenticated') setIsSheetOpen(true);
+  }, [status]);
 
   const canSubmit = title.trim().length > 0 && body.trim().length > 0;
 
@@ -69,7 +66,7 @@ export default function CommunityNewPage() {
         <span aria-hidden="true" />
       </div>
 
-      {isMounted && user ? (
+      {status === 'loading' ? null : user ? (
         <form className={styles.form} onSubmit={handleSubmit}>
           <div>
             <p className={styles.fieldLabel}>글 종류</p>
@@ -131,7 +128,7 @@ export default function CommunityNewPage() {
           <p className={styles.gateDescription}>
             제보와 후기는 로그인 후 작성할 수 있어요.
             <br />
-            데모 계정으로 바로 시작할 수 있습니다.
+            카카오·구글·네이버 또는 닉네임만으로 바로 시작할 수 있습니다.
           </p>
           <Button label="로그인하기" variant="primary" onClick={() => setIsSheetOpen(true)} />
         </div>
