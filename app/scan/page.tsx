@@ -1,6 +1,7 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { Suspense, useEffect, useRef, useState } from 'react';
+import { useSearchParams } from 'next/navigation';
 import ContractInputScreen from '@/components/scan/ContractInputScreen';
 import OcrReviewScreen from '@/components/scan/OcrReviewScreen';
 import AnalysisProgressScreen from '@/components/scan/AnalysisProgressScreen';
@@ -24,10 +25,34 @@ type InputMode = 'camera' | 'upload' | 'text';
 type Step = 'input' | 'ocr-review' | 'progress' | 'result';
 type ReviewResult = Extract<ContractImageExtraction, { decision: 'review-required' }>;
 
+const VALID_DOC_TYPES: DocType[] = ['lease', 'labor', 'service', 'terms', 'message'];
+
 export default function ScanPage() {
+  // useSearchParams는 Suspense 경계가 필요합니다 (Next 15 정적 렌더링 요건).
+  return (
+    <Suspense fallback={null}>
+      <ScanFlow />
+    </Suspense>
+  );
+}
+
+function ScanFlow() {
   const { text, docType, status, stage, result, error, setText, setDocType, applySample, start, reset } =
     useScanStore();
   const profile = useAppStore((state) => state.profile);
+  const searchParams = useSearchParams();
+
+  // 홈에서 목적별로 들어온 경우 해당 탭을 열어줍니다 (예: /scan?type=message).
+  // 최초 1회만 반영 — 이후 사용자가 직접 바꾼 탭을 덮어쓰지 않도록.
+  const presetApplied = useRef(false);
+  useEffect(() => {
+    if (presetApplied.current) return;
+    presetApplied.current = true;
+    const requested = searchParams.get('type');
+    if (requested && VALID_DOC_TYPES.includes(requested as DocType)) {
+      setDocType(requested as DocType);
+    }
+  }, [searchParams, setDocType]);
 
   const [step, setStep] = useState<Step>('input');
   const [mode, setMode] = useState<InputMode>('text');
