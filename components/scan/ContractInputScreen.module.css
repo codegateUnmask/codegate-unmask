@@ -1,0 +1,263 @@
+.screen {
+  position: relative;
+  width: 100%;
+  max-width: 480px;
+  min-height: 100dvh;
+  margin: 0 auto;
+  background: #f7f7f2;
+  color: #202124;
+}
+
+.header {
+  position: fixed;
+  top: 0;
+  left: 50%;
+  z-index: 10;
+  display: grid;
+  width: min(100%, 480px);
+  height: 64px;
+  grid-template-columns: 40px 1fr 40px;
+  align-items: center;
+  padding: 12px;
+  transform: translateX(-50%);
+  background: #f7f7f2;
+}
+
+.iconButton {
+  display: grid;
+  width: 40px;
+  height: 40px;
+  place-items: center;
+  padding: 0;
+  border: 0;
+  border-radius: 50%;
+  background: transparent;
+  color: #202124;
+}
+
+.iconButton svg {
+  width: 24px;
+  height: 24px;
+}
+
+.iconButton:first-child svg {
+  fill: currentColor;
+}
+
+.iconButton:last-child svg,
+.modeIcon svg,
+.cta svg {
+  width: 24px;
+  height: 24px;
+  fill: none;
+  stroke: currentColor;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  stroke-width: 1.9;
+}
+
+.logo {
+  justify-self: center;
+  width: 105px;
+  margin: 0;
+  color: #202124;
+  font-size: 28px;
+  font-weight: 900;
+  letter-spacing: -1.2px;
+  line-height: 40px;
+  text-align: center;
+}
+
+.content {
+  display: flex;
+  min-height: 100dvh;
+  flex-direction: column;
+  padding: 88px 20px 32px;
+}
+
+.heading h1 {
+  margin: 0;
+  color: #202124;
+  font-size: 22px;
+  font-weight: 800;
+  letter-spacing: -0.55px;
+  line-height: 30px;
+}
+
+.heading p {
+  margin: 8px 0 0;
+  color: #484944;
+  font-size: 16px;
+  line-height: 24px;
+}
+
+.modeGroup {
+  display: grid;
+  margin: 32px 0 0;
+  padding: 0;
+  border: 0;
+  gap: 16px;
+}
+
+.modeGroup legend {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+}
+
+.modeCard,
+.modeCardSelected {
+  position: relative;
+  display: grid;
+  width: 100%;
+  height: 126px;
+  grid-template-columns: 48px minmax(0, 1fr);
+  align-items: center;
+  gap: 16px;
+  padding: 20px;
+  border: 1px solid #c6c7c1;
+  border-radius: 12px;
+  background: #fff;
+  cursor: pointer;
+}
+
+.modeCardSelected {
+  padding: 20px;
+}
+
+.modeCard input,
+.modeCardSelected input {
+  position: absolute;
+  opacity: 0;
+}
+
+.modeCard:focus-within,
+.modeCardSelected:focus-within {
+  outline: 2px solid #202124;
+  outline-offset: 2px;
+  box-shadow: 0 0 0 4px #c8f04b;
+}
+
+.modeIcon {
+  display: grid;
+  width: 48px;
+  height: 48px;
+  place-items: center;
+  border-radius: 50%;
+  background: #ebece6;
+  color: #202124;
+}
+
+.modeCardSelected .modeIcon {
+  background: #e1f88a;
+}
+
+.modeCard .modeIcon {
+  background: #e6e6e1;
+}
+
+.modeCopy {
+  display: flex;
+  min-width: 0;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.modeCopy strong {
+  color: #202124;
+  font-size: 20px;
+  font-weight: 700;
+  line-height: 28px;
+}
+
+.modeCopy > span {
+  color: #484944;
+  font-size: 16px;
+  letter-spacing: -0.01em;
+  line-height: 24px;
+  word-break: keep-all;
+}
+
+.bottom {
+  display: grid;
+  margin-top: auto;
+  padding-top: 32px;
+}
+
+.privacy {
+  display: grid;
+  width: 100%;
+  height: 80px;
+  grid-template-columns: 20px minmax(0, 1fr);
+  align-items: center;
+  gap: 12px;
+  padding: 16px;
+  border: 1px solid #c6c7c1;
+  border-radius: 8px;
+  background: #f7f7f2;
+}
+
+.privacyIcon {
+  display: grid;
+  width: 20px;
+  height: 20px;
+  place-items: center;
+  color: #202124;
+}
+
+.privacyIcon svg {
+  width: 20px;
+  height: 20px;
+  fill: currentColor;
+}
+
+.privacy p {
+  margin: 0;
+  color: #484944;
+  font-size: 15px;
+  line-height: 23px;
+  word-break: keep-all;
+}
+
+.cta {
+  display: flex;
+  width: 100%;
+  height: 60px;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  margin-top: 24px;
+  padding: 16px 20px;
+  border: 0;
+  border-radius: 12px;
+  background: #c8f04b;
+  color: #1c2200;
+  font: inherit;
+  font-size: 16px;
+  font-weight: 700;
+  letter-spacing: -0.01em;
+}
+
+.cta svg {
+  width: 20px;
+  height: 20px;
+}
+
+@media (max-width: 360px) {
+  .modeCard,
+  .modeCardSelected {
+    grid-template-columns: 44px minmax(0, 1fr);
+    gap: 12px;
+    padding: 16px;
+  }
+
+  .modeIcon {
+    width: 44px;
+    height: 44px;
+  }
+}
