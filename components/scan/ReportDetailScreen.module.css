@@ -3,8 +3,8 @@
   max-width: 480px;
   min-height: 100dvh;
   margin: 0 auto;
-  background: #f7f7f2;
-  color: #202124;
+  background: var(--color-background-body);
+  color: var(--color-text-primary);
 }
 
 .header {
@@ -19,8 +19,8 @@
   align-items: center;
   padding: 0 12px;
   transform: translateX(-50%);
-  border-bottom: 1px solid #e5e5df;
-  background: #f7f7f2;
+  border-bottom: 1px solid var(--color-border);
+  background: var(--color-background-body);
 }
 
 .headerIcon {
@@ -30,7 +30,7 @@
   place-items: center;
   border: 0;
   background: transparent;
-  color: #202124;
+  color: var(--color-text-primary);
   cursor: pointer;
 }
 
@@ -48,7 +48,7 @@
 .headerIcon:focus-visible,
 .findingSummary:focus-visible,
 .auxSummary:focus-visible {
-  outline: 3px solid #c8f04b;
+  outline: 3px solid var(--color-accent);
   outline-offset: -3px;
   border-radius: 8px;
 }
@@ -69,8 +69,8 @@
   height: 32px;
   place-items: center;
   border-radius: 10px;
-  background: #202124;
-  color: #c8f04b;
+  background: var(--unmask-ink-deep);
+  color: var(--color-accent);
 }
 
 .brandIcon svg {
@@ -89,14 +89,14 @@
 
 .summaryCard {
   padding: 20px;
-  border: 1px solid #c6c7c1;
+  border: 1px solid var(--color-border-emphasized);
   border-radius: 12px;
   background: #fff;
 }
 
 .eyebrow {
   margin: 0 0 6px;
-  color: #484944;
+  color: var(--color-text-secondary);
   font-size: 12px;
   font-weight: 700;
   letter-spacing: 0.02em;
@@ -104,7 +104,7 @@
 
 .summaryCard h1 {
   margin: 0;
-  color: #151618;
+  color: var(--unmask-ink-deep);
   font-size: 21px;
   font-weight: 800;
   letter-spacing: -0.035em;
@@ -114,7 +114,7 @@
 
 .summaryCopy {
   margin: 10px 0 0;
-  color: #484944;
+  color: var(--color-text-secondary);
   font-size: 14px;
   line-height: 1.6;
   word-break: keep-all;
@@ -129,13 +129,13 @@
 
 .count {
   padding: 10px 12px;
-  border: 1px solid #e5e5df;
+  border: 1px solid var(--color-border);
   border-radius: 12px;
   text-align: center;
 }
 
 .count dt {
-  color: #484944;
+  color: var(--color-text-secondary);
   font-size: 11px;
   font-weight: 700;
 }
@@ -148,11 +148,11 @@
 }
 
 .dangerCount dd {
-  color: #ba1a1a;
+  color: var(--color-error);
 }
 
 .warningCount dd {
-  color: #8f4a00;
+  color: var(--color-warning);
 }
 
 .safeCount dd {
@@ -166,7 +166,7 @@
 }
 
 .findingCard {
-  border: 1px solid #c6c7c1;
+  border: 1px solid var(--color-border-emphasized);
   border-radius: 12px;
   background: #fff;
 }
@@ -199,7 +199,7 @@
   height: 20px;
   flex: none;
   fill: none;
-  stroke: #484944;
+  stroke: var(--color-text-secondary);
   stroke-linecap: round;
   stroke-linejoin: round;
   stroke-width: 1.9;
@@ -222,13 +222,13 @@
 }
 
 .dangerBadge {
-  background: #ffdad6;
-  color: #ba1a1a;
+  background: var(--color-error-muted);
+  color: var(--color-error);
 }
 
 .warningBadge {
-  background: #ffdcc4;
-  color: #8f4a00;
+  background: var(--color-warning-muted);
+  color: var(--color-warning);
 }
 
 .safeBadge {
@@ -238,12 +238,12 @@
 
 .findingBody {
   padding: 14px 16px 16px;
-  border-top: 1px solid #e5e5df;
+  border-top: 1px solid var(--color-border);
 }
 
 .quoteLabel {
   margin: 0 0 6px;
-  color: #484944;
+  color: var(--color-text-secondary);
   font-size: 11px;
   font-weight: 800;
   letter-spacing: 0.02em;
@@ -252,10 +252,10 @@
 .quote {
   margin: 0;
   padding: 12px 14px;
-  border-left: 3px solid #c6c7c1;
+  border-left: 3px solid var(--color-border-emphasized);
   border-radius: 0 8px 8px 0;
-  background: #f7f7f2;
-  color: #202124;
+  background: var(--color-background-body);
+  color: var(--color-text-primary);
   font-size: 15px;
   font-weight: 600;
   letter-spacing: -0.015em;
@@ -265,7 +265,7 @@
 
 .reason {
   margin: 14px 0 0;
-  color: #484944;
+  color: var(--color-text-secondary);
   font-size: 14px;
   letter-spacing: -0.012em;
   line-height: 1.64;
@@ -276,13 +276,13 @@
   margin-top: 14px;
   padding: 14px 16px;
   border-radius: 12px;
-  background: #202124;
+  background: var(--unmask-ink-deep);
 }
 
 .action span {
   display: block;
   margin-bottom: 6px;
-  color: #c8f04b;
+  color: var(--color-accent);
   font-size: 12px;
   font-weight: 800;
   letter-spacing: 0.02em;
@@ -305,7 +305,7 @@
   margin-top: 12px;
   padding: 6px 10px;
   border-radius: 999px;
-  background: #efffc0;
+  background: var(--color-accent-muted);
   color: #39490b;
   font-size: 11px;
   font-weight: 700;
@@ -333,7 +333,7 @@
 }
 
 .auxCard {
-  border: 1px solid #c6c7c1;
+  border: 1px solid var(--color-border-emphasized);
   border-radius: 12px;
   background: #fff;
 }
@@ -367,8 +367,8 @@
   padding: 0 6px;
   place-items: center;
   border-radius: 999px;
-  background: #f7f7f2;
-  color: #484944;
+  background: var(--color-background-body);
+  color: var(--color-text-secondary);
   font-size: 12px;
   font-weight: 800;
 }
@@ -376,28 +376,28 @@
 .auxList {
   margin: 0;
   padding: 4px 16px 14px;
-  border-top: 1px solid #e5e5df;
+  border-top: 1px solid var(--color-border);
   list-style: none;
 }
 
 .auxList li {
   padding: 10px 0;
-  color: #202124;
+  color: var(--color-text-primary);
   font-size: 14px;
   line-height: 1.6;
   word-break: keep-all;
 }
 
 .auxList li + li {
-  border-top: 1px solid #e5e5df;
+  border-top: 1px solid var(--color-border);
 }
 
 .personalized {
   margin-top: 20px;
   padding: 16px 20px;
-  border: 1px solid #c8f04b;
+  border: 1px solid var(--color-accent);
   border-radius: 12px;
-  background: #efffc0;
+  background: var(--color-accent-muted);
 }
 
 .personalizedLabel {
@@ -410,7 +410,7 @@
 
 .personalizedText {
   margin: 0;
-  color: #202124;
+  color: var(--color-text-primary);
   font-size: 15px;
   font-weight: 600;
   line-height: 1.6;
@@ -425,8 +425,8 @@
   width: min(100%, 480px);
   padding: 12px 20px max(12px, env(safe-area-inset-bottom));
   transform: translateX(-50%);
-  border-top: 1px solid #e5e5df;
-  background: #f7f7f2;
+  border-top: 1px solid var(--color-border);
+  background: var(--color-background-body);
 }
 
 .cta {
@@ -438,8 +438,8 @@
   gap: 8px;
   border: 0;
   border-radius: 12px;
-  background: #c8f04b;
-  color: #151618;
+  background: var(--color-accent);
+  color: var(--unmask-ink-deep);
   font: inherit;
   font-size: 15px;
   font-weight: 800;
@@ -448,11 +448,11 @@
 }
 
 .cta:hover {
-  background: #b1d83b;
+  background: var(--unmask-accent-hover);
 }
 
 .cta:focus-visible {
-  outline: 3px solid #151618;
+  outline: 3px solid var(--unmask-ink-deep);
   outline-offset: 2px;
 }
 
@@ -463,8 +463,8 @@
 
 @media (min-width: 481px) {
   .screen {
-    border-right: 1px solid #c6c7c1;
-    border-left: 1px solid #c6c7c1;
+    border-right: 1px solid var(--color-border-emphasized);
+    border-left: 1px solid var(--color-border-emphasized);
   }
 }
 

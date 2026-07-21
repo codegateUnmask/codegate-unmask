@@ -2,6 +2,8 @@
 
 import { Suspense, useEffect, useRef, useState } from 'react';
 import { useSearchParams } from 'next/navigation';
+import { Dialog } from '@astryxdesign/core/Dialog';
+import { Button } from '@astryxdesign/core/Button';
 import ContractInputScreen from '@/components/scan/ContractInputScreen';
 import TextInputScreen from '@/components/scan/TextInputScreen';
 import OcrProcessingScreen from '@/components/scan/OcrProcessingScreen';
@@ -339,46 +341,38 @@ function ScanFlow() {
         />
       )}
 
-      {mismatch && (
-        <div
-          role="dialog"
-          aria-label="문서 유형 확인"
-          className="fixed inset-0 z-30 flex items-end justify-center bg-black/40 px-4 pb-6"
-          onClick={() => setMismatch(null)}
-        >
-          <div
-            className="w-full max-w-[480px] rounded-2xl bg-white p-5"
-            onClick={(e) => e.stopPropagation()}
-          >
-            <h3 className="text-[16px] font-extrabold text-[var(--ink)]">
+      <Dialog isOpen={mismatch !== null} onOpenChange={(open) => !open && setMismatch(null)} width={360}>
+        {mismatch && (
+          <div className="flex flex-col gap-1 px-1 pb-1">
+            <h3 className="text-[16px] font-extrabold text-[var(--color-text-primary)]">
               이 문서는 「{mismatch.label}」 문서로 보여요
             </h3>
-            <p className="mt-1 text-[13.5px] leading-relaxed text-[var(--ink-soft)]">
+            <p className="text-[13.5px] leading-relaxed text-[var(--color-text-secondary)]">
               정확한 판독을 위해 {DOC_LABELS[mismatch.type]} 분석을 이용해주세요.
             </p>
-            <button
-              type="button"
-              onClick={() => {
-                setDocType(mismatch.type);
-                setMismatch(null);
-              }}
-              className="mt-4 w-full rounded-xl bg-[var(--ink)] px-4 py-3 text-[14px] font-bold text-white"
-            >
-              {mismatch.label} 분석으로 이동
-            </button>
-            <button
-              type="button"
+            <div className="mt-3">
+              <Button
+                label={`${mismatch.label} 분석으로 이동`}
+                variant="primary"
+                width="100%"
+                onClick={() => {
+                  setDocType(mismatch.type);
+                  setMismatch(null);
+                }}
+              />
+            </div>
+            <Button
+              label="그래도 판독하기"
+              variant="ghost"
+              width="100%"
               onClick={() => {
                 setMismatch(null);
                 void start(profile ?? undefined);
               }}
-              className="mt-2 w-full py-1 text-center text-[12.5px] font-bold text-[var(--ink-soft)] underline underline-offset-2"
-            >
-              그래도 판독하기
-            </button>
+            />
           </div>
-        </div>
-      )}
+        )}
+      </Dialog>
     </>
   );
 }

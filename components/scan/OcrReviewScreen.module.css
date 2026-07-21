@@ -4,8 +4,8 @@
   min-height: 1386px;
   margin: 0 auto;
   overflow-x: hidden;
-  background: #f7f7f2;
-  color: #202124;
+  background: var(--color-background-body);
+  color: var(--color-text-primary);
   font-family: "Noto Sans KR", "Apple SD Gothic Neo", -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
 }
 
@@ -18,7 +18,7 @@
   align-items: center;
   height: 64px;
   padding: 12px 20px;
-  background: #f7f7f2;
+  background: var(--color-background-body);
 }
 
 .iconButton {
@@ -30,7 +30,7 @@
   border: 0;
   border-radius: 50%;
   background: transparent;
-  color: #202124;
+  color: var(--color-text-primary);
   cursor: pointer;
 }
 
@@ -125,9 +125,9 @@
   align-items: center;
   gap: 4px;
   padding: 4px 10px;
-  border: 1px solid #c6c7c1;
+  border: 1px solid var(--color-border-emphasized);
   border-radius: 999px;
-  color: #484944;
+  color: var(--color-text-secondary);
   font-size: 12px;
   font-weight: 700;
   white-space: nowrap;
@@ -160,7 +160,7 @@
 .reviewPanel {
   margin: 0 16px 20px;
   padding: 14px;
-  border: 1px solid #ffdcc4;
+  border: 1px solid var(--color-warning-muted);
   border-radius: 12px;
   background: #fff8ef;
 }
@@ -170,7 +170,7 @@
   align-items: center;
   gap: 6px;
   margin: 0 0 8px;
-  color: #8f4a00;
+  color: var(--color-warning);
   font-size: 13px;
   font-weight: 800;
 }
@@ -214,11 +214,11 @@
 }
 
 .criticalBadge {
-  background: #ba1a1a;
+  background: var(--color-error);
 }
 
 .lowConfidenceBadge {
-  background: #8f4a00;
+  background: var(--color-warning);
 }
 
 .confirmRow {
@@ -228,7 +228,7 @@
   padding: 8px 10px;
   border-radius: 8px;
   background: #fff;
-  color: #202124;
+  color: var(--color-text-primary);
   font-size: 13px;
   font-weight: 700;
   line-height: 1.55;
@@ -240,12 +240,12 @@
   flex: 0 0 auto;
   width: 18px;
   height: 18px;
-  accent-color: #151618;
+  accent-color: var(--unmask-ink-deep);
 }
 
 .confirmNotice {
   margin: 8px 0 0;
-  color: #8f4a00;
+  color: var(--color-warning);
   font-size: 12.5px;
   font-weight: 800;
 }
@@ -259,7 +259,7 @@
 }
 
 .documentText strong {
-  color: #202124;
+  color: var(--color-text-primary);
   font-weight: 800;
 }
 
@@ -296,8 +296,8 @@
   height: 60px;
   gap: 8px;
   border-radius: 8px;
-  background: #c8f04b;
-  color: #202124;
+  background: var(--color-accent);
+  color: var(--color-on-accent);
   font-size: 16px;
   line-height: 20px;
   box-shadow: 0 2px 0 rgba(32, 33, 36, 0.16);
@@ -309,7 +309,7 @@
 }
 
 .primaryAction:hover:not(:disabled) {
-  background: #b1d83b;
+  background: var(--unmask-accent-hover);
 }
 
 .secondaryAction {
@@ -318,10 +318,10 @@
   height: 48px;
   align-items: center;
   justify-content: center;
-  border: 1px solid #c6c7c1;
+  border: 1px solid var(--color-border-emphasized);
   border-radius: 8px;
   background: #fff;
-  color: #202124;
+  color: var(--color-text-primary);
   font-family: inherit;
   font-size: 15px;
   font-weight: 700;
@@ -338,7 +338,7 @@
 .secondaryAction:focus-visible,
 .editableText:focus-visible,
 .confirmRow input:focus-visible {
-  outline: 3px solid #b1d83b;
+  outline: 3px solid var(--unmask-accent-hover);
   outline-offset: 2px;
 }
 
