@@ -9,7 +9,7 @@ import { enabledSocialProviders } from '@/auth';
 import LoginForm from '@/components/auth/LoginForm';
 import styles from './page.module.css';
 
-export const metadata = { title: '로그인 — unmask' };
+export const metadata = { title: '로그인 — ClearGuard' };
 
 export default async function LoginPage({
   searchParams,
