@@ -68,7 +68,7 @@ export default function MePage() {
           <p className={styles.heroDesc}>진단 결과와 계약서 분석 기록이 한곳에 저장돼요.</p>
           <div className={styles.heroAction}>
             <Button
-              label="Google로 로그인"
+              label="로그인하기"
               variant="primary"
               width="100%"
               onClick={() => setIsSheetOpen(true)}
