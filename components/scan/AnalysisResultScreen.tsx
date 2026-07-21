@@ -19,15 +19,6 @@ function ShieldIcon() {
   );
 }
 
-function BellIcon() {
-  return (
-    <svg viewBox="0 0 24 24" aria-hidden="true">
-      <path d="M18 8a6 6 0 0 0-12 0c0 7-3 7-3 9h18c0-2-3-2-3-9" />
-      <path d="M10 21h4" />
-    </svg>
-  );
-}
-
 function AlertIcon() {
   return (
     <svg viewBox="0 0 24 24" aria-hidden="true">
@@ -58,15 +49,6 @@ function ArrowIcon() {
   return (
     <svg viewBox="0 0 24 24" aria-hidden="true">
       <path d="m9 18 6-6-6-6" />
-    </svg>
-  );
-}
-
-function HomeIcon() {
-  return (
-    <svg viewBox="0 0 24 24" aria-hidden="true">
-      <path d="m3 11 9-8 9 8" />
-      <path d="M5 10v10h14V10M9 20v-6h6v6" />
     </svg>
   );
 }
@@ -103,6 +85,7 @@ export interface AnalysisResultScreenProps {
   docTypeLabel: string;
   onBack: () => void;
   onShowRequests?: () => void;
+  onShowDetail?: () => void;
 }
 
 export default function AnalysisResultScreen({
@@ -110,12 +93,14 @@ export default function AnalysisResultScreen({
   docTypeLabel,
   onBack,
   onShowRequests,
+  onShowDetail,
 }: AnalysisResultScreenProps) {
   const style = SUMMARY_STYLE[result.overallLevel];
   const explained = result.findings.filter(
     (f): f is typeof f & { level: 'danger' | 'warning' } => f.level !== 'safe',
   );
   const hasRequests = (result.requestPhrases?.length ?? 0) > 0;
+  const showDetail = onShowDetail ?? (hasRequests ? onShowRequests : undefined);
 
   return (
     <div className={styles.screen}>
@@ -129,9 +114,7 @@ export default function AnalysisResultScreen({
           </span>
           <span>unmask</span>
         </span>
-        <span className={styles.headerIcon} aria-hidden="true">
-          <BellIcon />
-        </span>
+        <span className={styles.headerIcon} aria-hidden="true" />
       </header>
 
       <main className={styles.content}>
@@ -204,9 +187,9 @@ export default function AnalysisResultScreen({
       </main>
 
       <div className={styles.bottomDock}>
-        {hasRequests ? (
-          <button type="button" className={styles.cta} onClick={onShowRequests}>
-            상대에게 요청할 문구 보기
+        {showDetail ? (
+          <button type="button" className={styles.cta} onClick={showDetail}>
+            계약 전에 물어볼 내용 보기
             <ArrowIcon />
           </button>
         ) : (
@@ -215,12 +198,6 @@ export default function AnalysisResultScreen({
             <ArrowIcon />
           </button>
         )}
-        <nav className={styles.navigation} aria-label="주요 메뉴">
-          <button type="button" className={`${styles.navItem} ${styles.navItemActive}`} onClick={onBack}>
-            <HomeIcon />
-            홈
-          </button>
-        </nav>
       </div>
     </div>
   );
