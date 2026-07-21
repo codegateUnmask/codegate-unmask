@@ -80,7 +80,7 @@
 }
 
 .tabActive .iconWrap {
-  transform: translateY(-22px);
+  transform: translateY(-10px);
 }
 
 .icon {
