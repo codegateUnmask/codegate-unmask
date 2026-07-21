@@ -106,8 +106,14 @@ function ScanFlow() {
     if (running) setStep(result ? 'result' : 'progress');
     else if (status === 'done') setStep('result');
     else if (status === 'error') {
-      setErrorKind(typeof navigator !== 'undefined' && !navigator.onLine ? 'network' : 'server');
-      setStep('error');
+      // 정밀 분석만 실패하고 1차 결과는 이미 받아둔 경우가 있습니다.
+      // 쓸 수 있는 결과를 통째로 버리고 에러 화면만 띄우면 손해라,
+      // 결과가 있으면 그대로 보여주고 '정밀 분석 실패' 안내만 얹습니다.
+      if (result) setStep('result');
+      else {
+        setErrorKind(typeof navigator !== 'undefined' && !navigator.onLine ? 'network' : 'server');
+        setStep('error');
+      }
     }
   }, [running, status, result]);
 
@@ -316,6 +322,7 @@ function ScanFlow() {
           docTypeLabel={DOC_LABELS[docType]}
           srcText={srcText}
           refining={running}
+          onRetryRefine={status === 'error' ? () => start(profile ?? undefined) : undefined}
           onBack={handleReset}
           onShowDetail={() => setStep('report')}
           onShowRequests={() => setStep('requests')}
