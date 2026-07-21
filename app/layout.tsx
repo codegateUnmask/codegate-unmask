@@ -2,7 +2,6 @@ import type { Metadata } from 'next';
 import './globals.css';
 import { Providers } from './providers';
 import TabBar from '@/components/nav/TabBar';
-import ProfileMenu from '@/components/ProfileMenu';
 import CowCursor from '@/components/brand/CowCursor';
 
 export const metadata: Metadata = {
@@ -29,7 +28,6 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         <Providers>
           {children}
           <TabBar />
-          <ProfileMenu />
           {/* 커서 따라다니는 흑우 — 홈 후킹 문구와 세트 (마우스 기기에서만) */}
           <CowCursor />
         </Providers>
