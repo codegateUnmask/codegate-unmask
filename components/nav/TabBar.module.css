@@ -18,6 +18,33 @@
   background: #ffffff;
 }
 
+.track {
+  position: absolute;
+  top: 0;
+  left: 8px;
+  right: 8px;
+  height: 0;
+  pointer-events: none;
+}
+
+.slider {
+  position: relative;
+  width: 20%;
+  height: 0;
+}
+
+.circle {
+  position: absolute;
+  top: -22px;
+  left: calc(50% - 24px);
+  width: 48px;
+  height: 48px;
+  border-radius: 50%;
+  background: var(--color-accent, #c8f04b);
+  border: 3px solid #ffffff;
+  box-shadow: 0 4px 12px rgba(32, 33, 36, 0.16);
+}
+
 .tab,
 .tabActive {
   display: flex;
@@ -44,22 +71,20 @@
 
 .iconWrap {
   position: relative;
+  z-index: 1;
   display: grid;
   place-items: center;
   width: 46px;
   height: 28px;
+  transition: transform 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
 }
 
-.activePill {
-  position: absolute;
-  inset: 0;
-  border-radius: 999px;
-  background: var(--color-accent, #c8f04b);
+.tabActive .iconWrap {
+  transform: translateY(-22px);
 }
 
 .icon {
-  position: relative;
-  z-index: 1;
+  transition: color 0.2s ease 0.1s;
 }
 
 .tabActive .icon {
@@ -77,4 +102,11 @@
   outline: 2px solid var(--color-accent, #c8f04b);
   outline-offset: -2px;
   border-radius: 10px;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .iconWrap,
+  .icon {
+    transition: none;
+  }
 }
