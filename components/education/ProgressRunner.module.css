@@ -40,18 +40,80 @@
   display: block;
 }
 
-/* 달릴 때만 위아래로 통통 튀게 */
+/* 달리기 — 원화가 한 컷뿐이라(프레임 교체 불가) 몸통 움직임으로 질주를 만듭니다.
+   ① gallop: 도약(앞으로 기울며 뜸) → 착지(뒤로 기울며 눌림) 4박자
+   ② lean:   전체를 살짝 앞으로 기울여 달리는 방향감
+   ③ dust:   착지 순간 발밑에 먼지가 튀어 속도감을 보탬
+   세 개를 서로 다른 주기로 겹쳐 기계적인 반복처럼 보이지 않게 했습니다. */
 .running .cow {
-  animation: hop 0.32s ease-in-out infinite;
+  animation: gallop 0.42s cubic-bezier(0.32, 0, 0.28, 1) infinite;
+  transform-origin: 60% 90%; /* 뒷다리 쪽을 축으로 — 앞발이 들리는 느낌 */
 }
 
-@keyframes hop {
+@keyframes gallop {
+  /* 웅크림 — 뒷다리로 지면을 밀기 직전 */
+  0% {
+    transform: translateY(2px) rotate(-3deg) scaleY(0.94) scaleX(1.05);
+  }
+  /* 도약 — 몸이 펴지며 가장 높이 */
+  30% {
+    transform: translateY(-11px) rotate(4deg) scaleY(1.06) scaleX(0.97);
+  }
+  /* 체공 — 살짝 떨어지기 시작 */
+  55% {
+    transform: translateY(-7px) rotate(1deg) scaleY(1.02) scaleX(1);
+  }
+  /* 착지 — 앞다리가 닿으며 눌림 */
+  78% {
+    transform: translateY(3px) rotate(-4deg) scaleY(0.9) scaleX(1.07);
+  }
+  100% {
+    transform: translateY(2px) rotate(-3deg) scaleY(0.94) scaleX(1.05);
+  }
+}
+
+/* 달리는 동안 전체가 앞으로 기울어 방향감을 줍니다 */
+.running {
+  animation: lean 0.84s ease-in-out infinite;
+}
+
+@keyframes lean {
   0%,
   100% {
-    transform: translateY(0) scaleX(1);
+    margin-left: 0;
   }
   50% {
-    transform: translateY(-6px) scaleX(1.04);
+    margin-left: 2px;
+  }
+}
+
+/* 착지할 때 튀는 먼지 */
+.running::after {
+  content: '';
+  position: absolute;
+  left: 2px;
+  bottom: 2px;
+  width: 12px;
+  height: 5px;
+  border-radius: 50%;
+  background: rgba(31, 36, 18, 0.22);
+  animation: dust 0.42s ease-out infinite;
+}
+
+@keyframes dust {
+  0%,
+  60% {
+    opacity: 0;
+    transform: translateX(0) scaleX(0.5);
+  }
+  /* 착지 타이밍(78%)에 맞춰 튐 */
+  80% {
+    opacity: 0.9;
+    transform: translateX(-6px) scaleX(1);
+  }
+  100% {
+    opacity: 0;
+    transform: translateX(-14px) scaleX(1.5);
   }
 }
 
@@ -111,7 +173,9 @@
   .runner {
     transition: none;
   }
+  .running,
   .running .cow,
+  .running::after,
   .crown,
   .escape,
   .escapeSub {
