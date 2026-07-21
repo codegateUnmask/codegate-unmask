@@ -120,3 +120,4 @@ export function buildProfile(answers: number[]): VulnProfile {
     strengths: def.strengths,
   };
 }
+git add .

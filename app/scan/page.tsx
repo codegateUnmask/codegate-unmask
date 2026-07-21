@@ -1,165 +1,349 @@
-// ============================================================
-// 판독 화면 (데모 컷2) — [담당: 프론트(B)]
-// 텍스트 붙여넣기 → SSE로 트리아지 → 정밀 결과를 받아 렌더링합니다.
-// API 호출이 실패하면(예: 아직 ANTHROPIC_API_KEY 미설정) 목업으로 대체하고
-// 명시적으로 "목업 데이터" 라벨을 붙입니다 (진짜인 척 두지 않는다 — 팀 CLAUDE.md §7③).
-// ============================================================
 'use client';
 
-import { useState } from 'react';
-import type { DocType, ScanResult, ScanStreamEvent } from '@/lib/types';
-import { useAppStore } from '@/lib/store';
-import { PACK_TASKS } from '@/lib/knowledge/tasks';
-import { MOCK_SCAN_RESULT } from '@/lib/mock';
-import { RISKY_LEASE_SAMPLE, SAFE_LEASE_SAMPLE } from '@/lib/samples/lease';
-import { AnalysisChecklist } from '@/components/viewer/AnalysisChecklist';
-import { ScanReport } from '@/components/viewer/ScanReport';
+// ============================================================
+// /diagnose 화면
+// - 16문항 진행 → /api/diagnose 호출 → 결과 카드 렌더링
+// - 결과는 localStorage('unmask_vuln_profile')에 저장 → 판독 화면(컷3)에서 재사용
+// - 사이버 시큐리티 테마: 다크 배경 + 일렉트릭 그린 포인트 + 네온 레드/앰버/그린
+// ============================================================
 
-const DOC_TYPE_LABEL: Record<DocType, string> = {
-  lease: '전월세 계약서',
-  labor: '근로·알바 계약서',
-  terms: '약관·독소조항',
-  message: '문자 (스미싱/피싱)',
+import { useEffect, useMemo, useState } from 'react';
+import { QUESTIONS } from '@/lib/diagnosis/questions';
+import type { VulnAxes, VulnProfile } from '@/lib/types';
+
+const STORAGE_KEY = 'unmask_vuln_profile';
+
+type Step = 'intro' | 'quiz' | 'loading' | 'result' | 'error';
+
+const AXIS_META: Record<keyof VulnAxes, { label: string; color: string; glow: string }> = {
+  authority: { label: '권위 반응', color: '#ffb020', glow: 'rgba(255,176,32,0.45)' },
+  urgency: { label: '시간압박 반응', color: '#ff3b56', glow: 'rgba(255,59,86,0.45)' },
+  greed: { label: '이득 유혹 반응', color: '#c084fc', glow: 'rgba(192,132,252,0.45)' },
+  verify: { label: '검증 습관', color: '#39ff14', glow: 'rgba(57,255,20,0.45)' },
 };
 
-type Stage = 'idle' | 'triage' | 'full';
+export default function DiagnosePage() {
+  const [step, setStep] = useState<Step>('intro');
+  const [index, setIndex] = useState(0);
+  const [answers, setAnswers] = useState<number[]>([]);
+  const [profile, setProfile] = useState<VulnProfile | null>(null);
+  const [errorMsg, setErrorMsg] = useState<string>('');
 
-export default function ScanPage() {
-  const profile = useAppStore((s) => s.profile);
-  const [docType, setDocType] = useState<DocType>('lease');
-  const [text, setText] = useState('');
-  const [stage, setStage] = useState<Stage>('idle');
-  const [result, setResult] = useState<ScanResult | null>(null);
-  const [isMock, setIsMock] = useState(false);
+  // 이전에 진단한 결과가 있으면 표시
+  useEffect(() => {
+    const saved = localStorage.getItem(STORAGE_KEY);
+    if (saved) {
+      try {
+        setProfile(JSON.parse(saved));
+      } catch {
+        /* 무시 — 손상된 데이터면 새로 진단하면 됨 */
+      }
+    }
+  }, []);
 
-  const pack = PACK_TASKS[docType];
-  const loading = stage === 'triage';
+  const progress = useMemo(
+    () => Math.round((index / QUESTIONS.length) * 100),
+    [index]
+  );
 
-  async function handleSubmit() {
-    setStage('triage');
-    setResult(null);
-    setIsMock(false);
+  function startQuiz() {
+    setAnswers([]);
+    setIndex(0);
+    setStep('quiz');
+  }
 
+  async function submitAnswers(finalAnswers: number[]) {
+    setStep('loading');
     try {
-      const res = await fetch('/api/scan', {
+      const res = await fetch('/api/diagnose', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ text, docType, profile: profile ?? undefined }),
+        body: JSON.stringify({ answers: finalAnswers }),
       });
-      if (!res.body) throw new Error('no stream body');
-
-      const reader = res.body.getReader();
-      const decoder = new TextDecoder();
-      let buffer = '';
-      let lastStage: Stage = 'idle';
-
-      while (true) {
-        const { done, value } = await reader.read();
-        if (done) break;
-        buffer += decoder.decode(value, { stream: true });
-
-        const chunks = buffer.split('\n\n');
-        buffer = chunks.pop() ?? '';
-        for (const chunk of chunks) {
-          if (!chunk.startsWith('data: ')) continue;
-          const event = JSON.parse(chunk.slice(6)) as ScanStreamEvent;
-          lastStage = event.stage;
-          setStage(event.stage);
-          setResult(event.result);
-        }
+      if (!res.ok) {
+        const err = await res.json().catch(() => ({}));
+        throw new Error(err.error || '진단 서버 오류');
       }
-
-      // 서버가 에러를 삼키고 빈 스트림으로 닫는 경우가 있어(API 키 누락·호출 실패 등),
-      // 이벤트가 하나도 안 온 상태로 스트림이 끝나면 실패로 처리한다.
-      // 이 처리가 없으면 화면이 "검사 중"에서 영원히 멈춘다.
-      if (lastStage === 'idle') throw new Error('스트림이 결과 없이 종료됨');
-      // 트리아지까지만 오고 정밀 분석이 실패한 경우 — 있는 결과라도 완료로 마감한다.
-      if (lastStage !== 'full') setStage('full');
-    } catch (err) {
-      console.error('[scan] falling back to mock:', err);
-      setStage('full');
-      setResult(MOCK_SCAN_RESULT);
-      setIsMock(true);
+      const data: VulnProfile = await res.json();
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(data));
+      setProfile(data);
+      setStep('result');
+    } catch (e) {
+      setErrorMsg(e instanceof Error ? e.message : '알 수 없는 오류');
+      setStep('error');
     }
   }
 
-  return (
-    <main className="mx-auto flex w-full max-w-2xl flex-1 flex-col gap-6 px-6 py-12">
-      <h1 className="text-2xl font-bold">계약서 판독</h1>
+  function selectOption(score: number) {
+    const next = [...answers, score];
+    setAnswers(next);
+    if (index + 1 < QUESTIONS.length) {
+      setIndex(index + 1);
+    } else {
+      submitAnswers(next);
+    }
+  }
 
-      <div className="flex gap-2">
-        {(Object.keys(DOC_TYPE_LABEL) as DocType[]).map((dt) => (
+  function goBack() {
+    if (index === 0) return;
+    setAnswers(answers.slice(0, -1));
+    setIndex(index - 1);
+  }
+
+  function retake() {
+    setProfile(null);
+    localStorage.removeItem(STORAGE_KEY);
+    startQuiz();
+  }
+
+  return (
+    <main className="min-h-screen bg-[#05070a] text-gray-100 flex items-center justify-center px-4 py-10">
+      <div className="w-full max-w-md">
+        {step === 'intro' && !profile && <IntroCard onStart={startQuiz} />}
+        {step === 'intro' && profile && (
+          <ResultCard profile={profile} onRetake={retake} />
+        )}
+        {step === 'quiz' && (
+          <QuizCard
+            index={index}
+            progress={progress}
+            onSelect={selectOption}
+            onBack={goBack}
+          />
+        )}
+        {step === 'loading' && <LoadingCard />}
+        {step === 'result' && profile && (
+          <ResultCard profile={profile} onRetake={retake} />
+        )}
+        {step === 'error' && (
+          <ErrorCard message={errorMsg} onRetry={() => setStep('quiz')} />
+        )}
+      </div>
+    </main>
+  );
+}
+
+// ------------------------------------------------------------
+// 인트로
+// ------------------------------------------------------------
+function IntroCard({ onStart }: { onStart: () => void }) {
+  return (
+    <div className="rounded-2xl border border-[#39ff14]/25 bg-[#0a0e14] p-8 shadow-[0_0_40px_rgba(57,255,20,0.08)]">
+      <p className="mb-2 text-xs tracking-[0.3em] text-[#39ff14] font-mono">UNMASK // DIAGNOSIS</p>
+      <h1 className="mb-4 text-2xl font-bold leading-snug">
+        당신의 사기 방어 유형은?
+      </h1>
+      <p className="mb-8 text-sm leading-relaxed text-gray-400">
+        16개의 질문으로 권위·시간압박·이득 유혹에 대한 반응과 검증 습관을 분석합니다.
+        결과에는 MBTI 매칭과 캐릭터 타이틀이 함께 제공됩니다. 약 2분 소요.
+      </p>
+      <button
+        onClick={onStart}
+        className="w-full rounded-xl bg-[#39ff14] py-3 font-bold text-black transition hover:brightness-110 active:scale-[0.98]"
+      >
+        진단 시작하기
+      </button>
+    </div>
+  );
+}
+
+// ------------------------------------------------------------
+// 문항 진행
+// ------------------------------------------------------------
+function QuizCard({
+  index,
+  progress,
+  onSelect,
+  onBack,
+}: {
+  index: number;
+  progress: number;
+  onSelect: (score: number) => void;
+  onBack: () => void;
+}) {
+  const q = QUESTIONS[index];
+  return (
+    <div className="rounded-2xl border border-gray-800 bg-[#0a0e14] p-6">
+      <div className="mb-6 flex items-center justify-between text-xs font-mono text-gray-500">
+        <span>
+          {index + 1} / {QUESTIONS.length}
+        </span>
+        <span className="text-[#39ff14]">{progress}%</span>
+      </div>
+      <div className="mb-6 h-1.5 w-full overflow-hidden rounded-full bg-gray-800">
+        <div
+          className="h-full rounded-full bg-[#39ff14] transition-all duration-300"
+          style={{ width: `${progress}%` }}
+        />
+      </div>
+
+      <h2 className="mb-6 text-lg font-semibold leading-relaxed">{q.text}</h2>
+
+      <div className="space-y-3">
+        {q.options.map((opt, i) => (
           <button
-            key={dt}
-            type="button"
-            onClick={() => setDocType(dt)}
-            className={`rounded-full px-3 py-1 text-sm ${
-              docType === dt
-                ? 'bg-neutral-900 text-white dark:bg-white dark:text-neutral-900'
-                : 'border border-neutral-300 dark:border-neutral-700'
-            }`}
+            key={i}
+            onClick={() => onSelect(opt.score)}
+            className="w-full rounded-xl border border-gray-800 bg-[#0d1219] px-4 py-3 text-left text-sm text-gray-200 transition hover:border-[#39ff14]/50 hover:bg-[#101720] active:scale-[0.99]"
           >
-            {DOC_TYPE_LABEL[dt]}
+            {opt.label}
           </button>
         ))}
       </div>
 
-      <textarea
-        value={text}
-        onChange={(e) => setText(e.target.value)}
-        placeholder="계약서 조항을 붙여넣으세요 (핵심 조항 위주로, 전문을 다 넣지 않아도 됩니다)"
-        className="h-40 rounded-xl border border-neutral-300 p-3 text-sm dark:border-neutral-700 dark:bg-neutral-950"
-      />
-
-      {/* 데모용 샘플 불러오기 — 발표 때 붙여넣기 실수를 없애기 위한 버튼 */}
-      {docType === 'lease' && (
-        <div className="flex items-center gap-2 text-xs">
-          <span className="text-neutral-400">샘플:</span>
-          <button
-            type="button"
-            onClick={() => setText(RISKY_LEASE_SAMPLE)}
-            className="rounded-full border border-neutral-300 px-3 py-1 hover:bg-neutral-100 dark:border-neutral-700 dark:hover:bg-neutral-900"
-          >
-            위험한 계약서
-          </button>
-          <button
-            type="button"
-            onClick={() => setText(SAFE_LEASE_SAMPLE)}
-            className="rounded-full border border-neutral-300 px-3 py-1 hover:bg-neutral-100 dark:border-neutral-700 dark:hover:bg-neutral-900"
-          >
-            안전한 계약서
-          </button>
-        </div>
+      {index > 0 && (
+        <button
+          onClick={onBack}
+          className="mt-6 text-xs text-gray-500 hover:text-gray-300"
+        >
+          ← 이전 질문
+        </button>
       )}
+    </div>
+  );
+}
 
+// ------------------------------------------------------------
+// 로딩
+// ------------------------------------------------------------
+function LoadingCard() {
+  return (
+    <div className="rounded-2xl border border-gray-800 bg-[#0a0e14] p-10 text-center">
+      <div className="mx-auto mb-4 h-8 w-8 animate-spin rounded-full border-2 border-[#39ff14] border-t-transparent" />
+      <p className="font-mono text-sm text-gray-400">유형 분석 중...</p>
+    </div>
+  );
+}
+
+// ------------------------------------------------------------
+// 에러
+// ------------------------------------------------------------
+function ErrorCard({ message, onRetry }: { message: string; onRetry: () => void }) {
+  return (
+    <div className="rounded-2xl border border-[#ff3b56]/40 bg-[#0a0e14] p-8 text-center">
+      <p className="mb-4 font-mono text-sm text-[#ff3b56]">진단 실패</p>
+      <p className="mb-6 text-sm text-gray-400">{message}</p>
       <button
-        type="button"
-        onClick={handleSubmit}
-        disabled={!text.trim() || loading}
-        className="self-start rounded-full bg-neutral-900 px-6 py-3 text-white disabled:opacity-40 dark:bg-white dark:text-neutral-900"
+        onClick={onRetry}
+        className="rounded-xl border border-gray-700 px-5 py-2 text-sm text-gray-200 hover:border-[#39ff14]/50"
       >
-        판독하기
+        다시 시도
       </button>
+    </div>
+  );
+}
 
-      {stage !== 'idle' && (
-        <div className="rounded-xl border border-neutral-200 p-4 dark:border-neutral-800">
-          <p className="mb-3 text-sm font-medium text-neutral-500">
-            {loading ? '검사 중입니다…' : '검사 완료'}
-          </p>
-          <AnalysisChecklist tasks={pack.tasks} stage={stage} />
+// ------------------------------------------------------------
+// 결과 카드 — 스크린샷 찍고 싶은 비주얼
+// ------------------------------------------------------------
+function ResultCard({
+  profile,
+  onRetake,
+}: {
+  profile: VulnProfile;
+  onRetake: () => void;
+}) {
+  const isDefensive = profile.category === 'defensive';
+  const accent = isDefensive ? '#39ff14' : '#ff3b56';
+  const accentGlow = isDefensive ? 'rgba(57,255,20,0.25)' : 'rgba(255,59,86,0.25)';
+  const list = isDefensive ? profile.strengths ?? [] : profile.weakAgainst;
+  const listLabel = isDefensive ? '특히 강한 방어 포인트' : '특히 취약한 수법';
+
+  return (
+    <div id="unmask-result-card" className="space-y-4">
+      <div
+        className="rounded-2xl border p-7"
+        style={{
+          borderColor: `${accent}55`,
+          background: 'linear-gradient(180deg,#0a0e14 0%,#070a0f 100%)',
+          boxShadow: `0 0 45px ${accentGlow}`,
+        }}
+      >
+        {/* 상단 배지 */}
+        <div className="mb-5 flex items-center justify-between">
+          <span className="font-mono text-[10px] tracking-[0.25em] text-gray-500">
+            UNMASK RESULT
+          </span>
+          <span
+            className="rounded-full px-3 py-1 text-[10px] font-bold tracking-wide"
+            style={{ color: accent, border: `1px solid ${accent}55`, background: `${accent}12` }}
+          >
+            {isDefensive ? '🛡 방어형' : '⚠ 취약형'}
+          </span>
         </div>
-      )}
 
-      {result && (
-        <>
-          {isMock && (
-            <p className="rounded-lg bg-yellow-100 px-3 py-2 text-xs text-yellow-800 dark:bg-yellow-950 dark:text-yellow-300">
-              ⚠️ 목업 데이터입니다 (API 연결 전 화면 확인용)
-            </p>
-          )}
-          <ScanReport result={result} />
-        </>
-      )}
-    </main>
+        {/* 캐릭터 타이틀 */}
+        <p className="mb-1 text-xs font-mono text-gray-500">{profile.mbtiMatch} 페르소나</p>
+        <h1
+          className="mb-2 text-3xl font-extrabold leading-tight"
+          style={{ color: accent, textShadow: `0 0 20px ${accentGlow}` }}
+        >
+          {profile.characterTitle}
+        </h1>
+        <p className="mb-4 text-sm font-semibold text-gray-300">{profile.typeName}</p>
+        <p className="mb-6 text-sm italic text-gray-400">&ldquo;{profile.tagline}&rdquo;</p>
+
+        {/* 4축 그래프 */}
+        <div className="mb-6 space-y-3">
+          {(Object.keys(profile.axes) as (keyof VulnAxes)[]).map((axis) => {
+            const meta = AXIS_META[axis];
+            const value = profile.axes[axis];
+            return (
+              <div key={axis}>
+                <div className="mb-1 flex items-center justify-between text-xs text-gray-400">
+                  <span>{meta.label}</span>
+                  <span className="font-mono" style={{ color: meta.color }}>
+                    {value}
+                  </span>
+                </div>
+                <div className="h-2 w-full overflow-hidden rounded-full bg-gray-800">
+                  <div
+                    className="h-full rounded-full transition-all duration-500"
+                    style={{
+                      width: `${value}%`,
+                      background: meta.color,
+                      boxShadow: `0 0 8px ${meta.glow}`,
+                    }}
+                  />
+                </div>
+              </div>
+            );
+          })}
+        </div>
+
+        {/* 설명 */}
+        <p className="mb-5 text-sm leading-relaxed text-gray-300">{profile.description}</p>
+
+        {/* 취약 수법 / 방어 포인트 목록 */}
+        {list.length > 0 && (
+          <div className="mb-2 rounded-xl border border-gray-800 bg-[#0d1219] p-4">
+            <p className="mb-2 text-xs font-bold text-gray-400">{listLabel}</p>
+            <ul className="space-y-1.5">
+              {list.map((item, i) => (
+                <li key={i} className="flex items-start gap-2 text-xs text-gray-300">
+                  <span style={{ color: accent }}>▸</span>
+                  <span>{item}</span>
+                </li>
+              ))}
+            </ul>
+          </div>
+        )}
+      </div>
+
+      <div className="flex gap-3">
+        <button
+          onClick={onRetake}
+          className="flex-1 rounded-xl border border-gray-700 py-3 text-sm text-gray-300 hover:border-[#39ff14]/50"
+        >
+          다시 진단하기
+        </button>
+        <button
+          onClick={() => window.print()}
+          className="flex-1 rounded-xl bg-[#39ff14] py-3 text-sm font-bold text-black hover:brightness-110"
+        >
+          결과 저장 / 공유
+        </button>
+      </div>
+    </div>
   );
 }
