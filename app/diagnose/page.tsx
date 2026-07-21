@@ -12,6 +12,7 @@ import type { VulnAxes, VulnProfile } from '@/lib/types';
 import { QUESTIONS } from '@/lib/diagnosis/questions';
 import { useAppStore } from '@/lib/store';
 import { ANON_OWNER, FRESH_DIAGNOSIS_KEY, identityKey } from '@/components/auth/identity';
+import { renderResultCard } from '@/lib/diagnosis/resultCard';
 
 // 4축 그래프 라벨 — verify만 "높을수록 안전"인 역방향 축이라 색을 달리 칠한다
 const AXIS_LABELS: { key: keyof VulnAxes; label: string; safe: boolean }[] = [
@@ -27,6 +28,7 @@ export default function DiagnosePage() {
   const [answers, setAnswers] = useState<number[]>(new Array(QUESTIONS.length).fill(-1));
   const [result, setResult] = useState<VulnProfile | null>(null);
   const [loading, setLoading] = useState(false);
+  const [saving, setSaving] = useState(false);
 
   const answered = answers.filter((a) => a >= 0).length;
 
@@ -62,6 +64,37 @@ export default function DiagnosePage() {
       }
     } catch {
       /* 사용자가 공유 시트를 닫은 경우 등 — 무시 */
+    }
+  }
+
+  /** 결과 카드를 PNG로 저장 — 공유 시트에 파일까지 실어 보냅니다(지원 기기 한정). */
+  async function handleSaveImage() {
+    if (!result || saving) return;
+    setSaving(true);
+    try {
+      const blob = await renderResultCard(result);
+      if (!blob) {
+        alert('이미지를 만들지 못했어요. 화면 캡처를 이용해 주세요.');
+        return;
+      }
+      const file = new File([blob], `clearguard-${result.typeCode}.png`, { type: 'image/png' });
+
+      // 파일 공유를 지원하면 공유 시트로(카톡·인스타 바로 전송 가능)
+      if (navigator.canShare?.({ files: [file] })) {
+        await navigator.share({ files: [file], title: 'ClearGuard 유형 진단' });
+        return;
+      }
+      // 아니면 다운로드
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = file.name;
+      a.click();
+      URL.revokeObjectURL(url);
+    } catch {
+      /* 사용자가 공유 시트를 닫은 경우 등 — 무시 */
+    } finally {
+      setSaving(false);
     }
   }
 
@@ -150,22 +183,41 @@ export default function DiagnosePage() {
             </div>
           )}
         </div>
-        <div className="flex w-full flex-col items-stretch gap-2 sm:flex-row sm:justify-center">
-          <Button label="내 유형 맞춤 계약서 판독하러 가기" variant="primary" size="lg" href="/scan" />
-          <button
-            type="button"
-            onClick={handleShare}
-            className="rounded-xl border border-neutral-300 px-5 py-3 text-sm font-bold text-neutral-700 dark:border-neutral-700 dark:text-neutral-300"
-          >
-            결과 공유하기
-          </button>
-          <button
-            type="button"
-            onClick={handleRetake}
-            className="rounded-xl border border-neutral-300 px-5 py-3 text-sm font-bold text-neutral-700 dark:border-neutral-700 dark:text-neutral-300"
-          >
-            다시 검사하기
-          </button>
+        {/* 주 버튼은 한 줄 전폭, 보조 버튼 3개는 가로로 균등 분할 —
+            셋을 한 줄에 욱여넣으면 "결과 공\n유하기"처럼 어색하게 끊깁니다. */}
+        <div className="flex w-full flex-col gap-2">
+          <Button
+            label="내 유형 맞춤 계약서 판독하러 가기"
+            variant="primary"
+            size="lg"
+            width="100%"
+            href="/scan"
+          />
+          <div className="grid grid-cols-3 gap-2">
+            <button
+              type="button"
+              onClick={handleShare}
+              className="whitespace-nowrap rounded-xl border border-neutral-300 px-2 py-3 text-sm font-bold text-neutral-700 dark:border-neutral-700 dark:text-neutral-300"
+            >
+              공유하기
+            </button>
+            <button
+              type="button"
+              onClick={handleSaveImage}
+              disabled={saving}
+              className="whitespace-nowrap rounded-xl border border-neutral-300 px-2 py-3 text-sm font-bold text-neutral-700 disabled:opacity-50 dark:border-neutral-700 dark:text-neutral-300"
+            >
+              {saving ? '저장 중…' : '이미지 저장'}
+            </button>
+            <button
+              type="button"
+              onClick={handleRetake}
+              className="whitespace-nowrap rounded-xl border border-neutral-300 px-2 py-3 text-sm font-bold text-neutral-700 dark:border-neutral-700 dark:text-neutral-300"
+            >
+              다시 검사
+            </button>
+          </div>
+          <Button label="내 유형 맞춤 학습 시작하기" variant="secondary" width="100%" href="/train" />
         </div>
       </main>
     );
@@ -178,7 +230,11 @@ export default function DiagnosePage() {
       <div className="space-y-6">
         {QUESTIONS.map((q, qi) => (
           <div key={q.id}>
-            <p className="mb-2 font-medium">{q.text}</p>
+            {/* 질문은 선택지보다 크게 — 스크롤 중에 질문 단위가 눈에 먼저 들어오도록 */}
+            <p className="mb-3 flex gap-2 text-[17px] font-bold leading-snug">
+              <span className="shrink-0 text-[var(--color-text-muted,#8a8a80)]">Q{qi + 1}.</span>
+              <span>{q.text}</span>
+            </p>
             <div className="flex flex-col gap-2">
               {q.options.map((opt, oi) => (
                 <SelectableCard
@@ -190,7 +246,20 @@ export default function DiagnosePage() {
                   }
                   padding={2}
                 >
-                  <span className="text-sm font-medium text-[var(--color-text-primary)]">{opt.label}</span>
+                  <span className="flex items-center gap-2.5 text-sm font-medium text-[var(--color-text-primary)]">
+                    {/* 선택지 번호 — 눈으로 개수를 세기 쉽고, 구두 안내(“2번 고르세요”)도 가능 */}
+                    <span
+                      aria-hidden="true"
+                      className={`grid h-[22px] w-[22px] shrink-0 place-items-center rounded-full text-[11px] font-bold ${
+                        answers[qi] === opt.score
+                          ? 'bg-[var(--color-accent,#c8f04b)] text-[#1f2412]'
+                          : 'bg-neutral-100 text-neutral-500 dark:bg-neutral-800 dark:text-neutral-400'
+                      }`}
+                    >
+                      {oi + 1}
+                    </span>
+                    <span>{opt.label}</span>
+                  </span>
                 </SelectableCard>
               ))}
             </div>
