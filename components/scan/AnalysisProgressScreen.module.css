@@ -13,13 +13,13 @@
   z-index: 10;
   top: 0;
   left: 50%;
-  display: flex;
+  display: grid;
   width: min(100%, 480px);
   height: 64px;
   box-sizing: border-box;
+  grid-template-columns: 44px minmax(0, 1fr) 44px;
   align-items: center;
-  justify-content: space-between;
-  padding: 0 20px;
+  padding: 0 12px;
   border-bottom: 1px solid #e5e5df;
   background: #f7f7f2;
   transform: translateX(-50%);
@@ -28,6 +28,7 @@
 .brand {
   display: flex;
   align-items: center;
+  justify-content: center;
   gap: 8px;
   font-size: 18px;
   font-weight: 800;
@@ -55,34 +56,33 @@
   stroke-width: 1.8;
 }
 
-.notificationIcon {
-  position: relative;
+.iconButton {
   display: grid;
-  width: 40px;
-  height: 40px;
+  width: 44px;
+  height: 44px;
   place-items: center;
+  padding: 0;
+  border: 0;
+  border-radius: 12px;
+  background: transparent;
   color: #202124;
+  cursor: pointer;
 }
 
-.notificationIcon > svg {
+.iconButton svg {
   width: 22px;
   height: 22px;
   fill: none;
   stroke: currentColor;
   stroke-linecap: round;
   stroke-linejoin: round;
-  stroke-width: 1.7;
+  stroke-width: 1.9;
 }
 
-.notificationIcon > span {
-  position: absolute;
-  top: 7px;
-  right: 8px;
-  width: 7px;
-  height: 7px;
-  border: 2px solid #f7f7f2;
-  border-radius: 50%;
-  background: #c8f04b;
+.iconButton:focus-visible,
+.cancelAction:focus-visible {
+  outline: 2px solid #c8f04b;
+  outline-offset: 2px;
 }
 
 .content {
@@ -91,8 +91,8 @@
   box-sizing: border-box;
   flex-direction: column;
   justify-content: space-between;
-  gap: 96px;
-  padding: 96px 20px 32px;
+  gap: 48px;
+  padding: 96px 20px calc(24px + env(safe-area-inset-bottom));
 }
 
 .documentCard {
@@ -101,7 +101,7 @@
   gap: 16px;
   padding: 16px;
   border: 1px solid #e5e5df;
-  border-radius: 16px;
+  border-radius: 12px;
   background: #fff;
 }
 
@@ -115,7 +115,7 @@
   gap: 7px;
   padding: 25px 10px 10px;
   overflow: hidden;
-  border: 1px solid #c3c8bc;
+  border: 1px solid #c6c7c1;
   border-radius: 8px;
   background: #f7f7f2;
 }
@@ -126,8 +126,8 @@
   right: -1px;
   width: 18px;
   height: 18px;
-  border-bottom: 1px solid #c3c8bc;
-  border-left: 1px solid #c3c8bc;
+  border-bottom: 1px solid #c6c7c1;
+  border-left: 1px solid #c6c7c1;
   background: #fff;
 }
 
@@ -136,7 +136,7 @@
   width: 100%;
   height: 4px;
   border-radius: 2px;
-  background: #c3c8bc;
+  background: #c6c7c1;
 }
 
 .documentLineShort {
@@ -168,39 +168,22 @@
   line-height: 27px;
 }
 
-.progressBlock {
-  margin-top: 40px;
-}
-
-.progressTrack {
-  width: 100%;
-  height: 8px;
+.srOnly {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  margin: -1px;
+  padding: 0;
   overflow: hidden;
-  border-radius: 999px;
-  background: #e5e5df;
-}
-
-.progressTrack span {
-  display: block;
-  width: 45%;
-  height: 100%;
-  border-radius: inherit;
-  background: #c8f04b;
-}
-
-.progressBlock p {
-  margin: 12px 0 0;
-  color: #57624a;
-  font-size: 14px;
-  font-weight: 600;
-  line-height: 21px;
-  text-align: center;
+  clip: rect(0 0 0 0);
+  border: 0;
+  white-space: nowrap;
 }
 
 .steps {
   display: grid;
   gap: 24px;
-  margin: 48px 0 0;
+  margin: 44px 0 0;
   padding: 0;
   list-style: none;
 }
@@ -223,7 +206,7 @@
   left: 13px;
   width: 1px;
   height: 24px;
-  background: #c3c8bc;
+  background: #c6c7c1;
   content: "";
 }
 
@@ -234,50 +217,133 @@
   box-sizing: border-box;
   flex: 0 0 28px;
   place-items: center;
-  border: 1px solid #747971;
+  border: 1px solid #c6c7c1;
   border-radius: 50%;
   background: #fff;
 }
 
 .completedStep .stepIcon {
-  border-color: #c8f04b;
-  background: #c8f04b;
+  border-color: #202124;
+  background: #202124;
 }
 
 .completedStep svg {
   width: 18px;
   height: 18px;
   fill: none;
-  stroke: #202124;
+  stroke: #fff;
   stroke-linecap: round;
   stroke-linejoin: round;
   stroke-width: 2;
 }
 
-.activeStep {
-  color: #57624a;
-}
-
 .activeStep .stepIcon {
   border: 2px solid #c8f04b;
-  background: #fff;
 }
 
-.activeStep .stepIcon span {
-  width: 8px;
-  height: 8px;
+.spinner {
+  width: 14px;
+  height: 14px;
+  box-sizing: border-box;
+  border: 2px solid #e1f88a;
+  border-top-color: #202124;
   border-radius: 50%;
-  background: #c8f04b;
+  animation: spin 0.9s linear infinite;
+}
+
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .spinner {
+    border-color: #b1d83b;
+    border-top-color: #202124;
+    animation: none;
+  }
+}
+
+.stepChip,
+.stepChipMuted {
+  margin-left: auto;
+  padding: 3px 10px;
+  border-radius: 999px;
+  font-size: 11px;
+  font-weight: 700;
+  line-height: 16px;
+}
+
+.stepChip {
+  background: #e1f88a;
+  color: #202124;
+}
+
+.stepChipMuted {
+  border: 1px solid #e5e5df;
+  background: #fff;
+  color: #484944;
 }
 
 .steps .pendingStep {
-  color: #747971;
+  color: #484944;
   font-weight: 500;
 }
 
 .pendingStep .stepIcon {
-  border-color: #c3c8bc;
+  border-color: #c6c7c1;
   background: transparent;
+}
+
+.summaryPanel {
+  margin-top: 28px;
+  padding: 16px 18px;
+  border-radius: 12px;
+  background: #efffc0;
+}
+
+.summaryHeadline {
+  margin: 0;
+  color: #202124;
+  font-size: 14px;
+  font-weight: 700;
+  line-height: 21px;
+  word-break: keep-all;
+}
+
+.summarySub {
+  margin: 6px 0 0;
+  color: #484944;
+  font-size: 13px;
+  font-weight: 500;
+  line-height: 20px;
+  word-break: keep-all;
+}
+
+.footer {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 14px;
+}
+
+.cancelAction {
+  display: inline-flex;
+  min-height: 44px;
+  align-items: center;
+  justify-content: center;
+  padding: 0 16px;
+  border: 0;
+  border-radius: 12px;
+  background: transparent;
+  color: #484944;
+  font-size: 14px;
+  font-weight: 600;
+  line-height: 21px;
+  text-decoration: underline;
+  text-underline-offset: 3px;
+  cursor: pointer;
 }
 
 .privacy {
@@ -285,13 +351,12 @@
   width: fit-content;
   max-width: 100%;
   align-items: center;
-  align-self: center;
   gap: 8px;
   margin: 0;
   padding: 9px 14px;
-  border: 1px solid #c3c8bc;
+  border: 1px solid #c6c7c1;
   border-radius: 999px;
-  color: #57624a;
+  color: #484944;
   font-size: 12px;
   font-weight: 600;
   line-height: 18px;
@@ -310,8 +375,7 @@
 }
 
 @media (max-width: 359px) {
-  .content,
-  .header {
+  .content {
     padding-right: 16px;
     padding-left: 16px;
   }
