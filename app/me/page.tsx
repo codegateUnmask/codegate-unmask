@@ -168,7 +168,7 @@ export default function MePage() {
         </List>
       </section>
 
-      <p className={styles.version}>unmask demo v0.1</p>
+      <p className={styles.version}>ClearGuard demo v0.1</p>
     </main>
   );
 }

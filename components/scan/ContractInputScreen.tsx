@@ -110,7 +110,7 @@ export function ContractInputScreen({
         ) : (
           <span className={styles.iconButton} aria-hidden="true" />
         )}
-        <h1 className={styles.logo}>unmask</h1>
+        <h1 className={styles.logo}>ClearGuard</h1>
         <span className={styles.iconButton} aria-hidden="true" />
       </header>
 

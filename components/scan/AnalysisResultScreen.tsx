@@ -141,7 +141,7 @@ export default function AnalysisResultScreen({
           <span className={styles.brandIcon}>
             <ShieldIcon />
           </span>
-          <span>unmask</span>
+          <span>ClearGuard</span>
         </span>
         <span className={styles.headerIcon} aria-hidden="true" />
       </header>

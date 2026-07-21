@@ -63,7 +63,7 @@ export default function ScanReport({ status, stage, srcText, result, error }: Pr
       <div className="scanline flex items-center gap-3 rounded-xl border border-[var(--line)] bg-white px-4 py-3">
         <span className="h-2.5 w-2.5 animate-pulse rounded-full bg-[var(--ink)]" />
         <span className="font-mono text-[13.5px] font-bold tracking-wider text-[var(--ink)]">
-          UNMASKING… 조항을 벗기는 중
+          SCANNING… 조항을 벗기는 중
         </span>
       </div>
     );

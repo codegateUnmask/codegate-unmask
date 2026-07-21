@@ -107,7 +107,7 @@ export default function PremiumPage() {
         const res = await fetch('/api/pay/kakao/ready', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ planId: plan.id, itemName: `unmask ${plan.name}`, amount: plan.amount, orderId }),
+          body: JSON.stringify({ planId: plan.id, itemName: `ClearGuard ${plan.name}`, amount: plan.amount, orderId }),
         });
         const d = await res.json();
         if (!d.demo && d.tid) {
@@ -142,7 +142,7 @@ export default function PremiumPage() {
     <main className="mx-auto max-w-3xl px-5 pb-24 pt-9">
       <header className="mb-8">
         <p className="font-mono text-[13px] font-bold tracking-[0.22em] text-[var(--ink-soft)]">
-          UNMASK PREMIUM
+          CLEARGUARD PREMIUM
         </p>
         <h1 className="mt-1 text-[28px] font-extrabold leading-tight text-[var(--ink)]">
           위험을 <span className="hl-brand">먼저 아는</span> 사람들의 선택

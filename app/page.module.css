@@ -16,34 +16,19 @@
   width: 100%;
   box-sizing: border-box;
   align-items: center;
-  gap: 8px;
   padding: 48px 20px 16px;
 }
 
-.brandIcon {
-  display: grid;
-  width: 32px;
-  height: 32px;
-  flex: 0 0 32px;
-  place-items: center;
-  color: #202124;
+.brandLink {
+  display: inline-flex;
+  align-items: center;
+  color: inherit;
+  text-decoration: none;
 }
 
-.brandIcon svg {
-  width: 32px;
-  height: 32px;
-  fill: none;
-  stroke: currentColor;
-  stroke-linecap: round;
-  stroke-linejoin: round;
-  stroke-width: 1.8;
-}
-
-.brand {
-  font-size: 20px;
-  font-weight: 800;
-  letter-spacing: -0.04em;
-  line-height: 32px;
+.brandLink:focus-visible {
+  outline: 2px solid #202124;
+  outline-offset: 4px;
 }
 
 .hero {
@@ -59,20 +44,26 @@
   display: flex;
   flex-direction: column;
   align-items: center;
-  padding: 32px 20px 40px;
+  padding: 24px 20px 40px;
   text-align: center;
 }
 
-.illustration {
-  width: 256px;
-  height: 256px;
-  flex: 0 0 256px;
-  /* Stitch 산출물이 구글 CDN 핫링크였음 — 데모 당일 외부 CDN 장애·핫링크
-     차단 위험이 있어 public/으로 내려받아 자체 호스팅 (512x279 JPEG, 22KB) */
-  background-image: url("/hero-illustration.jpg");
-  background-position: center;
-  background-repeat: no-repeat;
-  background-size: contain;
+.logoHero {
+  display: grid;
+  width: min(260px, 72vw);
+  aspect-ratio: 1;
+  flex: 0 0 auto;
+  place-items: center;
+  border: 1px solid rgba(22, 32, 44, 0.08);
+  border-radius: 40px;
+  background:
+    radial-gradient(circle at 50% 30%, rgba(6, 182, 212, 0.14), transparent 56%),
+    linear-gradient(180deg, rgba(37, 99, 235, 0.08), rgba(255, 255, 255, 0.96));
+  box-shadow: 0 24px 60px rgba(22, 32, 44, 0.08);
+}
+
+.logoHeroMark {
+  transform: translateY(2px);
 }
 
 .introduction h1 {

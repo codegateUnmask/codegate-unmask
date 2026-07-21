@@ -1,16 +1,7 @@
 import Link from 'next/link';
 import { ClickableCard } from '@astryxdesign/core/ClickableCard';
 import styles from './page.module.css';
-
-function ShieldLockedIcon() {
-  return (
-    <svg viewBox="0 0 32 32" aria-hidden="true">
-      <path d="M16 2.75 27 7v7.7c0 6.65-4.52 12.24-11 14.55C9.52 26.94 5 21.35 5 14.7V7l11-4.25Z" />
-      <rect x="11" y="14" width="10" height="8" rx="2" />
-      <path d="M13.5 14v-1.5a2.5 2.5 0 0 1 5 0V14" />
-    </svg>
-  );
-}
+import { ClearGuardLogo } from '@/components/brand/ClearGuardLogo';
 
 function DocumentScannerIcon() {
   return (
@@ -76,18 +67,16 @@ export default function Home() {
   return (
     <main className={styles.screen}>
       <header className={styles.header}>
-        {/* 로고 탭 → 첫 화면. display:contents로 감싸 기존 flex 레이아웃 무변경. */}
-        <Link href="/" aria-label="unmask 홈으로" style={{ display: 'contents', color: 'inherit', textDecoration: 'none' }}>
-          <span className={styles.brandIcon}>
-            <ShieldLockedIcon />
-          </span>
-          <span className={styles.brand}>unmask</span>
+        <Link href="/" aria-label="ClearGuard 홈으로" className={styles.brandLink}>
+          <ClearGuardLogo variant="lockup" size={30} />
         </Link>
       </header>
 
       <section className={styles.hero} aria-labelledby="start-title">
         <div className={styles.introduction}>
-          <div className={styles.illustration} role="img" aria-label="보호된 계약서 일러스트" />
+          <div className={styles.logoHero} role="img" aria-label="ClearGuard 로고">
+            <ClearGuardLogo variant="mark" size={156} className={styles.logoHeroMark} />
+          </div>
           <h1 id="start-title">
             어려운 계약서,
             <br />
