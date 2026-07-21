@@ -21,7 +21,6 @@ export type RiskLevel = 'danger' | 'warning' | 'safe';
  */
 export type DocType = 'lease' | 'labor' | 'service' | 'terms' | 'message';
 
-/** SSE 분석 단계 — 트리아지(Haiku, 빠름) 먼저, 정밀(Opus)이 이어붙음 */
 export type AnalysisStage = 'triage' | 'full';
 
 // ------------------------------------------------------------

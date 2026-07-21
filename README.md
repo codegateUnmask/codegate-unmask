@@ -6,7 +6,7 @@
 
 ```bash
 npm install
-cp .env.example .env.local   # ANTHROPIC_API_KEY 채우기
+cp .env.example .env.local   # OPENAI_API_KEY 채우기
 npm run dev
 ```
 
@@ -26,7 +26,7 @@ http://localhost:3000 에서 확인. `/diagnose`(진단), `/scan`(판독) 화면
 
 ## 배포 — Vercel (GitHub Pages 아님)
 
-**GitHub Pages로는 배포할 수 없습니다.** 이 앱은 `/api/scan`, `/api/diagnose` 같은 서버 API 라우트를 쓰는데 GitHub Pages는 정적 파일만 호스팅합니다. Claude API 키도 서버에서만 써야 하므로(브라우저에 노출되면 키 유출) 서버가 도는 Vercel이 필요합니다.
+**GitHub Pages로는 배포할 수 없습니다.** 이 앱은 `/api/scan`, `/api/diagnose` 같은 서버 API 라우트를 쓰는데 GitHub Pages는 정적 파일만 호스팅합니다. OpenAI API 키도 서버에서만 써야 하므로(브라우저에 노출되면 키 유출) 서버가 도는 Vercel이 필요합니다.
 
 ⚠️ **Vercel은 GitHub 조직 소유 레포를 무료(Hobby) 등급으로 배포해주지 않습니다** — 유료 팀(Pro)을 요구합니다. 그래서 조직 레포는 협업·PR 용도로 그대로 두고, **배포는 개인 계정의 미러 레포에서** 합니다.
 
@@ -50,7 +50,7 @@ npm run sync-deploy    # git pull origin main && git push personal main
 1. https://vercel.com 에 GitHub 계정으로 로그인
 2. **Add New… → Project** → `ChoHyeonChan/codegate-unmask-deploy` 선택 → Import
 3. Framework는 Next.js로 자동 인식됨 — 빌드 설정 그대로 두기
-4. **Environment Variables**에 `ANTHROPIC_API_KEY` 추가 (키가 아직 없으면 비워둬도 됩니다 — 목업으로 화면은 동작합니다)
+4. **Environment Variables**에 `OPENAI_API_KEY` 추가 (키가 아직 없으면 비워둬도 됩니다 — 목업으로 화면은 동작합니다)
 5. Deploy
 
 ## 데이터베이스 — 현재 쓰지 않습니다

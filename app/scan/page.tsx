@@ -1,4 +1,3 @@
-// [B 담당] /scan — 판독 화면 (데모 컷2)
 'use client';
 
 import { useScanStore } from '@/stores/scanStore';
