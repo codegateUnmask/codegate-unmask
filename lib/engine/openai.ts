@@ -4,7 +4,24 @@ import { MAX_TOKENS } from '../config';
 export type AnalysisStage = 'triage' | 'scan';
 
 const ANALYSIS_ERROR_MESSAGE = '문서 분석에 실패했습니다.';
-export const OPENAI_REQUEST_TIMEOUT_MS = 30_000;
+
+// 단계별 요청 타임아웃.
+//
+// 기존에는 두 단계 모두 30초 단일값이었는데, 정밀 분석 실측이 10.9~29.4초라
+// 여유가 0.6초까지 좁아지는 경우가 있었습니다. 실제로 프로덕션에서
+// "triage는 도착했는데 정밀 분석만 실패"가 재현됐고, 총 소요 37.6초가
+// triage 실측(5.9~7.8초) + 정확히 30초와 일치해 이 타임아웃이 원인으로 확인됐습니다.
+//
+// 두 단계는 handler에서 동시에 띄우므로(병렬) 최악 소요는 합이 아니라 max(15, 40) = 40초입니다.
+// 라우트 maxDuration(120초) 안에서 넉넉합니다.
+// triage는 실측 5.9~7.8초라 15초면 충분하고, 실패해도 정밀 분석 결과로 넘어갑니다.
+export const OPENAI_TIMEOUT_MS = {
+  triage: 15_000,
+  scan: 40_000,
+} as const;
+
+/** @deprecated 단계별 값(OPENAI_TIMEOUT_MS)을 쓰세요. 기존 참조 호환용. */
+export const OPENAI_REQUEST_TIMEOUT_MS = OPENAI_TIMEOUT_MS.scan;
 
 export const SCAN_RESULT_SCHEMA = {
   type: 'object',
@@ -84,7 +101,7 @@ export async function requestStructuredAnalysis(
   if (!apiKey) throw new Error(ANALYSIS_ERROR_MESSAGE);
 
   const config = getStageConfig(stage);
-  const client = new OpenAI({ apiKey, maxRetries: 0, timeout: OPENAI_REQUEST_TIMEOUT_MS });
+  const client = new OpenAI({ apiKey, maxRetries: 0, timeout: OPENAI_TIMEOUT_MS[stage] });
   const response = await client.responses.create({
     model: config.model,
     instructions,

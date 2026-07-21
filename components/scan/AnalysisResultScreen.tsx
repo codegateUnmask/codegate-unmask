@@ -1,5 +1,12 @@
-import type { RiskLevel, ScanResult } from '@/lib/types';
+'use client';
+
+import GlossaryText from '@/components/viewer/GlossaryText';
+import { riskPercent, segmentDoc } from '@/lib/risk';
+import type { Finding, RiskLevel, ScanResult } from '@/lib/types';
 import styles from './AnalysisResultScreen.module.css';
+
+/** mock.scan의 확장 필드 — 협상이 어려울 때의 차선책 */
+type FindingWithCompromise = Finding & { compromise?: string };
 
 function BackIcon() {
   return (
@@ -80,9 +87,20 @@ const BADGE_LABEL: Record<'danger' | 'warning', string> = {
   warning: '주의',
 };
 
+/** 원문 형광펜 색 (조항 카드의 MARK_CLASS와 별개 — 원문은 안전 구간도 칠함) */
+const SRC_MARK: Record<RiskLevel, string> = {
+  danger: styles.srcDanger,
+  warning: styles.srcWarning,
+  safe: styles.srcSafe,
+};
+
 export interface AnalysisResultScreenProps {
   result: ScanResult;
   docTypeLabel: string;
+  /** 판독에 사용한 원문 — 형광펜 표시용 */
+  srcText?: string;
+  /** 1차(triage) 결과를 먼저 보여주는 중이고 정밀 분석이 아직 진행 중인지 */
+  refining?: boolean;
   onBack: () => void;
   onShowRequests?: () => void;
   onShowDetail?: () => void;
@@ -91,6 +109,8 @@ export interface AnalysisResultScreenProps {
 export default function AnalysisResultScreen({
   result,
   docTypeLabel,
+  srcText,
+  refining,
   onBack,
   onShowRequests,
   onShowDetail,
@@ -101,6 +121,12 @@ export default function AnalysisResultScreen({
   );
   const hasRequests = (result.requestPhrases?.length ?? 0) > 0;
   const showDetail = onShowDetail ?? (hasRequests ? onShowRequests : undefined);
+  const counts = {
+    danger: result.findings.filter((f) => f.level === 'danger').length,
+    warning: result.findings.filter((f) => f.level === 'warning').length,
+    safe: result.findings.filter((f) => f.level === 'safe').length,
+  };
+  const pct = riskPercent(result.overallLevel, result.findings);
 
   return (
     <div className={styles.screen}>
@@ -118,6 +144,16 @@ export default function AnalysisResultScreen({
       </header>
 
       <main className={styles.content}>
+        {refining && (
+          <section className={styles.refining} role="status">
+            <span className={styles.refiningDot} aria-hidden="true" />
+            <p>
+              <strong>1차 빠른 판독 결과</strong>입니다. 정밀 분석이 진행 중이며, 끝나면 더 자세한
+              내용으로 자동 업데이트됩니다.
+            </p>
+          </section>
+        )}
+
         <section
           className={styles.summary}
           style={{ background: style.bg }}
@@ -139,10 +175,49 @@ export default function AnalysisResultScreen({
           </div>
         </section>
 
+        {/* 위험도 게이지 — 등급만으로는 안 보이는 '얼마나'를 한 눈에 */}
+        <section className={styles.gauge} aria-label="위험도">
+          <div className={styles.gaugeHead}>
+            <span className={styles.gaugeValue} style={{ color: style.iconBg }}>
+              {pct}
+              <span className={styles.gaugeUnit}>%</span>
+            </span>
+            <span className={styles.gaugeTrack}>
+              <i style={{ width: `${pct}%`, background: style.iconBg }} />
+            </span>
+          </div>
+          <p className={styles.gaugeCaption}>
+            위험도 추정치 · 위험 {counts.danger} · 주의 {counts.warning} · 안전 {counts.safe}
+          </p>
+        </section>
+
+        {/* 계약서 원문 — AI 형광펜. 어디가 문제인지 원문 위에서 바로 보여줍니다 */}
+        {srcText && (
+          <section className={styles.source} aria-label="원문 형광펜">
+            <h2 className={styles.sectionTitle}>원문에서 짚은 부분</h2>
+            <p className={styles.sourceBody}>
+              {segmentDoc(srcText, result.findings).map((seg, i) =>
+                seg.level ? (
+                  <mark key={i} className={SRC_MARK[seg.level]}>
+                    {seg.text}
+                  </mark>
+                ) : (
+                  <span key={i}>{seg.text}</span>
+                ),
+              )}
+            </p>
+            <p className={styles.sourceLegend}>
+              <b className={styles.legendDanger}>■ 위험</b> · <b className={styles.legendWarning}>■ 주의</b> ·{' '}
+              <b className={styles.legendSafe}>■ 안전</b>
+            </p>
+          </section>
+        )}
+
         {explained.length > 0 && (
           <section className={styles.findings} aria-label="발견된 독소조항">
             {explained.map((f) => {
               const level = f.level as 'danger' | 'warning';
+              const compromise = (f as FindingWithCompromise).compromise;
               return (
                 <article key={f.id} className={styles.findingCard}>
                   <header className={styles.findingHeader}>
@@ -150,19 +225,33 @@ export default function AnalysisResultScreen({
                     <h2>{f.clauseTitle || '확인이 필요한 조항'}</h2>
                   </header>
 
+                  {/* 어려운 용어에 점선 밑줄 — 누르면 쉬운 설명 (지식팩 glossary) */}
                   <blockquote className={styles.quote}>
-                    &ldquo;<mark className={MARK_CLASS[level]}>{f.quote}</mark>&rdquo;
+                    &ldquo;
+                    <mark className={MARK_CLASS[level]}>
+                      <GlossaryText text={f.quote} />
+                    </mark>
+                    &rdquo;
                   </blockquote>
 
                   <div className={styles.explanation}>
                     <h3>왜 {BADGE_LABEL[level]}한가요?</h3>
-                    <p>{f.detailedReason || f.reason}</p>
+                    <p>
+                      <GlossaryText text={f.detailedReason || f.reason} />
+                    </p>
                   </div>
 
                   {f.action && (
                     <div className={styles.suggestion}>
                       <span>지금 할 일</span>
                       <p>{f.action}</p>
+                    </div>
+                  )}
+
+                  {compromise && (
+                    <div className={styles.compromise}>
+                      <span>협상이 어렵다면 (절충안)</span>
+                      <p>{compromise}</p>
                     </div>
                   )}
 
@@ -184,6 +273,13 @@ export default function AnalysisResultScreen({
             <p className={styles.personalizedText}>{result.personalized}</p>
           </section>
         )}
+
+        {/* 법적 경계 고지 — 우리는 예/아니오를 선고하지 않는다는 원칙의 화면상 표현 */}
+        <p className={styles.disclaimer}>
+          이 판독은 법률 자문이 아닌 정보 제공입니다. 중요한 결정 전에는 전문가와 상의하세요.
+          <br />
+          무료 상담 · 대한법률구조공단 132 · 고용노동부 1350 · 주택임대차분쟁조정위원회
+        </p>
       </main>
 
       <div className={styles.bottomDock}>

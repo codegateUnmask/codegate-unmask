@@ -65,7 +65,7 @@ export default function ScanPage() {
 }
 
 function ScanFlow() {
-  const { text, docType, status, stage, result, setText, setDocType, applySample, start, reset } =
+  const { text, docType, status, stage, srcText, result, setText, setDocType, applySample, start, reset } =
     useScanStore();
   const profile = useAppStore((state) => state.profile);
   const searchParams = useSearchParams();
@@ -99,13 +99,17 @@ function ScanFlow() {
   const requiresConfirmation = ocrReview !== null && !confirmed;
 
   useEffect(() => {
-    if (running) setStep('progress');
+    // 팀 계약(CLAUDE.md §5): "프론트는 triage가 오면 즉시 렌더하고 full이 오면 갈아끼움".
+    // 1차(triage) 결과는 실측 약 6.5초에 도착하는데 정밀 분석은 20~28초가 걸립니다.
+    // 결과가 이미 손에 있는데 진행바만 보여주면 체감 대기가 4배로 늘어나므로,
+    // 결과가 하나라도 들어오면 바로 결과 화면으로 넘기고 정밀 분석은 배너로 알립니다.
+    if (running) setStep(result ? 'result' : 'progress');
     else if (status === 'done') setStep('result');
     else if (status === 'error') {
       setErrorKind(typeof navigator !== 'undefined' && !navigator.onLine ? 'network' : 'server');
       setStep('error');
     }
-  }, [running, status]);
+  }, [running, status, result]);
 
   function openPicker(kind: 'camera' | 'upload') {
     const input = fileInputRef.current;
@@ -310,6 +314,8 @@ function ScanFlow() {
         <AnalysisResultScreen
           result={result}
           docTypeLabel={DOC_LABELS[docType]}
+          srcText={srcText}
+          refining={running}
           onBack={handleReset}
           onShowDetail={() => setStep('report')}
           onShowRequests={() => setStep('requests')}

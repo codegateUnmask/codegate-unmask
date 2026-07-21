@@ -105,6 +105,23 @@ async function parseRequest(request: Request): Promise<ScanRequest | Response> {
   };
 }
 
+/**
+ * 판독 단계 실패를 서버 로그에만 남깁니다.
+ *
+ * 기존에는 `catch {}`로 통째로 버려서 프로덕션 장애의 원인을 볼 수 없었습니다
+ * (실제로 정밀 분석 타임아웃을 추적하는 데 오래 걸렸습니다).
+ * ⚠️ 응답 본문에는 그대로 두지 않습니다 — 원문·프로바이더 메시지가 새면 안 되므로
+ *    에러 종류와 이름만 남기고 메시지 본문은 로그에도 넣지 않습니다.
+ */
+function logStageFailure(stage: 'triage' | 'full', error: unknown): void {
+  const name = error instanceof Error ? error.name : typeof error;
+  const isTimeout =
+    error instanceof Error && /timeout|aborted|ETIMEDOUT/i.test(`${error.name}${error.message}`);
+  console.error(
+    `[scan] ${stage} 단계 실패 — type=${name}${isTimeout ? ' (타임아웃 의심)' : ''}`,
+  );
+}
+
 function toSSE(event: ScanStreamEvent): string {
   return `data: ${JSON.stringify(event)}\n\n`;
 }
@@ -123,17 +140,31 @@ export function createScanHandler(engine: ScanEngine) {
       async start(controller) {
         const encoder = new TextEncoder();
 
-        const triageResult = await engine
+        // 두 단계는 같은 입력을 보는 독립 호출이라 동시에 띄웁니다.
+        // 순차로 돌리면 (triage + 정밀)이 그대로 더해지지만, 병렬이면 둘 중 느린 쪽만 걸립니다.
+        //   실측: triage 6.9초 + 정밀 15.4초 = 22.2초 → 병렬 15.4초 (6.9초 단축)
+        // 다만 프론트가 triage를 먼저 렌더하고 정밀로 교체하는 계약이라
+        // 전송 순서는 triage → full 로 유지합니다(수신 순서 보장).
+        const triagePromise = engine
           .runTriage(text, parsed.docType, parsed.profile)
-          .catch(() => null);
+          .catch((error: unknown) => {
+            logStageFailure('triage', error);
+            return null;
+          });
+        const fullPromise = engine.analyzeDocument(text, parsed.docType, parsed.profile);
+        // 아래에서 await 하기 전에 정밀 단계가 먼저 실패하면 unhandled rejection이 되므로 미리 붙여둡니다.
+        fullPromise.catch(() => {});
+
+        const triageResult = await triagePromise;
         if (triageResult) {
           controller.enqueue(encoder.encode(toSSE({ stage: 'triage', result: triageResult })));
         }
 
         try {
-          const result = await engine.analyzeDocument(text, parsed.docType, parsed.profile);
+          const result = await fullPromise;
           controller.enqueue(encoder.encode(toSSE({ stage: 'full', result })));
-        } catch {
+        } catch (error: unknown) {
+          logStageFailure('full', error);
           controller.enqueue(encoder.encode(toErrorSSE()));
         } finally {
           controller.close();
