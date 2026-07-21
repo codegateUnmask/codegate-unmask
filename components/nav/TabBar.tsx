@@ -16,7 +16,7 @@ const TABS = [
 ] as const;
 
 const SQUISH = {
-  y: [0, -14, 2, 0],
+  y: [0, -8, 2, 0],
   scaleX: [1, 1.4, 0.92, 1],
   scaleY: [1, 0.6, 1.12, 1],
 };
