@@ -1,16 +1,26 @@
 'use client';
 
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { motion } from 'motion/react';
-import { Badge } from '@astryxdesign/core/Badge';
-import { Banner } from '@astryxdesign/core/Banner';
+import { Button } from '@astryxdesign/core/Button';
+import { EmptyState } from '@astryxdesign/core/EmptyState';
 import LoginSheet from '@/components/auth/LoginSheet';
 import { useAuthStore } from '@/stores/authStore';
-import { useCommunityStore } from '@/stores/communityStore';
-import { KIND_LABEL } from '@/lib/mock.community';
+import { BOARD_META, BOARD_ORDER } from '@/lib/community/shared';
+import type { BoardType, PostSummary } from '@/lib/community/shared';
+import { getClientToken } from '@/lib/community/client';
 import styles from './community.module.css';
+
+function timeAgo(iso: string): string {
+  const min = Math.floor((Date.now() - new Date(iso).getTime()) / 60000);
+  if (min < 1) return '방금 전';
+  if (min < 60) return `${min}분 전`;
+  const hr = Math.floor(min / 60);
+  if (hr < 24) return `${hr}시간 전`;
+  return `${Math.floor(hr / 24)}일 전`;
+}
 
 function HeartIcon() {
   return (
@@ -37,15 +47,43 @@ function PenIcon() {
   );
 }
 
+type FeedStatus = 'loading' | 'error' | 'ready';
+
 export default function CommunityPage() {
   const router = useRouter();
   const user = useAuthStore((s) => s.user);
-  const posts = useCommunityStore((s) => s.posts);
+  const [board, setBoard] = useState<BoardType>('scam-case');
+  const [posts, setPosts] = useState<PostSummary[]>([]);
+  const [status, setStatus] = useState<FeedStatus>('loading');
   const [isSheetOpen, setIsSheetOpen] = useState(false);
+  const [reloadKey, setReloadKey] = useState(0);
+
+  useEffect(() => {
+    let cancelled = false;
+    setStatus('loading');
+    fetch(`/api/community/posts?board=${board}`, {
+      headers: { 'x-client-token': getClientToken() },
+    })
+      .then((res) => {
+        if (!res.ok) throw new Error();
+        return res.json();
+      })
+      .then((data: PostSummary[]) => {
+        if (cancelled) return;
+        setPosts(data);
+        setStatus('ready');
+      })
+      .catch(() => {
+        if (!cancelled) setStatus('error');
+      });
+    return () => {
+      cancelled = true;
+    };
+  }, [board, reloadKey]);
 
   function handleWrite() {
     if (user) {
-      router.push('/community/new');
+      router.push(`/community/write?board=${board}`);
     } else {
       setIsSheetOpen(true);
     }
@@ -59,45 +97,85 @@ export default function CommunityPage() {
       </header>
 
       <div className={styles.banner}>
-        <Banner status="info" title="데모용 목업 데이터입니다" />
+        <div className={styles.chipRow} role="group" aria-label="게시판 선택">
+          {BOARD_ORDER.map((b) => (
+            <button
+              key={b}
+              type="button"
+              className={styles.chip}
+              aria-pressed={board === b}
+              onClick={() => setBoard(b)}
+            >
+              {BOARD_META[b].label}
+            </button>
+          ))}
+        </div>
       </div>
 
-      <ul className={styles.list}>
-        {posts.map((post, index) => (
-          <motion.li
-            key={post.id}
-            initial={{ opacity: 0, y: 10 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: index * 0.05, duration: 0.25, ease: 'easeOut' }}
-            whileTap={{ scale: 0.98 }}
-          >
-            <Link href={`/community/${post.id}`} className={styles.card}>
-              <span className={styles.cardTop}>
-                <Badge
-                  variant={post.kind === 'report' ? 'warning' : 'neutral'}
-                  label={KIND_LABEL[post.kind]}
-                />
-                {post.docTypeTag && <span className={styles.tag}>{post.docTypeTag}</span>}
-              </span>
-              <p className={styles.cardTitle}>{post.title}</p>
-              <p className={styles.cardBody}>{post.body}</p>
-              <span className={styles.cardMeta}>
-                <span className={styles.metaByline}>
-                  {post.author} · {post.createdAt}
+      {status === 'loading' && (
+        <ul className={styles.list} aria-hidden="true">
+          {[0, 1, 2].map((i) => (
+            <li key={i} className={styles.card} style={{ opacity: 0.5 }}>
+              <p className={styles.cardTitle}>&nbsp;</p>
+              <p className={styles.cardBody}>&nbsp;</p>
+            </li>
+          ))}
+        </ul>
+      )}
+
+      {status === 'error' && (
+        <EmptyState
+          isCompact
+          title="목록을 불러오지 못했어요"
+          description="네트워크 상태를 확인하고 다시 시도해주세요."
+          actions={
+            <Button label="다시 시도" variant="primary" onClick={() => setReloadKey((k) => k + 1)} />
+          }
+        />
+      )}
+
+      {status === 'ready' && posts.length === 0 && (
+        <EmptyState
+          isCompact
+          title="아직 글이 없어요"
+          description="첫 글을 남겨보세요."
+          actions={<Button label="첫 글 쓰러 가기" variant="primary" onClick={handleWrite} />}
+        />
+      )}
+
+      {status === 'ready' && posts.length > 0 && (
+        <ul className={styles.list}>
+          {posts.map((post, index) => (
+            <motion.li
+              key={post.id}
+              initial={{ opacity: 0, y: 10 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: index * 0.05, duration: 0.25, ease: 'easeOut' }}
+              whileTap={{ scale: 0.98 }}
+            >
+              <Link href={`/community/${post.id}`} className={styles.card}>
+                <span className={styles.cardTop}>
+                  <span className={styles.tag}>{BOARD_META[post.boardType].label}</span>
                 </span>
-                <span className={styles.metaCount}>
-                  <HeartIcon />
-                  {post.likes}
+                <p className={styles.cardTitle}>{post.title}</p>
+                <span className={styles.cardMeta}>
+                  <span className={styles.metaByline}>
+                    {post.nickname} · {timeAgo(post.createdAt)}
+                  </span>
+                  <span className={styles.metaCount}>
+                    <HeartIcon />
+                    {post.likeCount}
+                  </span>
+                  <span className={styles.metaCount}>
+                    <CommentIcon />
+                    {post.commentCount}
+                  </span>
                 </span>
-                <span className={styles.metaCount}>
-                  <CommentIcon />
-                  {post.comments.length}
-                </span>
-              </span>
-            </Link>
-          </motion.li>
-        ))}
-      </ul>
+              </Link>
+            </motion.li>
+          ))}
+        </ul>
+      )}
 
       <button type="button" className={styles.fixedCta} onClick={handleWrite} aria-label="사기 수법 제보 글쓰기">
         <PenIcon />
@@ -107,7 +185,7 @@ export default function CommunityPage() {
       <LoginSheet
         isOpen={isSheetOpen}
         onOpenChange={setIsSheetOpen}
-        onSuccess={() => router.push('/community/new')}
+        onSuccess={() => router.push(`/community/write?board=${board}`)}
       />
     </main>
   );
