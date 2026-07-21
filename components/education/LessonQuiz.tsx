@@ -3,9 +3,10 @@
 // 강의 상세 + 퀴즈 — [담당: 지식·데이터·인프라(D)]
 // 5문제 중 3개 이상 정답이면 수료 (pawsitive 교육센터와 같은 기준)
 
-import { useState } from 'react';
+import { useMemo, useState } from 'react';
 import { Button } from '@astryxdesign/core/Button';
-import { QUIZ_PASS_SCORE, type EduLesson } from '@/lib/education/content';
+import { QUIZ_PASS_SCORE, QUIZ_SERVE_COUNT, type EduLesson } from '@/lib/education/content';
+import { serveQuiz } from '@/lib/education/shuffle';
 
 /**
  * 본문의 **강조** 를 굵은 글씨로 바꿉니다.
@@ -33,20 +34,31 @@ interface Props {
 
 export default function LessonQuiz({ lesson, isCompleted, onPass, onClose }: Props) {
   const [phase, setPhase] = useState<'read' | 'quiz' | 'result'>('read');
-  const [picked, setPicked] = useState<number[]>(new Array(lesson.quiz.length).fill(-1));
+  // 출제 회차 — 바뀔 때마다 문제를 새로 뽑습니다(다시 풀기, 재입장).
+  const [round, setRound] = useState(0);
   const [correct, setCorrect] = useState(0);
 
-  const allAnswered = picked.every((p) => p >= 0);
+  // 문제 풀에서 매번 새로 뽑고 선지도 섞습니다.
+  // 이 컴포넌트는 강의를 열 때마다 새로 마운트되므로, 나갔다 오면 자동으로 새 문제입니다.
+  const quiz = useMemo(
+    () => serveQuiz(lesson.quiz, QUIZ_SERVE_COUNT),
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- round가 바뀔 때 의도적으로 재출제
+    [lesson.id, round],
+  );
+
+  const [picked, setPicked] = useState<number[]>(() => new Array(QUIZ_SERVE_COUNT).fill(-1));
+  const allAnswered = picked.length === quiz.length && picked.every((p) => p >= 0);
 
   function grade() {
-    const score = lesson.quiz.reduce((n, q, i) => (picked[i] === q.answer ? n + 1 : n), 0);
+    const score = quiz.reduce((n, q, i) => (picked[i] === q.answer ? n + 1 : n), 0);
     setCorrect(score);
     setPhase('result');
     if (score >= QUIZ_PASS_SCORE) onPass();
   }
 
   function retry() {
-    setPicked(new Array(lesson.quiz.length).fill(-1));
+    setRound((r) => r + 1); // 새 문제로 다시 출제
+    setPicked(new Array(QUIZ_SERVE_COUNT).fill(-1));
     setPhase('quiz');
   }
 
@@ -86,7 +98,7 @@ export default function LessonQuiz({ lesson, isCompleted, onPass, onClose }: Pro
             </div>
             <div className="mt-6">
               <Button
-                label={`퀴즈 풀기 (${lesson.quiz.length}문제 · ${QUIZ_PASS_SCORE}개 이상 정답 시 수료)`}
+                label={`퀴즈 풀기 (${QUIZ_SERVE_COUNT}문제 중 ${QUIZ_PASS_SCORE}개 이상 맞히면 수료)`}
                 variant="primary"
                 width="100%"
                 onClick={() => setPhase('quiz')}
@@ -98,7 +110,7 @@ export default function LessonQuiz({ lesson, isCompleted, onPass, onClose }: Pro
         {phase === 'quiz' && (
           <>
             <div className="space-y-5">
-              {lesson.quiz.map((q, qi) => (
+              {quiz.map((q, qi) => (
                 <div key={qi}>
                   <p className="mb-2 flex gap-2 text-[15.5px] font-bold leading-snug">
                     <span className="shrink-0 text-neutral-400">Q{qi + 1}.</span>
@@ -142,7 +154,7 @@ export default function LessonQuiz({ lesson, isCompleted, onPass, onClose }: Pro
               </button>
               <div className="flex-1">
                 <Button
-                  label={allAnswered ? '정답 확인하기' : `${picked.filter((p) => p >= 0).length}/${lesson.quiz.length} 선택됨`}
+                  label={allAnswered ? '정답 확인하기' : `${picked.filter((p) => p >= 0).length}/${quiz.length} 선택됨`}
                   variant="primary"
                   width="100%"
                   isDisabled={!allAnswered}
@@ -162,7 +174,7 @@ export default function LessonQuiz({ lesson, isCompleted, onPass, onClose }: Pro
             >
               <p className="text-3xl">{passed ? '🎓' : '📚'}</p>
               <p className={`mt-2 text-lg font-extrabold ${passed ? 'text-[#5f6b0a]' : 'text-amber-700'}`}>
-                {correct}/{lesson.quiz.length} 정답 — {passed ? '수료!' : '조금만 더!'}
+                {correct}/{quiz.length} 정답 — {passed ? '수료!' : '조금만 더!'}
               </p>
               <p className="mt-1 text-[13px] text-neutral-600 dark:text-neutral-400">
                 {passed
@@ -172,7 +184,7 @@ export default function LessonQuiz({ lesson, isCompleted, onPass, onClose }: Pro
             </div>
 
             <div className="mt-5 space-y-3">
-              {lesson.quiz.map((q, qi) => {
+              {quiz.map((q, qi) => {
                 const ok = picked[qi] === q.answer;
                 return (
                   <div key={qi} className="rounded-xl border border-neutral-200 p-3 text-sm dark:border-neutral-700">
