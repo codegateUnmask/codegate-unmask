@@ -57,7 +57,12 @@ export default function TrainPage() {
     <main className="mx-auto w-full max-w-[560px] px-5 pb-28 pt-8">
       {/* 헤더 + 진행 게이지 */}
       <section className="rounded-3xl border border-[#e4ecc6] bg-gradient-to-b from-[#f6fbe6] to-white p-6">
-        <h1 className="text-[22px] font-extrabold">🐂 흑우 탈출 훈련소</h1>
+        <h1 className="flex items-center gap-2 text-[22px] font-extrabold">
+          {/* 이모지 대신 우리 흑우 캐릭터 (러너·커서와 같은 원화) */}
+          {/* eslint-disable-next-line @next/next/no-img-element -- 장식용 소형 PNG */}
+          <img src="/cow-cursor.png" alt="" className="h-8 w-8 object-contain" />
+          흑우 탈출 훈련소
+        </h1>
         <p className="mt-1 text-[13px] text-neutral-500">
           아는 만큼 안 당합니다. 강의를 읽고 퀴즈를 통과하면 수료돼요.
         </p>

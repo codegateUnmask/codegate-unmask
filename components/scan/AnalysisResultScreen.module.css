@@ -76,7 +76,7 @@
 }
 
 .content {
-  padding: 80px 20px 128px;
+  padding: 80px 20px 192px;
 }
 
 .summary {
@@ -560,7 +560,7 @@
 .bottomDock {
   position: fixed;
   z-index: 20;
-  bottom: 0;
+  bottom: calc(64px + env(safe-area-inset-bottom));
   left: 50%;
   display: grid;
   width: min(100%, 480px);
