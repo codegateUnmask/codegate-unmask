@@ -73,7 +73,26 @@ export function scoreAnswers(answers: number[]): VulnAxes {
 }
 
 /** 4축 점수 → 16유형(MBTI 코드) 판정 */
+// 특수 유형 '전설의 흑우형' 경계값 —
+// 취약 3축이 전부 매우 높고(>=75) 검증이 매우 낮으면(<=25) 16조합보다 먼저 판정합니다.
+// 4문항×3점=12점 만점 기준 75점 = 9점 이상, 25점 = 3점 이하라 실제로 도달 가능하며,
+// 같은 답이면 항상 같은 결과가 나옵니다(순수 임계값 판정, 랜덤 없음).
+//
+// ⚠️ 이 블록이 사라지면 profileTypes.ts 의 HEUKWOO 정의가 살아 있어도
+//    17번째 유형에 영원히 도달할 수 없습니다. 머지 시 유실 주의.
+const EXTREME_HIGH = 75;
+const EXTREME_LOW = 25;
+
 export function determineType(axes: VulnAxes): string {
+  if (
+    axes.authority >= EXTREME_HIGH &&
+    axes.urgency >= EXTREME_HIGH &&
+    axes.greed >= EXTREME_HIGH &&
+    axes.verify <= EXTREME_LOW
+  ) {
+    return 'HEUKWOO';
+  }
+
   const bit = (v: number) => (v >= THRESHOLD ? '1' : '0');
   const key = `${bit(axes.authority)}${bit(axes.urgency)}${bit(axes.greed)}${bit(axes.verify)}`;
   const typeCode = PATTERN_TO_TYPE[key];

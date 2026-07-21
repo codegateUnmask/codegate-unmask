@@ -13,6 +13,7 @@
     "test:scan": "tsc app/api/scan/route.test.ts --target ES2022 --module commonjs --moduleResolution node --outDir .next/scan-test --esModuleInterop --skipLibCheck && node .next/scan-test/app/api/scan/route.test.js",
     "test:ocr": "tsc lib/ocr-confidence.ts lib/ocr-quality.ts lib/ocr.test.ts --target ES2022 --module commonjs --moduleResolution node --outDir .next/ocr-test --esModuleInterop --skipLibCheck && node .next/ocr-test/ocr.test.js",
     "sync-deploy": "git pull origin main && git push personal main",
+    "test:diagnosis": "tsc lib/diagnosis/scoring.test.ts --target ES2022 --module commonjs --moduleResolution node --outDir .next/diag-test --esModuleInterop --skipLibCheck && node .next/diag-test/diagnosis/scoring.test.js",
     "test:ratelimit": "tsc lib/rateLimit.ts lib/rateLimit.test.ts --target ES2022 --module commonjs --moduleResolution node --outDir .next/rl-test --esModuleInterop --skipLibCheck && node .next/rl-test/rateLimit.test.js"
   },
   "dependencies": {
