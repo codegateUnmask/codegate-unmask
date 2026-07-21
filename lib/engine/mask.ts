@@ -1,6 +1,8 @@
 import { DATE_LIKE, MASK_PATTERNS, MASK_REPLACEMENT } from '../config';
 
-const MASK_ORDER = ['phone', 'rrn', 'account', 'email'] as const;
+// 순서 주의: 주민번호를 연락처보다 먼저 처리하면 앞 6자리가 잘려나갑니다.
+// 이름·주소는 숫자 규칙과 겹치지 않으므로 마지막에 처리합니다.
+const MASK_ORDER = ['phone', 'rrn', 'account', 'email', 'name', 'addressDetail'] as const;
 
 /**
  * 날짜 자리표시자. 마스킹 규칙(특히 계좌번호)이 자리표시자 자체를 다시 삼키지 않도록
