@@ -15,7 +15,11 @@
     "sync-deploy": "git pull origin main && git push personal main"
   },
   "dependencies": {
+    "@astryxdesign/core": "^0.1.7",
+    "@astryxdesign/theme-neutral": "^0.1.7",
     "@paddleocr/paddleocr-js": "0.4.2",
+    "@stylexjs/stylex": "^0.19.0",
+    "motion": "^12.42.2",
     "next": "^15.5.20",
     "openai": "^6.48.0",
     "react": "19.2.4",
@@ -23,6 +27,7 @@
     "zustand": "^5.0.14"
   },
   "devDependencies": {
+    "@astryxdesign/cli": "^0.1.7",
     "@tailwindcss/postcss": "^4",
     "@types/node": "^20",
     "@types/react": "^19",

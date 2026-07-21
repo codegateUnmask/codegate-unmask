@@ -1,0 +1,15 @@
+/* unmask 브랜드 오버라이드 — Charcoal & Acid Lime을 astryx 토큰에 주입.
+ * theme.css와 동일한 @scope + astryx-theme 레이어, 뒤에 로드되어 이긴다. */
+@layer astryx-theme {
+  @scope ([data-astryx-theme='neutral']) to ([data-astryx-theme]) {
+    :scope {
+      --color-accent: #c8f04b;
+      --color-on-accent: #202124;
+      --color-accent-muted: #efffc0;
+      --color-icon-accent: #4f6414;
+      --color-text-accent: #4f6414;
+      --font-family-body: 'Pretendard Variable', Pretendard, 'Apple SD Gothic Neo', 'Noto Sans KR', system-ui, sans-serif;
+      --font-family-heading: 'Pretendard Variable', Pretendard, 'Apple SD Gothic Neo', 'Noto Sans KR', system-ui, sans-serif;
+    }
+  }
+}
