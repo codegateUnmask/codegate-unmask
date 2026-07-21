@@ -38,4 +38,5 @@ export const MASK_REPLACEMENT = {
 export const STORE_ORIGINAL_TEXT = false;
 export const USE_OCR = false;
 
-export const USE_MOCK_STREAM = true;
+// 기본은 실제 API. 키 없는 로컬 개발자는 .env.local에 NEXT_PUBLIC_MOCK_STREAM=1
+export const USE_MOCK_STREAM = process.env.NEXT_PUBLIC_MOCK_STREAM === '1';

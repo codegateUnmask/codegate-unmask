@@ -1,4 +1,5 @@
 import { MAX_INPUT_CHARS } from '../../../lib/config';
+import { PROFILE_TYPES } from '../../../lib/diagnosis/profileTypes';
 import { maskPII } from '../../../lib/engine/mask';
 import { SCAN_ERROR_EVENT } from '../../../lib/sseProtocol';
 import type {
@@ -14,11 +15,15 @@ const ANALYSIS_ERROR = {
   message: '문서 분석에 실패했습니다.',
 } as const;
 const BAD_REQUEST_MESSAGE = '잘못된 요청입니다.';
+// 허용 typeCode = 진단 16유형(PROFILE_TYPES) + 구버전 3유형(하위 호환).
+// 서버가 가진 정의에서 도출 — 클라이언트 문자열을 신뢰하지 않는다.
 const PROFILE_TYPE_CODES = new Set([
+  ...Object.keys(PROFILE_TYPES),
   'AUTHORITY_DOMINANT',
   'URGENCY_DOMINANT',
   'GREED_DOMINANT',
 ]);
+const DOC_TYPES = new Set<DocType>(['lease', 'labor', 'service', 'terms', 'message']);
 
 type Analyzer = (
   text: string,
@@ -78,7 +83,12 @@ async function parseRequest(request: Request): Promise<ScanRequest | Response> {
     return badRequest();
   }
 
-  if (!isRecord(body) || typeof body.text !== 'string' || body.docType !== 'lease') {
+  if (
+    !isRecord(body) ||
+    typeof body.text !== 'string' ||
+    typeof body.docType !== 'string' ||
+    !DOC_TYPES.has(body.docType as DocType)
+  ) {
     return badRequest();
   }
   if (body.text.trim().length === 0 || body.text.length > MAX_INPUT_CHARS) {
@@ -90,7 +100,7 @@ async function parseRequest(request: Request): Promise<ScanRequest | Response> {
 
   return {
     text: body.text,
-    docType: 'lease',
+    docType: body.docType as DocType,
     ...(profile === undefined ? {} : { profile }),
   };
 }

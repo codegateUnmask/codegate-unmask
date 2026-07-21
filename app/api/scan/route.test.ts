@@ -90,8 +90,14 @@ async function main() {
     request({ text: 1, docType: 'lease' }),
     request({ text: '   ', docType: 'lease' }),
     request({ text: 'x'.repeat(MAX_INPUT_CHARS + 1), docType: 'lease' }),
-    request({ text: '계약서', docType: 'labor' }),
+    request({ text: '계약서', docType: 'unknown-type' }),
     request({ text: '계약서', docType: 'lease', profile: { typeCode: 'UNKNOWN' } }),
+    // 프로토타입 키 주입 — PROFILE_TYPES 조회가 프로토타입 체인을 타면 안 된다
+    request({
+      text: '계약서',
+      docType: 'lease',
+      profile: { typeCode: 'constructor', axes: { authority: 1, urgency: 1, greed: 1, verify: 1 } },
+    }),
     request({ text: '계약서', docType: 'lease' }, 'text/plain'),
   ];
 
@@ -101,6 +107,34 @@ async function main() {
     assert.deepEqual(await response.json(), { error: '잘못된 요청입니다.' });
   }
   assert.equal(invalidCalls, 0);
+
+  // 5종 docType 전부 + 진단 16유형(MBTI 코드) 프로필이 통과해야 한다
+  let validCalls = 0;
+  const countingEngine: ScanEngine = {
+    runTriage: async () => {
+      validCalls += 1;
+      return result;
+    },
+    analyzeDocument: async () => {
+      validCalls += 1;
+      return result;
+    },
+  };
+  for (const docType of ['lease', 'labor', 'service', 'terms', 'message']) {
+    const res = await createScanHandler(countingEngine)(request({ text: '계약서', docType }));
+    assert.equal(res.status, 200, `docType=${docType} 가 거부됨`);
+    await res.text();
+  }
+  const mbtiRes = await createScanHandler(countingEngine)(
+    request({
+      text: '계약서',
+      docType: 'lease',
+      profile: { ...profile(), typeCode: 'INFP' },
+    }),
+  );
+  assert.equal(mbtiRes.status, 200, 'MBTI 16유형 프로필이 거부됨');
+  await mbtiRes.text();
+  assert.equal(validCalls, 12);
 
   let fullCalls = 0;
   const triageFailureResponse = await createScanHandler({

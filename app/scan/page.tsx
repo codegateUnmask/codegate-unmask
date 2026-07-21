@@ -2,11 +2,13 @@
 'use client';
 
 import { useScanStore } from '@/stores/scanStore';
+import { useAppStore } from '@/lib/store';
 import ScanReport from '@/components/viewer/ScanReport';
-import { SAMPLES, MOCK_PROFILE } from '@/lib/mock.scan';
+import { SAMPLES } from '@/lib/mock.scan';
 import { USE_OCR } from '@/lib/config';
 import { imagesToText } from '@/lib/ocr';
-import { useRef, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
+import Link from 'next/link';
 import type { DocType } from '@/lib/types';
 
 const DOC_TABS: { key: DocType; label: string }[] = [
@@ -25,6 +27,12 @@ export default function ScanPage() {
   const running = status === 'triage' || status === 'full';
   const fileRef = useRef<HTMLInputElement>(null);
   const [ocrMsg, setOcrMsg] = useState<string | null>(null);
+
+  // 컷3 연결: /diagnose 결과(persist)를 판독에 실제로 넘긴다.
+  // mounted 게이트는 localStorage 재수화 전 SSR HTML과의 hydration 불일치 방지용.
+  const profile = useAppStore((s) => s.profile);
+  const [mounted, setMounted] = useState(false);
+  useEffect(() => setMounted(true), []);
 
   async function handlePhotos(files: FileList | null) {
     if (!files || files.length === 0) return;
@@ -65,10 +73,20 @@ export default function ScanPage() {
             className="w-full resize-y rounded-xl border border-[var(--line)] bg-[var(--field)] p-4 text-[15.5px] leading-relaxed text-[var(--ink)] outline-none focus:border-[var(--ink)]" />
 
           <div className="mt-3 space-y-2">
-            <button onClick={() => start(MOCK_PROFILE)} disabled={running || !text.trim()}
+            <button onClick={() => start(profile ?? undefined)} disabled={running || !text.trim()}
               className="w-full rounded-xl bg-[var(--ink)] px-5 py-3.5 text-[16px] font-extrabold text-white transition-transform active:scale-[0.98] disabled:opacity-40">
               {running ? '판독 중…' : '판독 시작'}
             </button>
+            {mounted && (profile ? (
+              <p className="text-[12.5px] font-bold text-[var(--ink-soft)]">
+                🎯 『{profile.typeName}』 맞춤 판독이 적용돼요
+              </p>
+            ) : (
+              <Link href="/diagnose"
+                className="block text-[12.5px] font-bold text-[var(--ink-soft)] underline underline-offset-2">
+                1분 진단하면 내 유형 맞춤 경고를 함께 받아요 →
+              </Link>
+            ))}
             <div className="flex flex-wrap gap-2">
               {USE_OCR && (
                 <>
