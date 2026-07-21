@@ -12,7 +12,7 @@ import { EmptyState } from '@astryxdesign/core/EmptyState';
 import { List, ListItem } from '@astryxdesign/core/List';
 import { useToast } from '@astryxdesign/core/Toast';
 import LoginSheet from '@/components/auth/LoginSheet';
-import { useAuthStore } from '@/stores/authStore';
+import { useSession, signOut } from 'next-auth/react';
 import { useAppStore } from '@/lib/store';
 import { MOCK_SCAN_HISTORY } from '@/lib/mock.me';
 import type { RiskLevel } from '@/lib/types';
@@ -31,12 +31,15 @@ const LEVEL_LABEL: Record<RiskLevel, string> = {
 };
 
 export default function MePage() {
-  const user = useAuthStore((s) => s.user);
-  const signOut = useAuthStore((s) => s.signOut);
+  const { data: session, status } = useSession();
+  const user = session?.user;
   const profile = useAppStore((s) => s.profile);
   const toast = useToast();
   const router = useRouter();
   const [isSheetOpen, setIsSheetOpen] = useState(false);
+
+  // 세션 확인 전에 로그아웃 화면을 그리면 로그인한 사용자에게 한 번 깜빡입니다.
+  if (status === 'loading') return <main className={styles.page} aria-busy="true" />;
 
   if (!user) {
     return (
@@ -60,7 +63,7 @@ export default function MePage() {
         <LoginSheet
           isOpen={isSheetOpen}
           onOpenChange={setIsSheetOpen}
-          onSuccess={() => router.push('/start')}
+          callbackPath="/start"
         />
       </main>
     );
@@ -71,10 +74,11 @@ export default function MePage() {
       <h1 className="sr-only">마이페이지</h1>
 
       <header className={styles.profile}>
-        <Avatar name={user.name} size="large" />
+        <Avatar name={user.name ?? '사용자'} size="large" />
         <div>
-          <p className={styles.name}>{user.name}</p>
-          <p className={styles.email}>{user.email}</p>
+          <p className={styles.name}>{user.name ?? '사용자'}</p>
+          {/* 닉네임 체험 입장은 계정이 없어 이메일이 없습니다 */}
+          <p className={styles.email}>{user.isGuest ? '닉네임 체험 모드' : user.email}</p>
         </div>
       </header>
 
@@ -164,7 +168,7 @@ export default function MePage() {
             label="이용약관"
             onClick={() => toast({ body: '준비 중이에요', uniqueID: 'me-settings' })}
           />
-          <ListItem label="로그아웃" onClick={signOut} />
+          <ListItem label="로그아웃" onClick={() => void signOut({ callbackUrl: '/' })} />
         </List>
       </section>
 

@@ -7,7 +7,7 @@ import { motion } from 'motion/react';
 import { Button } from '@astryxdesign/core/Button';
 import { EmptyState } from '@astryxdesign/core/EmptyState';
 import LoginSheet from '@/components/auth/LoginSheet';
-import { useAuthStore } from '@/stores/authStore';
+import { useSession } from 'next-auth/react';
 import { BOARD_META, BOARD_ORDER } from '@/lib/community/shared';
 import type { BoardType, PostSummary } from '@/lib/community/shared';
 import { getClientToken } from '@/lib/community/client';
@@ -51,7 +51,8 @@ type FeedStatus = 'loading' | 'error' | 'ready';
 
 export default function CommunityPage() {
   const router = useRouter();
-  const user = useAuthStore((s) => s.user);
+  const { data: session } = useSession();
+  const user = session?.user;
   const [board, setBoard] = useState<BoardType>('scam-case');
   const [posts, setPosts] = useState<PostSummary[]>([]);
   const [status, setStatus] = useState<FeedStatus>('loading');
@@ -185,7 +186,7 @@ export default function CommunityPage() {
       <LoginSheet
         isOpen={isSheetOpen}
         onOpenChange={setIsSheetOpen}
-        onSuccess={() => router.push(`/community/write?board=${board}`)}
+        callbackPath={`/community/write?board=${board}`}
       />
     </main>
   );
