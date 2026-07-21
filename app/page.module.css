@@ -6,7 +6,7 @@
   margin: 0 auto;
   flex-direction: column;
   overflow-x: hidden;
-  background: #fff;
+  background: var(--color-background-body, #f7f7f2);
   color: #202124;
   font-family: "Pretendard Variable", Pretendard, "Apple SD Gothic Neo", "Noto Sans KR", system-ui, sans-serif;
 }
