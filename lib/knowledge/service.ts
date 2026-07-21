@@ -17,6 +17,7 @@
 
 import type { KnowledgePack } from './index';
 import { PACK_TASKS } from './tasks';
+import { CONTRACT_GRADING } from './grading';
 
 const STATUTES = `
 [방문판매 등에 관한 법률 — 조문 원문]
@@ -136,5 +137,5 @@ export const servicePack: KnowledgePack = {
     '공정거래위원회 (불공정약관 신고)',
     '카드사 고객센터 (할부항변권 문의)',
   ],
-  knowledge: [STATUTES, TOXIC_PATTERNS, UNVERIFIABLE_GUIDE].join('\n'),
+  knowledge: [STATUTES, TOXIC_PATTERNS, UNVERIFIABLE_GUIDE, CONTRACT_GRADING].join('\n'),
 };
