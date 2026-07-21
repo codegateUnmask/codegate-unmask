@@ -9,7 +9,7 @@
 import { useState } from 'react';
 import type { DocType, ScanResult, ScanStreamEvent } from '@/lib/types';
 import { useAppStore } from '@/lib/store';
-import { getKnowledgePack } from '@/lib/knowledge';
+import { PACK_TASKS } from '@/lib/knowledge/tasks';
 import { MOCK_SCAN_RESULT } from '@/lib/mock';
 import { RISKY_LEASE_SAMPLE, SAFE_LEASE_SAMPLE } from '@/lib/samples/lease';
 import { AnalysisChecklist } from '@/components/viewer/AnalysisChecklist';
@@ -32,7 +32,7 @@ export default function ScanPage() {
   const [result, setResult] = useState<ScanResult | null>(null);
   const [isMock, setIsMock] = useState(false);
 
-  const pack = getKnowledgePack(docType);
+  const pack = PACK_TASKS[docType];
   const loading = stage === 'triage';
 
   async function handleSubmit() {
