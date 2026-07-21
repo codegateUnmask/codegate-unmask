@@ -101,6 +101,118 @@
   padding: 0 20px 48px;
 }
 
+/* 목적별 진입 카드 */
+.entries {
+  display: flex;
+  width: 100%;
+  box-sizing: border-box;
+  flex-direction: column;
+  gap: 10px;
+  padding: 0 20px 40px;
+}
+
+.entriesLabel {
+  margin: 0 0 2px;
+  color: #57624a;
+  font-size: 13px;
+  font-weight: 800;
+  letter-spacing: -0.01em;
+}
+
+.entryCard,
+.entryCardPrimary {
+  display: grid;
+  width: 100%;
+  box-sizing: border-box;
+  grid-template-columns: 44px minmax(0, 1fr) 20px;
+  align-items: center;
+  gap: 14px;
+  padding: 16px;
+  border: 1px solid #d8dad3;
+  border-radius: 14px;
+  background: #fff;
+  color: #202124;
+  text-decoration: none;
+}
+
+.entryCardPrimary {
+  border-color: #202124;
+  background: #f6ffe0;
+}
+
+.entryIcon {
+  display: grid;
+  width: 44px;
+  height: 44px;
+  place-items: center;
+  border-radius: 50%;
+  background: #ebece6;
+  color: #202124;
+}
+
+.entryCardPrimary .entryIcon {
+  background: #c8f04b;
+}
+
+.entryIcon svg {
+  width: 22px;
+  height: 22px;
+  fill: none;
+  stroke: currentColor;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  stroke-width: 1.8;
+}
+
+.entryBody {
+  display: flex;
+  min-width: 0;
+  flex-direction: column;
+  gap: 3px;
+}
+
+.entryBody strong {
+  font-size: 16px;
+  font-weight: 800;
+  letter-spacing: -0.02em;
+  line-height: 22px;
+}
+
+.entryBody > span {
+  color: #57624a;
+  font-size: 13px;
+  line-height: 19px;
+  word-break: keep-all;
+}
+
+.entryArrow {
+  display: grid;
+  width: 20px;
+  height: 20px;
+  place-items: center;
+  color: #747971;
+}
+
+.entryArrow svg {
+  width: 18px;
+  height: 18px;
+  fill: none;
+  stroke: currentColor;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  stroke-width: 2;
+}
+
+.entryCard:focus-visible,
+.entryCardPrimary:focus-visible {
+  outline: 2px solid #202124;
+  outline-offset: 3px;
+}
+
+.entries .login {
+  margin-top: 8px;
+}
+
 .cta {
   display: flex;
   width: 100%;

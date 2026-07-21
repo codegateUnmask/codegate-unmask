@@ -1,7 +1,10 @@
 'use client';
 
 import Link from 'next/link';
+import { useMemo } from 'react';
 import { ContractImageOcr } from './ContractImageOcr';
+import InputGuidance from './InputGuidance';
+import { checkDocTypeMatch } from '@/lib/knowledge/router';
 import { USE_OCR } from '@/lib/config';
 import type { Sample } from '@/lib/mock.scan';
 import type { ContractImageExtraction } from '@/lib/ocr';
@@ -137,6 +140,8 @@ export function ContractInputScreen({
   profile,
 }: ContractInputScreenProps) {
   const canProceed = mode === 'text' && text.trim().length > 0 && !busy;
+  // 키워드 기반이라 LLM 호출 없음 — 입력할 때마다 즉시 재판정해도 비용이 없습니다.
+  const match = useMemo(() => checkDocTypeMatch(text, docType), [text, docType]);
 
   return (
     <main className={styles.screen}>
@@ -235,6 +240,8 @@ export function ContractInputScreen({
             )}
           </div>
         )}
+
+        <InputGuidance match={match} onSwitch={onDocTypeChange} />
 
         {mode !== 'text' && USE_OCR && (
           <div className={styles.ocrPanel}>
