@@ -16,9 +16,9 @@ const TABS = [
 ] as const;
 
 const SQUISH = {
-  y: [0, -8, 2, 0],
-  scaleX: [1, 1.4, 0.92, 1],
-  scaleY: [1, 0.6, 1.12, 1],
+  y: [0, -8, 1, 0],
+  scaleX: [1, 1.35, 1.04, 1],
+  scaleY: [1, 0.65, 0.97, 1],
 };
 
 export default function TabBar() {
@@ -51,8 +51,8 @@ export default function TabBar() {
                 initial={false}
                 animate={reduceMotion ? undefined : SQUISH}
                 transition={{
-                  duration: 0.55,
-                  times: [0, 0.4, 0.75, 1],
+                  duration: 0.38,
+                  times: [0, 0.3, 0.62, 1],
                   ease: ['easeOut', 'easeInOut', 'easeOut'],
                 }}
               />
