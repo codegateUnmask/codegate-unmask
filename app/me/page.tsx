@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import Image from 'next/image';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
@@ -30,6 +30,12 @@ const LEVEL_LABEL: Record<RiskLevel, string> = {
   safe: '안전',
 };
 
+function nextBilling(iso: string): string {
+  const d = new Date(iso);
+  d.setMonth(d.getMonth() + 1);
+  return d.toLocaleDateString('ko-KR', { month: 'long', day: 'numeric' });
+}
+
 export default function MePage() {
   const { data: session, status } = useSession();
   const user = session?.user;
@@ -37,6 +43,16 @@ export default function MePage() {
   const toast = useToast();
   const router = useRouter();
   const [isSheetOpen, setIsSheetOpen] = useState(false);
+  const [sub, setSub] = useState<{ since: string } | null>(null);
+  const [passes, setPasses] = useState(0);
+
+  useEffect(() => {
+    try {
+      const s = localStorage.getItem('unmask.subscription');
+      if (s) setSub(JSON.parse(s));
+      setPasses(Number(localStorage.getItem('unmask.passes') ?? 0));
+    } catch {}
+  }, []);
 
   // 세션 확인 전에 로그아웃 화면을 그리면 로그인한 사용자에게 한 번 깜빡입니다.
   if (status === 'loading') return <main className={styles.page} aria-busy="true" />;
@@ -127,6 +143,41 @@ export default function MePage() {
         )}
       </section>
 
+      <section className={styles.card} aria-labelledby="me-sub-title">
+        <div className={styles.cardHead}>
+          <h2 id="me-sub-title" className={styles.sectionTitle}>
+            프리미엄 구독
+          </h2>
+          {sub && <Badge variant="success" label="프리미엄 이용 중" />}
+        </div>
+        {sub ? (
+          <div className={styles.subBody}>
+            <p className={styles.subInfo}>
+              다음 결제일 <b>{nextBilling(sub.since)}</b> · 무제한 판독 이용 중
+            </p>
+            <p className={styles.subInfo}>
+              보유 판독권 <b>{passes}건</b>
+            </p>
+            <Button
+              label="관리하기"
+              variant="secondary"
+              width="100%"
+              onClick={() => router.push('/premium')}
+            />
+          </div>
+        ) : (
+          <div className={styles.subBody}>
+            <p className={styles.subInfo}>프리미엄으로 무제한 판독</p>
+            <Button
+              label="구독 알아보기"
+              variant="primary"
+              width="100%"
+              onClick={() => router.push('/premium')}
+            />
+          </div>
+        )}
+      </section>
+
       <section className={styles.section} aria-labelledby="me-history-title">
         <div className={styles.sectionHead}>
           <h2 id="me-history-title" className={styles.sectionTitle}>
@@ -159,7 +210,6 @@ export default function MePage() {
           설정
         </h2>
         <List hasDividers density="spacious">
-          <ListItem label="프리미엄 구독" onClick={() => router.push('/premium')} />
           <ListItem
             label="알림 설정"
             onClick={() => toast({ body: '준비 중이에요', uniqueID: 'me-settings' })}

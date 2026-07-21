@@ -154,6 +154,22 @@
   color: var(--danger, #ce3b2f);
 }
 
+.subBody {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  margin-top: 10px;
+}
+
+.subInfo {
+  font-size: 14px;
+  color: var(--ink, #202124);
+}
+
+.subInfo b {
+  font-weight: 800;
+}
+
 .section {
   display: flex;
   flex-direction: column;
