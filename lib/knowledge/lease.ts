@@ -14,6 +14,7 @@
 
 import type { KnowledgePack } from './index';
 import { PACK_TASKS } from './tasks';
+import { CONTRACT_GRADING } from './grading';
 
 /**
  * 법령 원문 — 판독 결과의 legalBasis에 인용할 근거.
@@ -135,5 +136,5 @@ export const leasePack: KnowledgePack = {
     'HUG 주택도시보증공사 (전세보증금 반환보증 가입 가능 여부)',
     '주민센터 (전입신고·확정일자)',
   ],
-  knowledge: [STATUTES, TOXIC_PATTERNS, UNVERIFIABLE_GUIDE].join('\n'),
+  knowledge: [STATUTES, TOXIC_PATTERNS, UNVERIFIABLE_GUIDE, CONTRACT_GRADING].join('\n'),
 };

@@ -14,6 +14,7 @@
 
 import type { KnowledgePack } from './index';
 import { PACK_TASKS } from './tasks';
+import { CONTRACT_GRADING } from './grading';
 
 const STATUTES = `
 [약관의 규제에 관한 법률 — 조문 원문]
@@ -127,5 +128,5 @@ export const termsPack: KnowledgePack = {
     '개인정보보호위원회 (개인정보 관련)',
     '한국소비자원 (피해구제)',
   ],
-  knowledge: [STATUTES, TOXIC_PATTERNS, UNVERIFIABLE_GUIDE].join('\n'),
+  knowledge: [STATUTES, TOXIC_PATTERNS, UNVERIFIABLE_GUIDE, CONTRACT_GRADING].join('\n'),
 };

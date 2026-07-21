@@ -13,6 +13,7 @@
 
 import type { KnowledgePack } from './index';
 import { PACK_TASKS, MINIMUM_WAGE_2026 } from './tasks';
+import { CONTRACT_GRADING } from './grading';
 
 const STATUTES = `
 [근로기준법 — 조문 원문]
@@ -141,5 +142,5 @@ export const laborPack: KnowledgePack = {
     '고용노동부 온라인 진정 (노동포털)',
     '근로복지공단 (4대보험 가입내역 확인)',
   ],
-  knowledge: [STATUTES, TOXIC_PATTERNS, UNVERIFIABLE_GUIDE].join('\n'),
+  knowledge: [STATUTES, TOXIC_PATTERNS, UNVERIFIABLE_GUIDE, CONTRACT_GRADING].join('\n'),
 };
