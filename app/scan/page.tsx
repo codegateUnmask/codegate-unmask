@@ -3,13 +3,20 @@
 import { Suspense, useEffect, useRef, useState } from 'react';
 import { useSearchParams } from 'next/navigation';
 import ContractInputScreen from '@/components/scan/ContractInputScreen';
+import TextInputScreen from '@/components/scan/TextInputScreen';
+import OcrProcessingScreen from '@/components/scan/OcrProcessingScreen';
+import RecaptureScreen, { type RecaptureReason } from '@/components/scan/RecaptureScreen';
 import OcrReviewScreen from '@/components/scan/OcrReviewScreen';
 import AnalysisProgressScreen from '@/components/scan/AnalysisProgressScreen';
+import AnalysisErrorScreen from '@/components/scan/AnalysisErrorScreen';
 import AnalysisResultScreen from '@/components/scan/AnalysisResultScreen';
+import ReportDetailScreen from '@/components/scan/ReportDetailScreen';
+import RequestPhrasesScreen from '@/components/scan/RequestPhrasesScreen';
 import { useAppStore } from '@/lib/store';
+import { MAX_INPUT_CHARS } from '@/lib/config';
 import { SAMPLES, type Sample } from '@/lib/mock.scan';
+import { extractContractText } from '@/lib/ocr';
 import type { ContractOcrAssessment } from '@/lib/ocr-confidence';
-import type { ContractImageExtraction } from '@/lib/ocr';
 import type { DocType } from '@/lib/types';
 import { useScanStore } from '@/stores/scanStore';
 import { isMismatch } from '@/lib/docTypeGuess';
@@ -23,8 +30,28 @@ const DOC_LABELS: Record<DocType, string> = {
 };
 
 type InputMode = 'camera' | 'upload' | 'text';
-type Step = 'input' | 'ocr-review' | 'progress' | 'result';
-type ReviewResult = Extract<ContractImageExtraction, { decision: 'review-required' }>;
+type Step =
+  | 'input'
+  | 'text-input'
+  | 'ocr-processing'
+  | 'recapture'
+  | 'ocr-review'
+  | 'progress'
+  | 'error'
+  | 'result'
+  | 'report'
+  | 'requests';
+
+function mapOcrError(err: unknown): RecaptureReason {
+  const message = err instanceof Error ? err.message : '';
+  if (message.includes('모델')) return 'model-load-failed';
+  if (message.includes('추출하지 못했')) return 'no-text';
+  if (message.includes('손상') || message.includes('비어 있는') || message.includes('읽지 못했'))
+    return 'corrupt';
+  if (message.includes('JPG') || message.includes('형식') || message.includes('해상도가 너무 큽니다'))
+    return 'unsupported';
+  return 'no-text';
+}
 
 const VALID_DOC_TYPES: DocType[] = ['lease', 'labor', 'service', 'terms', 'message'];
 
@@ -38,7 +65,7 @@ export default function ScanPage() {
 }
 
 function ScanFlow() {
-  const { text, docType, status, stage, result, error, setText, setDocType, applySample, start, reset } =
+  const { text, docType, status, stage, result, setText, setDocType, applySample, start, reset } =
     useScanStore();
   const profile = useAppStore((state) => state.profile);
   const searchParams = useSearchParams();
@@ -57,43 +84,88 @@ function ScanFlow() {
 
   const [step, setStep] = useState<Step>('input');
   const [mode, setMode] = useState<InputMode>('text');
-  const [ocrBusy, setOcrBusy] = useState(false);
+  const [fileName, setFileName] = useState('');
   const [ocrReview, setOcrReview] = useState<ContractOcrAssessment | null>(null);
   const [confirmed, setConfirmed] = useState(false);
-  const [requestsOpen, setRequestsOpen] = useState(false);
+  const [recaptureReason, setRecaptureReason] = useState<RecaptureReason>('blur');
+  const [errorKind, setErrorKind] = useState<'network' | 'server'>('server');
+  const [lastInputStep, setLastInputStep] = useState<Extract<Step, 'text-input' | 'ocr-review' | 'input'>>('input');
   const [mismatch, setMismatch] = useState<{ label: string; type: DocType } | null>(null);
+
+  const fileInputRef = useRef<HTMLInputElement>(null);
+  const ocrAbortRef = useRef(false);
 
   const running = status === 'triage' || status === 'full';
   const requiresConfirmation = ocrReview !== null && !confirmed;
 
-  // status가 done/error가 되면 결과 화면으로, 실행 중이면 진행 화면으로 자동 전환
   useEffect(() => {
     if (running) setStep('progress');
-    else if (status === 'done' || status === 'error') setStep('result');
+    else if (status === 'done') setStep('result');
+    else if (status === 'error') {
+      setErrorKind(typeof navigator !== 'undefined' && !navigator.onLine ? 'network' : 'server');
+      setStep('error');
+    }
   }, [running, status]);
 
-  function handleOcrResult(ocrResult: ReviewResult) {
-    setText(ocrResult.assessment.text);
-    setOcrReview(ocrResult.assessment);
-    setConfirmed(false);
-    setStep('ocr-review');
+  function openPicker(kind: 'camera' | 'upload') {
+    const input = fileInputRef.current;
+    if (!input) return;
+    if (kind === 'camera') input.setAttribute('capture', 'environment');
+    else input.removeAttribute('capture');
+    input.click();
+  }
+
+  async function runOcr(file: File) {
+    setFileName(file.name);
+    ocrAbortRef.current = false;
+    setStep('ocr-processing');
+    try {
+      const extraction = await extractContractText(file);
+      if (ocrAbortRef.current) return;
+      if (extraction.decision === 'recapture') {
+        setRecaptureReason(extraction.reasons.includes('blurry') ? 'blur' : 'low-resolution');
+        setStep('recapture');
+        return;
+      }
+      setText(extraction.assessment.text);
+      setOcrReview(extraction.assessment);
+      setConfirmed(false);
+      setLastInputStep('ocr-review');
+      setStep('ocr-review');
+    } catch (err) {
+      if (ocrAbortRef.current) return;
+      setRecaptureReason(mapOcrError(err));
+      setStep('recapture');
+    }
+  }
+
+  function handleNextFromInput() {
+    if (mode === 'text') {
+      setLastInputStep('text-input');
+      setStep('text-input');
+      return;
+    }
+    openPicker(mode);
   }
 
   function handleSample(sample: Sample) {
     applySample(sample);
     setOcrReview(null);
     setConfirmed(false);
-    start(profile ?? undefined);
+    setLastInputStep('input');
+    void start(profile ?? undefined);
   }
 
-  function handleNextFromInput() {
-    if (mode !== 'text' || !text.trim()) return;
+  function handleAnalyzeFromText() {
+    if (!text.trim()) return;
+    setOcrReview(null);
+    setConfirmed(false);
     const check = isMismatch(text, docType);
     if (check.mismatch && check.suggest && check.suggestLabel) {
       setMismatch({ label: check.suggestLabel, type: check.suggest });
       return; // 탭과 다른 문서로 보이면 판독을 시작하지 않고 안내
     }
-    start(profile ?? undefined);
+    void start(profile ?? undefined);
   }
 
   function handleAnalyzeFromReview() {
@@ -103,158 +175,164 @@ function ScanFlow() {
       setMismatch({ label: check.suggestLabel, type: check.suggest });
       return;
     }
-    start(profile ?? undefined);
+    void start(profile ?? undefined);
+  }
+
+  function handleCancelAnalysis() {
+    reset();
+    setStep(lastInputStep);
   }
 
   function handleReset() {
     reset();
     setStep('input');
     setMode('text');
+    setFileName('');
     setOcrReview(null);
     setConfirmed(false);
-    setRequestsOpen(false);
+    setLastInputStep('input');
     setMismatch(null);
-  }
-
-  function handleBackToInput() {
-    setStep('input');
-    setOcrReview(null);
-    setConfirmed(false);
-  }
-
-  if (step === 'ocr-review') {
-    return (
-      <>
-      <OcrReviewScreen
-        text={text}
-        onTextChange={setText}
-        assessment={ocrReview}
-        confirmed={confirmed}
-        onConfirmedChange={setConfirmed}
-        requiresConfirmation={requiresConfirmation}
-        onAnalyze={handleAnalyzeFromReview}
-        analyzeDisabled={running || !text.trim() || requiresConfirmation}
-        busy={running}
-        onBack={handleBackToInput}
-      />
-      {mismatch && (
-        <div
-          role="dialog"
-          aria-label="문서 유형 확인"
-          className="fixed inset-0 z-30 flex items-end justify-center bg-black/40 px-4 pb-6"
-          onClick={() => setMismatch(null)}
-        >
-          <div
-            className="w-full max-w-[480px] rounded-2xl bg-white p-5"
-            onClick={(e) => e.stopPropagation()}
-          >
-            <h3 className="text-[16px] font-extrabold text-[var(--ink)]">
-              이 문서는 「{mismatch.label}」 문서로 보여요
-            </h3>
-            <p className="mt-1 text-[13.5px] leading-relaxed text-[var(--ink-soft)]">
-              정확한 판독을 위해 {DOC_LABELS[mismatch.type]} 분석을 이용해주세요.
-            </p>
-            <button
-              type="button"
-              onClick={() => { setDocType(mismatch.type); setMismatch(null); }}
-              className="mt-4 w-full rounded-xl bg-[var(--ink)] px-4 py-3 text-[14px] font-bold text-white"
-            >
-              {mismatch.label} 분석으로 이동
-            </button>
-            <button
-              type="button"
-              onClick={() => { setMismatch(null); start(profile ?? undefined); }}
-              className="mt-2 w-full py-1 text-center text-[12.5px] font-bold text-[var(--ink-soft)] underline underline-offset-2"
-            >
-              그래도 판독하기
-            </button>
-          </div>
-        </div>
-      )}
-      </>
-    );
-  }
-
-  if (step === 'progress') {
-    return <AnalysisProgressScreen docTypeLabel={DOC_LABELS[docType]} stage={stage} />;
-  }
-
-  if (step === 'result' && result) {
-    return (
-      <>
-        <AnalysisResultScreen
-          result={result}
-          docTypeLabel={DOC_LABELS[docType]}
-          onBack={handleReset}
-          onShowRequests={() => setRequestsOpen(true)}
-        />
-        {requestsOpen && (result.requestPhrases?.length ?? 0) > 0 && (
-          <div
-            role="dialog"
-            aria-label="상대에게 요청할 문구"
-            className="fixed inset-0 z-30 flex items-end justify-center bg-black/40 px-4 pb-6"
-            onClick={() => setRequestsOpen(false)}
-          >
-            <div
-              className="w-full max-w-[480px] rounded-2xl bg-white p-5"
-              onClick={(e) => e.stopPropagation()}
-            >
-              <h3 className="mb-3 text-[16px] font-extrabold text-[var(--ink)]">상대에게 요청할 문구</h3>
-              <ul className="space-y-2">
-                {result.requestPhrases.map((phrase, i) => (
-                  <li key={i} className="rounded-xl bg-[var(--field)] px-3.5 py-3 text-[14.5px] leading-relaxed text-[var(--ink)]">
-                    {phrase}
-                  </li>
-                ))}
-              </ul>
-              <button
-                type="button"
-                onClick={() => setRequestsOpen(false)}
-                className="mt-4 w-full rounded-xl bg-[var(--ink)] px-4 py-3 text-[14px] font-bold text-white"
-              >
-                닫기
-              </button>
-            </div>
-          </div>
-        )}
-      </>
-    );
-  }
-
-  if (step === 'result' && status === 'error') {
-    return (
-      <div className="mx-auto flex max-w-[480px] flex-col items-center gap-4 px-5 py-20 text-center">
-        <p className="text-[15px] font-bold text-[var(--danger)]">
-          {error ?? '판독 중 문제가 생겼어요. 다시 시도해주세요.'}
-        </p>
-        <button
-          type="button"
-          onClick={handleReset}
-          className="rounded-xl bg-[var(--ink)] px-5 py-3 text-[14px] font-bold text-white"
-        >
-          처음으로
-        </button>
-      </div>
-    );
   }
 
   return (
     <>
-      <ContractInputScreen
-        docType={docType}
-        onDocTypeChange={setDocType}
-        mode={mode}
-        onModeChange={setMode}
-        text={text}
-        onTextChange={setText}
-        samples={SAMPLES[docType] ?? []}
-        onSample={handleSample}
-        onOcrResult={handleOcrResult}
-        onOcrBusyChange={setOcrBusy}
-        busy={running || ocrBusy}
-        onNext={handleNextFromInput}
-        profile={profile}
+      <input
+        ref={fileInputRef}
+        type="file"
+        accept="image/jpeg,image/png"
+        className="sr-only"
+        aria-hidden="true"
+        tabIndex={-1}
+        onChange={(event) => {
+          const file = event.currentTarget.files?.[0];
+          event.currentTarget.value = '';
+          if (file) void runOcr(file);
+        }}
       />
+
+      {step === 'input' && (
+        <ContractInputScreen
+          docType={docType}
+          onDocTypeChange={setDocType}
+          mode={mode}
+          onModeChange={setMode}
+          samples={SAMPLES[docType] ?? []}
+          onSample={handleSample}
+          busy={running}
+          onNext={handleNextFromInput}
+          profile={profile}
+        />
+      )}
+
+      {step === 'text-input' && (
+        <TextInputScreen
+          docType={docType}
+          text={text}
+          maxChars={MAX_INPUT_CHARS}
+          onDocTypeChange={setDocType}
+          onTextChange={setText}
+          onAnalyze={handleAnalyzeFromText}
+          onBack={() => setStep('input')}
+          disabled={running}
+        />
+      )}
+
+      {step === 'ocr-processing' && (
+        <OcrProcessingScreen
+          fileName={fileName}
+          stage="extract"
+          onChangeImage={() => {
+            ocrAbortRef.current = true;
+            setStep('input');
+            openPicker(mode === 'camera' ? 'camera' : 'upload');
+          }}
+          onCancel={() => {
+            ocrAbortRef.current = true;
+            setStep('input');
+          }}
+        />
+      )}
+
+      {step === 'recapture' && (
+        <RecaptureScreen
+          reason={recaptureReason}
+          onRetake={() => openPicker('camera')}
+          onPickAnother={() => openPicker('upload')}
+          onTypeInstead={() => {
+            setLastInputStep('text-input');
+            setStep('text-input');
+          }}
+          onBack={() => setStep('input')}
+        />
+      )}
+
+      {step === 'ocr-review' && (
+        <OcrReviewScreen
+          fileName={fileName || undefined}
+          text={text}
+          onTextChange={setText}
+          assessment={ocrReview}
+          confirmed={confirmed}
+          onConfirmedChange={setConfirmed}
+          requiresConfirmation={requiresConfirmation}
+          onAnalyze={handleAnalyzeFromReview}
+          analyzeDisabled={running || !text.trim() || requiresConfirmation}
+          busy={running}
+          onBack={() => setStep('input')}
+          onRetake={() => openPicker('camera')}
+        />
+      )}
+
+      {step === 'progress' && (
+        <AnalysisProgressScreen
+          docTypeLabel={DOC_LABELS[docType]}
+          stage={stage}
+          onCancel={handleCancelAnalysis}
+          dangerCount={
+            stage === 'triage' ? result?.findings.filter((f) => f.level === 'danger').length : undefined
+          }
+          warningCount={
+            stage === 'triage' ? result?.findings.filter((f) => f.level === 'warning').length : undefined
+          }
+        />
+      )}
+
+      {step === 'error' && (
+        <AnalysisErrorScreen
+          kind={errorKind}
+          onRetry={() => void start(profile ?? undefined)}
+          onEdit={() => setStep(lastInputStep)}
+          onBack={() => setStep(lastInputStep)}
+        />
+      )}
+
+      {step === 'result' && result && (
+        <AnalysisResultScreen
+          result={result}
+          docTypeLabel={DOC_LABELS[docType]}
+          onBack={handleReset}
+          onShowDetail={() => setStep('report')}
+          onShowRequests={() => setStep('requests')}
+        />
+      )}
+
+      {step === 'report' && result && (
+        <ReportDetailScreen
+          result={result}
+          docTypeLabel={DOC_LABELS[docType]}
+          onBack={() => setStep('result')}
+          onShowRequests={() => setStep('requests')}
+        />
+      )}
+
+      {step === 'requests' && result && (
+        <RequestPhrasesScreen
+          phrases={(result.requestPhrases ?? []).map((phrase) => ({ text: phrase }))}
+          onNewScan={handleReset}
+          onBackToReport={() => setStep('report')}
+        />
+      )}
+
       {mismatch && (
         <div
           role="dialog"
@@ -274,14 +352,20 @@ function ScanFlow() {
             </p>
             <button
               type="button"
-              onClick={() => { setDocType(mismatch.type); setMismatch(null); }}
+              onClick={() => {
+                setDocType(mismatch.type);
+                setMismatch(null);
+              }}
               className="mt-4 w-full rounded-xl bg-[var(--ink)] px-4 py-3 text-[14px] font-bold text-white"
             >
               {mismatch.label} 분석으로 이동
             </button>
             <button
               type="button"
-              onClick={() => { setMismatch(null); start(profile ?? undefined); }}
+              onClick={() => {
+                setMismatch(null);
+                void start(profile ?? undefined);
+              }}
               className="mt-2 w-full py-1 text-center text-[12.5px] font-bold text-[var(--ink-soft)] underline underline-offset-2"
             >
               그래도 판독하기
