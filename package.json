@@ -6,7 +6,8 @@
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
-    "lint": "eslint"
+    "lint": "eslint",
+    "sync-deploy": "git pull origin main && git push personal main"
   },
   "dependencies": {
     "@anthropic-ai/sdk": "^0.112.4",
