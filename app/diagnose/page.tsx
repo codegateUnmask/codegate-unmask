@@ -4,7 +4,7 @@
 // ============================================================
 'use client';
 
-import { useRef, useState } from 'react';
+import { useState } from 'react';
 import { useSession } from 'next-auth/react';
 import { Button } from '@astryxdesign/core/Button';
 import { SelectableCard } from '@astryxdesign/core/SelectableCard';
@@ -13,12 +13,7 @@ import { QUESTIONS } from '@/lib/diagnosis/questions';
 import { useAppStore } from '@/lib/store';
 import { ANON_OWNER, FRESH_DIAGNOSIS_KEY, identityKey } from '@/components/auth/identity';
 import { profileToShareUrl } from '@/lib/share';
-<<<<<<< HEAD
-import ShareResultButtons from '@/components/share/ShareResultButtons';
-import { profileToShareUrl } from '@/lib/share';
-=======
 import { renderResultCard } from '@/lib/diagnosis/resultCard';
->>>>>>> origin/main
 
 // 4축 그래프 라벨 — verify만 "높을수록 안전"인 역방향 축이라 색을 달리 칠한다
 const AXIS_LABELS: { key: keyof VulnAxes; label: string; safe: boolean }[] = [
@@ -34,12 +29,7 @@ export default function DiagnosePage() {
   const [answers, setAnswers] = useState<number[]>(new Array(QUESTIONS.length).fill(-1));
   const [result, setResult] = useState<VulnProfile | null>(null);
   const [loading, setLoading] = useState(false);
-<<<<<<< HEAD
-  // 결과 카드 캡처용 (이미지 공유)
-  const cardRef = useRef<HTMLDivElement>(null);
-=======
   const [saving, setSaving] = useState(false);
->>>>>>> origin/main
 
   const answered = answers.filter((a) => a >= 0).length;
 
@@ -63,11 +53,9 @@ export default function DiagnosePage() {
     }
   }
 
-<<<<<<< HEAD
-=======
   async function handleShare() {
     if (!result) return;
-    const text = `[ClearGuard 사기 취약 유형 진단]\n나는 「${result.typeName}」 — ${result.tagline}\n1분 진단하기: ${window.location.origin}/diagnose`;
+    const text = `[ClearGuard 사기 취약 유형 진단]\n나는 「${result.typeName}」 — ${result.tagline}\n1분 진단하기: ${profileToShareUrl(result)}`;
     try {
       if (navigator.share) {
         await navigator.share({ title: 'ClearGuard 유형 진단', text });
@@ -111,7 +99,6 @@ export default function DiagnosePage() {
     }
   }
 
->>>>>>> origin/main
   function handleRetake() {
     setResult(null);
     setAnswers(new Array(QUESTIONS.length).fill(-1));
@@ -122,7 +109,7 @@ export default function DiagnosePage() {
     const isDefensive = result.category === 'defensive';
     return (
       <main className="mx-auto flex w-full max-w-[480px] flex-1 flex-col items-center justify-center gap-6 px-6 py-12">
-        <div ref={cardRef} className="w-full rounded-2xl border border-neutral-200 bg-white p-6 dark:border-neutral-800 dark:bg-neutral-950">
+        <div className="w-full rounded-2xl border border-neutral-200 p-6 dark:border-neutral-800">
           {/* 분류 배지 */}
           <div className="flex items-center justify-between">
             <span
@@ -197,23 +184,6 @@ export default function DiagnosePage() {
             </div>
           )}
         </div>
-<<<<<<< HEAD
-        {/* 공유: 카드 이미지 복사 + 결과 재현 링크 (/diagnose/shared) */}
-        <ShareResultButtons
-          targetRef={cardRef}
-          shareUrl={profileToShareUrl(result)}
-          fileName={`clearguard-${result.typeCode}.png`}
-        />
-        <div className="flex w-full flex-col items-stretch gap-2 sm:flex-row sm:justify-center">
-          <Button label="내 유형 맞춤 계약서 판독하러 가기" variant="primary" size="lg" href="/scan" />
-          <button
-            type="button"
-            onClick={handleRetake}
-            className="rounded-xl border border-neutral-300 px-5 py-3 text-sm font-bold text-neutral-700 dark:border-neutral-700 dark:text-neutral-300"
-          >
-            다시 검사하기
-          </button>
-=======
         {/* 주 버튼은 한 줄 전폭, 보조 버튼 3개는 가로로 균등 분할 —
             셋을 한 줄에 욱여넣으면 "결과 공\n유하기"처럼 어색하게 끊깁니다. */}
         <div className="flex w-full flex-col gap-2">
@@ -249,7 +219,6 @@ export default function DiagnosePage() {
             </button>
           </div>
           <Button label="내 유형 맞춤 학습 시작하기" variant="secondary" width="100%" href="/train" />
->>>>>>> origin/main
         </div>
       </main>
     );
