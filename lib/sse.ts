@@ -1,12 +1,6 @@
-// ============================================================
-// [B 담당] SSE 클라이언트 + 목업 스트림.
-// A 계약: /api/scan 은 stage:'triage' → stage:'full' 두 이벤트를 순서로 보냄.
-//   각 이벤트 = { stage, result: ScanResult }, 형식 data: {JSON}\n\n
-// USE_MOCK_STREAM=true 면 A API 없이 목업 2단계를 시간차로 재생.
-// ============================================================
-
 import { USE_MOCK_STREAM } from './config';
 import { SAMPLES, type Sample } from './mock.scan';
+import { isScanErrorFrame } from './sseProtocol';
 import type { ScanRequest, ScanResult, ScanStreamEvent } from './types';
 
 export async function scanStream(
@@ -36,11 +30,12 @@ export async function scanStream(
     while ((idx = buffer.indexOf('\n\n')) !== -1) {
       const frame = buffer.slice(0, idx);
       buffer = buffer.slice(idx + 2);
+      if (isScanErrorFrame(frame)) throw new Error('scan failed');
       for (const line of frame.split('\n')) {
         if (!line.startsWith('data:')) continue;
         const payload = line.slice(5).trim();
         if (!payload) continue;
-        try { onEvent(JSON.parse(payload) as ScanStreamEvent); } catch { /* skip */ }
+        try { onEvent(JSON.parse(payload) as ScanStreamEvent); } catch {}
       }
     }
   }
@@ -62,7 +57,7 @@ async function mockStream(
   try {
     await wait(600);
     onEvent({ stage: 'triage', result: { ...s.triage, ...meta } as ScanResult });
-    await wait(1400); // 정밀 분석 소요를 흉내
+    await wait(1400);
     onEvent({ stage: 'full', result: { ...s.full, ...meta } as ScanResult });
-  } catch { /* aborted */ }
+  } catch {}
 }
