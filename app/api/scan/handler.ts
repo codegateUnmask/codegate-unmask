@@ -105,6 +105,23 @@ async function parseRequest(request: Request): Promise<ScanRequest | Response> {
   };
 }
 
+/**
+ * 판독 단계 실패를 서버 로그에만 남깁니다.
+ *
+ * 기존에는 `catch {}`로 통째로 버려서 프로덕션 장애의 원인을 볼 수 없었습니다
+ * (실제로 정밀 분석 타임아웃을 추적하는 데 오래 걸렸습니다).
+ * ⚠️ 응답 본문에는 그대로 두지 않습니다 — 원문·프로바이더 메시지가 새면 안 되므로
+ *    에러 종류와 이름만 남기고 메시지 본문은 로그에도 넣지 않습니다.
+ */
+function logStageFailure(stage: 'triage' | 'full', error: unknown): void {
+  const name = error instanceof Error ? error.name : typeof error;
+  const isTimeout =
+    error instanceof Error && /timeout|aborted|ETIMEDOUT/i.test(`${error.name}${error.message}`);
+  console.error(
+    `[scan] ${stage} 단계 실패 — type=${name}${isTimeout ? ' (타임아웃 의심)' : ''}`,
+  );
+}
+
 function toSSE(event: ScanStreamEvent): string {
   return `data: ${JSON.stringify(event)}\n\n`;
 }
@@ -125,7 +142,10 @@ export function createScanHandler(engine: ScanEngine) {
 
         const triageResult = await engine
           .runTriage(text, parsed.docType, parsed.profile)
-          .catch(() => null);
+          .catch((error: unknown) => {
+            logStageFailure('triage', error);
+            return null;
+          });
         if (triageResult) {
           controller.enqueue(encoder.encode(toSSE({ stage: 'triage', result: triageResult })));
         }
@@ -133,7 +153,8 @@ export function createScanHandler(engine: ScanEngine) {
         try {
           const result = await engine.analyzeDocument(text, parsed.docType, parsed.profile);
           controller.enqueue(encoder.encode(toSSE({ stage: 'full', result })));
-        } catch {
+        } catch (error: unknown) {
+          logStageFailure('full', error);
           controller.enqueue(encoder.encode(toErrorSSE()));
         } finally {
           controller.close();
