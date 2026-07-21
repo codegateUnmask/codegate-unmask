@@ -4,8 +4,9 @@
 // ============================================================
 'use client';
 
-import { useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { useSession } from 'next-auth/react';
+import { AnimatePresence, motion, useReducedMotion } from 'motion/react';
 import { Button } from '@astryxdesign/core/Button';
 import { SelectableCard } from '@astryxdesign/core/SelectableCard';
 import type { VulnAxes, VulnProfile } from '@/lib/types';
@@ -27,8 +28,11 @@ export default function DiagnosePage() {
   const [answers, setAnswers] = useState<number[]>(new Array(QUESTIONS.length).fill(-1));
   const [result, setResult] = useState<VulnProfile | null>(null);
   const [loading, setLoading] = useState(false);
-
-  const answered = answers.filter((a) => a >= 0).length;
+  // step: -1 인트로, 0~15 문항, QUESTIONS.length 제출(분석 중)
+  const [step, setStep] = useState(-1);
+  const [dir, setDir] = useState(1);
+  const advanceTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const reduced = useReducedMotion();
 
   async function handleSubmit() {
     setLoading(true);
@@ -50,6 +54,34 @@ export default function DiagnosePage() {
     }
   }
 
+  function handleSelect(qi: number, score: number) {
+    setAnswers((prev) => prev.map((a, i) => (i === qi ? score : a)));
+    if (advanceTimer.current) clearTimeout(advanceTimer.current);
+    advanceTimer.current = setTimeout(
+      () => {
+        setDir(1);
+        setStep(qi + 1);
+      },
+      reduced ? 0 : 250,
+    );
+  }
+
+  function goBack() {
+    if (advanceTimer.current) clearTimeout(advanceTimer.current);
+    setDir(-1);
+    setStep((s) => s - 1);
+  }
+
+  useEffect(() => {
+    window.scrollTo({ top: 0 });
+    if (step === QUESTIONS.length && !result) handleSubmit();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [step]);
+
+  useEffect(() => () => {
+    if (advanceTimer.current) clearTimeout(advanceTimer.current);
+  }, []);
+
   async function handleShare() {
     if (!result) return;
     const text = `[ClearGuard 사기 취약 유형 진단]\n나는 「${result.typeName}」 — ${result.tagline}\n1분 진단하기: ${window.location.origin}/diagnose`;
@@ -68,6 +100,7 @@ export default function DiagnosePage() {
   function handleRetake() {
     setResult(null);
     setAnswers(new Array(QUESTIONS.length).fill(-1));
+    setStep(-1);
     window.scrollTo({ top: 0 });
   }
 
@@ -171,42 +204,122 @@ export default function DiagnosePage() {
     );
   }
 
+  const q = step >= 0 && step < QUESTIONS.length ? QUESTIONS[step] : null;
+  const slide = reduced ? 0 : 48;
+  const variants = {
+    enter: (d: number) => ({ x: d * slide, opacity: reduced ? 1 : 0 }),
+    center: { x: 0, opacity: 1 },
+    exit: (d: number) => ({ x: d * -slide, opacity: reduced ? 1 : 0 }),
+  };
+
   return (
-    <main className="mx-auto flex w-full max-w-[480px] flex-1 flex-col gap-6 px-6 py-12">
-      <h1 className="text-2xl font-bold">나는 어떤 사기에 약할까?</h1>
-
-      <div className="space-y-6">
-        {QUESTIONS.map((q, qi) => (
-          <div key={q.id}>
-            <p className="mb-2 font-medium">{q.text}</p>
-            <div className="flex flex-col gap-2">
-              {q.options.map((opt, oi) => (
-                <SelectableCard
-                  key={oi}
-                  label={opt.label}
-                  isSelected={answers[qi] === opt.score}
-                  onChange={() =>
-                    setAnswers((prev) => prev.map((a, i) => (i === qi ? opt.score : a)))
-                  }
-                  padding={2}
-                >
-                  <span className="text-sm font-medium text-[var(--color-text-primary)]">{opt.label}</span>
-                </SelectableCard>
-              ))}
-            </div>
+    <main className="mx-auto flex w-full max-w-[480px] flex-1 flex-col px-6 py-6">
+      {q && (
+        <div className="flex items-center gap-3">
+          <button
+            type="button"
+            onClick={goBack}
+            aria-label="이전으로"
+            className="-ml-2 grid h-11 w-11 shrink-0 place-items-center rounded-full text-[var(--color-text-secondary)]"
+          >
+            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+              <path
+                d="M15 5l-7 7 7 7"
+                stroke="currentColor"
+                strokeWidth="2.2"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+              />
+            </svg>
+          </button>
+          <div className="h-1.5 flex-1 overflow-hidden rounded-full bg-[var(--color-neutral)]">
+            <div
+              className="h-full rounded-full bg-[var(--color-accent)] transition-[width] duration-300"
+              style={{ width: `${((step + 1) / QUESTIONS.length) * 100}%` }}
+            />
           </div>
-        ))}
-      </div>
+          <span className="shrink-0 text-xs font-bold tabular-nums text-[var(--color-text-secondary)]">
+            {step + 1} / {QUESTIONS.length}
+          </span>
+        </div>
+      )}
 
-      <div className="self-start">
-        <Button
-          label={loading ? '분석 중…' : '결과 보기'}
-          variant="primary"
-          size="lg"
-          isDisabled={answered < QUESTIONS.length}
-          isLoading={loading}
-          onClick={handleSubmit}
-        />
+      <div className="relative flex min-h-[68dvh] flex-col justify-center">
+        <AnimatePresence mode="popLayout" custom={dir} initial={false}>
+          <motion.div
+            key={step}
+            custom={dir}
+            variants={variants}
+            initial="enter"
+            animate="center"
+            exit="exit"
+            transition={{ duration: reduced ? 0 : 0.25, ease: 'easeOut' }}
+            className="w-full"
+          >
+            {step === -1 && (
+              <div className="flex flex-col items-start gap-6">
+                <div>
+                  <h1 className="text-[28px] font-bold leading-snug">
+                    나는 어떤 사기에
+                    <br />
+                    약할까?
+                  </h1>
+                  <p className="mt-2 text-sm font-medium text-[var(--color-text-secondary)]">
+                    16문항 · 약 1분
+                  </p>
+                </div>
+                <ul className="space-y-2 text-[15px] text-[var(--color-text-primary)]">
+                  <li className="flex items-start gap-2">
+                    <span aria-hidden="true">🃏</span>
+                    <span>내 사기 취약 유형 카드를 받아요</span>
+                  </li>
+                  <li className="flex items-start gap-2">
+                    <span aria-hidden="true">🎯</span>
+                    <span>계약서 판독 결과에 맞춤 경고가 붙어요</span>
+                  </li>
+                </ul>
+                <Button
+                  label="시작하기"
+                  variant="primary"
+                  size="lg"
+                  onClick={() => {
+                    setDir(1);
+                    setStep(0);
+                  }}
+                />
+              </div>
+            )}
+
+            {q && (
+              <>
+                <p className="text-[19px] font-semibold leading-relaxed text-[var(--color-text-primary)]">
+                  {q.text}
+                </p>
+                <div className="mt-6 flex flex-col gap-2">
+                  {q.options.map((opt, oi) => (
+                    <SelectableCard
+                      key={oi}
+                      label={opt.label}
+                      isSelected={answers[step] === opt.score}
+                      onChange={() => handleSelect(step, opt.score)}
+                      padding={2}
+                    >
+                      <span className="text-sm font-medium text-[var(--color-text-primary)]">
+                        {opt.label}
+                      </span>
+                    </SelectableCard>
+                  ))}
+                </div>
+              </>
+            )}
+
+            {step === QUESTIONS.length && (
+              <p className="text-center text-lg font-semibold text-[var(--color-text-secondary)]">
+                {loading ? '결과 분석 중…' : '결과 정리 중…'}
+              </p>
+            )}
+          </motion.div>
+        </AnimatePresence>
       </div>
     </main>
   );
