@@ -88,7 +88,7 @@ export default function RequestPhrasesScreen({
         >
           <BackIcon />
         </button>
-        <ClearGuardLogo size={26} />
+        <ClearGuardLogo size={26} asHomeLink />
         <span aria-hidden="true" />
       </header>
 

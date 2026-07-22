@@ -75,7 +75,7 @@ export default function AnalysisProgressScreen({
     <section className={styles.screen} aria-labelledby="analysis-progress-title">
       <header className={styles.header}>
         <span />
-        <ClearGuardLogo size={26} />
+        <ClearGuardLogo size={26} asHomeLink />
         {onCancel ? (
           <button type="button" className={styles.iconButton} onClick={onCancel} aria-label="분석 취소">
             <CloseIcon />

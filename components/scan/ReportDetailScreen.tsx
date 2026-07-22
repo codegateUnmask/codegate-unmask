@@ -141,7 +141,7 @@ export default function ReportDetailScreen({
         <button type="button" className={styles.headerIcon} onClick={onBack} aria-label="뒤로가기">
           <BackIcon />
         </button>
-        <ClearGuardLogo size={26} />
+        <ClearGuardLogo size={26} asHomeLink />
         <span aria-hidden="true" />
       </header>
 
