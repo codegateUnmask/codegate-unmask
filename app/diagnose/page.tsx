@@ -13,6 +13,7 @@ import type { VulnAxes, VulnProfile } from '@/lib/types';
 import { QUESTIONS } from '@/lib/diagnosis/questions';
 import { useAppStore } from '@/lib/store';
 import { ANON_OWNER, FRESH_DIAGNOSIS_KEY, identityKey } from '@/components/auth/identity';
+import { ClearGuardLogo } from '@/components/brand/ClearGuardLogo';
 import { profileToShareUrl } from '@/lib/share';
 import { renderResultCard } from '@/lib/diagnosis/resultCard';
 
@@ -351,6 +352,10 @@ export default function DiagnosePage() {
             {step === -1 && (
               <div className="flex flex-col items-start gap-6">
                 <div>
+                  {/* 시작 화면이 비어 보여 브랜드를 얹었습니다 (판독 화면 헤더와 같은 로고) */}
+                  <div className="mb-5">
+                    <ClearGuardLogo size={30} />
+                  </div>
                   <h1 className="text-[28px] font-bold leading-snug">
                     나는 어떤 사기에
                     <br />
