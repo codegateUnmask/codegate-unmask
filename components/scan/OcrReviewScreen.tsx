@@ -2,6 +2,7 @@
 
 import type { ContractOcrAssessment } from '@/lib/ocr-confidence';
 import styles from './OcrReviewScreen.module.css';
+import { ClearGuardLogo } from '@/components/brand/ClearGuardLogo';
 
 const ICON_PATHS = {
   security: 'M12 1 3 5v6c0 5.55 3.84 10.74 9 12 5.16-1.26 9-6.45 9-12V5l-9-4Zm0 2.18 7 3.11V11c0 4.52-2.98 8.69-7 9.93C7.98 19.69 5 15.52 5 11V6.29l7-3.11Z',
@@ -60,7 +61,7 @@ export function OcrReviewScreen({
             <path d={ARROW_LEFT} />
           </svg>
         </button>
-        <h1 className={styles.logo}>ClearGuard</h1>
+        <h1 className={styles.logo}><ClearGuardLogo size={26} /></h1>
         <span className={styles.iconButton} aria-hidden="true" />
       </header>
 

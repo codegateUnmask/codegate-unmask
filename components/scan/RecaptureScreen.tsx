@@ -1,6 +1,7 @@
 'use client';
 
 import styles from './RecaptureScreen.module.css';
+import { ClearGuardLogo } from '@/components/brand/ClearGuardLogo';
 
 export type RecaptureReason =
   | 'blur'
@@ -126,7 +127,7 @@ export function RecaptureScreen({
         >
           <BackIcon />
         </button>
-        <h1 className={styles.logo}>ClearGuard</h1>
+        <h1 className={styles.logo}><ClearGuardLogo size={26} /></h1>
         <span className={styles.iconButton} aria-hidden="true" />
       </header>
 

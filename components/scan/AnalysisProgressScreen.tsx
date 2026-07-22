@@ -1,5 +1,6 @@
 import type { AnalysisStage } from '@/lib/types';
 import styles from './AnalysisProgressScreen.module.css';
+import { ClearGuardLogo } from '@/components/brand/ClearGuardLogo';
 
 function ShieldIcon() {
   return (
@@ -74,12 +75,7 @@ export default function AnalysisProgressScreen({
     <section className={styles.screen} aria-labelledby="analysis-progress-title">
       <header className={styles.header}>
         <span />
-        <div className={styles.brand}>
-          <span className={styles.brandIcon}>
-            <ShieldIcon />
-          </span>
-          <span>ClearGuard</span>
-        </div>
+        <ClearGuardLogo size={26} />
         {onCancel ? (
           <button type="button" className={styles.iconButton} onClick={onCancel} aria-label="분석 취소">
             <CloseIcon />

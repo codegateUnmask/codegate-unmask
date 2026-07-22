@@ -1,5 +1,6 @@
 import type { Finding, RiskLevel, ScanResult } from '@/lib/types';
 import styles from './ReportDetailScreen.module.css';
+import { ClearGuardLogo } from '@/components/brand/ClearGuardLogo';
 
 function BackIcon() {
   return (
@@ -140,12 +141,7 @@ export default function ReportDetailScreen({
         <button type="button" className={styles.headerIcon} onClick={onBack} aria-label="뒤로가기">
           <BackIcon />
         </button>
-        <span className={styles.brand}>
-          <span className={styles.brandIcon}>
-            <ShieldIcon />
-          </span>
-          <span>ClearGuard</span>
-        </span>
+        <ClearGuardLogo size={26} />
         <span aria-hidden="true" />
       </header>
 

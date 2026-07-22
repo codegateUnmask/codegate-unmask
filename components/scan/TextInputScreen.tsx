@@ -5,6 +5,7 @@ import InputGuidance from './InputGuidance';
 import { checkDocTypeMatch } from '@/lib/knowledge/router';
 import type { DocType } from '@/lib/types';
 import styles from './TextInputScreen.module.css';
+import { ClearGuardLogo } from '@/components/brand/ClearGuardLogo';
 
 const DOC_OPTIONS: { key: DocType; label: string }[] = [
   { key: 'lease', label: '전월세 계약서' },
@@ -87,7 +88,7 @@ export function TextInputScreen({
         >
           <BackIcon />
         </button>
-        <h1 className={styles.logo}>ClearGuard</h1>
+        <h1 className={styles.logo}><ClearGuardLogo size={26} /></h1>
         <span className={styles.iconButton} aria-hidden="true" />
       </header>
 

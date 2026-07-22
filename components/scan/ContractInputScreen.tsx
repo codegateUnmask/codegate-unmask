@@ -5,6 +5,7 @@ import { USE_OCR } from '@/lib/config';
 import type { Sample } from '@/lib/mock.scan';
 import type { DocType, VulnProfile } from '@/lib/types';
 import styles from './ContractInputScreen.module.css';
+import { ClearGuardLogo } from '@/components/brand/ClearGuardLogo';
 
 type InputMode = 'camera' | 'upload' | 'text';
 
@@ -110,7 +111,7 @@ export function ContractInputScreen({
         ) : (
           <span className={styles.iconButton} aria-hidden="true" />
         )}
-        <h1 className={styles.logo}>ClearGuard</h1>
+        <h1 className={styles.logo}><ClearGuardLogo size={26} /></h1>
         <span className={styles.iconButton} aria-hidden="true" />
       </header>
 
