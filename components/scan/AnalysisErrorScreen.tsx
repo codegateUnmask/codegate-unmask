@@ -55,7 +55,7 @@ export default function AnalysisErrorScreen({ kind, onRetry, onEdit, onBack }: A
         <button type="button" className={styles.iconButton} onClick={onBack} aria-label="이전 화면으로">
           <BackIcon />
         </button>
-        <ClearGuardLogo size={26} />
+        <ClearGuardLogo size={26} asHomeLink />
         <span />
       </header>
 

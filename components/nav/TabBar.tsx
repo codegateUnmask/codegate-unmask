@@ -27,8 +27,10 @@ export default function TabBar() {
   const scanStatus = useScanStore((s) => s.status);
   const reduceMotion = useReducedMotion();
 
-  // 판독 몰입 구간(progress→result→report)에서는 탭바를 숨긴다
-  if (pathname.startsWith('/scan') && scanStatus !== 'idle') return null;
+  // 분석이 도는 동안(triage→full)만 탭바를 숨겨 몰입을 유지한다.
+  // 결과가 나온 뒤(done)에도 숨기면 다른 탭으로 나갈 길이 없어진다.
+  const analyzing = scanStatus === 'triage' || scanStatus === 'full';
+  if (pathname.startsWith('/scan') && analyzing) return null;
 
   const activeIndex = TABS.findIndex((tab) =>
     tab.href === '/' ? pathname === '/' : pathname.startsWith(tab.href),

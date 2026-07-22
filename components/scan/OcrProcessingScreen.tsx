@@ -85,7 +85,7 @@ export function OcrProcessingScreen({
     <div className={styles.screen}>
       <header className={styles.header}>
         <span className={styles.iconButton} aria-hidden="true" />
-        <h1 className={styles.logo}><ClearGuardLogo size={26} /></h1>
+        <h1 className={styles.logo}><ClearGuardLogo size={26} asHomeLink /></h1>
         <button
           type="button"
           className={styles.iconButton}

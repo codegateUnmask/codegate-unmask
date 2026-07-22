@@ -88,7 +88,7 @@ export function TextInputScreen({
         >
           <BackIcon />
         </button>
-        <h1 className={styles.logo}><ClearGuardLogo size={26} /></h1>
+        <h1 className={styles.logo}><ClearGuardLogo size={26} asHomeLink /></h1>
         <span className={styles.iconButton} aria-hidden="true" />
       </header>
 
