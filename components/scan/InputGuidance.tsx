@@ -7,10 +7,10 @@
 //   1) 긴급 위협(납치·협박 빙자) — 판독보다 신고가 급한 경우
 //   2) 문서 유형 불일치 — 고른 탭과 붙여넣은 내용이 안 맞는 경우
 //
-// ⚠️ 설계 원칙: **막지 않고 안내만 합니다.**
-//    키워드 기반 판정이라 오탐이 가능하고, 정상 이용을 가로막는 쪽이
-//    놓치는 쪽보다 나쁩니다. 그래서 판독 버튼은 항상 살아 있고,
-//    전환은 사용자가 직접 누를 때만 일어납니다.
+// ⚠️ 설계 원칙(2026-07-22 개정): 애매하면(ok/unknown) 막지 않지만,
+//    **뚜렷한 불일치(mismatch)는 입력 화면이 판독을 막고** 이 배너의 버튼으로
+//    올바른 유형 전환을 안내합니다. 잘못된 카테고리의 판독 결과는
+//    정확하지 않은데 정확해 보여서, 안내만 하는 것보다 해롭습니다.
 // ============================================================
 
 import type { DocTypeMatch } from '@/lib/knowledge/router';
@@ -89,9 +89,24 @@ export function InputGuidance({ match, onSwitch }: InputGuidanceProps) {
           </a>
         </div>
 
-        <p className={styles.emergencyFoot}>
-          판독은 계속 진행할 수 있지만, 위 확인이 먼저입니다.
-        </p>
+        {status === 'mismatch' && suggested ? (
+          <>
+            <p className={styles.emergencyFoot}>
+              이 내용은 계약서가 아니라 <strong>{DOC_LABELS[suggested]}</strong> 판독 대상입니다.
+            </p>
+            <button
+              type="button"
+              className={styles.switchButton}
+              onClick={() => onSwitch(suggested)}
+            >
+              {DOC_LABELS[suggested]} 유형으로 바꾸고 판독하기
+            </button>
+          </>
+        ) : (
+          <p className={styles.emergencyFoot}>
+            판독은 계속 진행할 수 있지만, 위 확인이 먼저입니다.
+          </p>
+        )}
       </section>
     );
   }

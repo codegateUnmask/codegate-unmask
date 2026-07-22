@@ -67,11 +67,14 @@ export function TextInputScreen({
   onBack,
   disabled = false,
 }: TextInputScreenProps) {
-  const canAnalyze = !disabled && docType !== null && text.trim().length > 0;
   const match = useMemo(
     () => (docType ? checkDocTypeMatch(text, docType) : null),
     [text, docType],
   );
+  // 뚜렷한 유형 불일치(협박문 포함)면 판독을 막고 전환을 안내합니다 —
+  // 잘못된 카테고리의 판독 결과는 정확하지 않은데 정확해 보여서 더 해롭습니다.
+  const blocked = match?.status === 'mismatch';
+  const canAnalyze = !disabled && docType !== null && text.trim().length > 0 && !blocked;
 
   return (
     <div className={styles.screen}>
@@ -150,7 +153,9 @@ export function TextInputScreen({
           disabled={!canAnalyze}
           onClick={onAnalyze}
         >
-          이 내용 분석하기
+          {blocked && match?.suggested
+            ? '위 안내에서 유형을 바꾸면 분석할 수 있어요'
+            : '이 내용 분석하기'}
         </button>
       </footer>
     </div>

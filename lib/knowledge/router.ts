@@ -40,8 +40,8 @@ const THREAT_SIGNALS = {
   harm: ['납치', '감금', '데리고 있다', '데리고있다', '죽인다', '죽여', '해친다', '손가락', '장기를', '팔아넘'],
   /** 신고·주변 차단 — 협박범의 전형적 고립 시도 */
   isolate: ['신고하면', '신고하지 마', '경찰에 알리', '알리지 마', '아무에게도', '혼자 와', '전화 끊지'],
-  /** 즉시 금전 요구 */
-  extort: ['몸값', '지금 즉시 입금', '입금해', '송금해', '계좌로 보내', '시간 안에'],
+  /** 즉시 금전 요구 — 명령형 어미까지 포함(실측: "5천만원을 보내라"가 안 걸렸음) */
+  extort: ['몸값', '지금 즉시 입금', '입금해', '입금하라', '송금해', '송금하라', '계좌로 보내', '원을 보내', '보내라', '시간 안에'],
 } as const;
 
 export interface ThreatAssessment {
@@ -106,10 +106,10 @@ export interface DocTypeMatch {
 /**
  * 사용자가 고른 유형과 붙여넣은 본문이 어울리는지 확인합니다.
  *
- * 설계 원칙 — **막지 않고 안내만 합니다.**
- * 키워드 신호는 어디까지나 힌트라서, 오탐으로 정상 이용을 가로막는 쪽이
- * 놓치는 쪽보다 나쁩니다. 그래서 신호가 아예 없으면(unknown) 아무 말도 하지 않고,
- * 다른 유형이 뚜렷하게 우세할 때만 전환을 권합니다.
+ * 설계 원칙(2026-07-22 개정) — 신호가 없으면(unknown) 아무 말도 하지 않지만,
+ * **다른 유형이 뚜렷하게 우세하면(mismatch) 입력 화면에서 판독을 막고 전환을 안내**합니다.
+ * 잘못된 카테고리로 낸 판독 결과는 정확하지 않은데 정확해 보여서, 안내만 하는 것보다
+ * 해롭다는 실사용 판단(현찬). 애매한 경우(ok/unknown)는 여전히 막지 않습니다.
  */
 export function checkDocTypeMatch(text: string, selected: DocType): DocTypeMatch {
   const threat = assessThreat(text);
@@ -117,6 +117,13 @@ export function checkDocTypeMatch(text: string, selected: DocType): DocTypeMatch
 
   if (trimmed.length < MIN_TEXT_LENGTH) {
     return { status: 'too-short', suggested: null, threat };
+  }
+
+  // 긴급 위협(협박·납치 빙자)은 계약서가 아니라 '문자' 판독 대상입니다.
+  // 키워드 점수 마진과 무관하게 문자 유형 전환을 권합니다.
+  // (실측: 납치 협박문이 근로계약서 탭에서 마진 1점 차로 'ok' 판정된 사고 방지)
+  if (threat.isEmergency && selected !== 'message') {
+    return { status: 'mismatch', suggested: 'message', threat };
   }
 
   const ranked = guessDocType(trimmed);

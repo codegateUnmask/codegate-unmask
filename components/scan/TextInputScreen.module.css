@@ -52,7 +52,7 @@ span.iconButton {
 }
 
 .main {
-  padding: 88px 20px 140px;
+  padding: 88px 20px 204px;
 }
 
 .intro h2 {
@@ -178,7 +178,7 @@ span.iconButton {
 
 .footer {
   position: fixed;
-  bottom: 0;
+  bottom: calc(64px + env(safe-area-inset-bottom));
   left: 50%;
   z-index: 20;
   width: min(100%, 480px);
