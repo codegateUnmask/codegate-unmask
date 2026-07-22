@@ -2,6 +2,7 @@
 
 import { useEffect, useRef, useState } from 'react';
 import styles from './RequestPhrasesScreen.module.css';
+import { ClearGuardLogo } from '@/components/brand/ClearGuardLogo';
 
 function BackIcon() {
   return (
@@ -87,12 +88,7 @@ export default function RequestPhrasesScreen({
         >
           <BackIcon />
         </button>
-        <span className={styles.brand}>
-          <span className={styles.brandIcon}>
-            <ShieldIcon />
-          </span>
-          <span>ClearGuard</span>
-        </span>
+        <ClearGuardLogo size={26} />
         <span aria-hidden="true" />
       </header>
 

@@ -4,6 +4,7 @@ import GlossaryText from '@/components/viewer/GlossaryText';
 import { riskPercent, segmentDoc } from '@/lib/risk';
 import type { Finding, RiskLevel, ScanResult } from '@/lib/types';
 import styles from './AnalysisResultScreen.module.css';
+import { ClearGuardLogo } from '@/components/brand/ClearGuardLogo';
 
 /** mock.scan의 확장 필드 — 협상이 어려울 때의 차선책 */
 type FindingWithCompromise = Finding & { compromise?: string };
@@ -137,12 +138,7 @@ export default function AnalysisResultScreen({
         <button type="button" className={styles.headerIcon} onClick={onBack} aria-label="뒤로가기">
           <BackIcon />
         </button>
-        <span className={styles.brand}>
-          <span className={styles.brandIcon}>
-            <ShieldIcon />
-          </span>
-          <span>ClearGuard</span>
-        </span>
+        <ClearGuardLogo size={26} />
         <span className={styles.headerIcon} aria-hidden="true" />
       </header>
 

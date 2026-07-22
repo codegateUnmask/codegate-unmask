@@ -1,6 +1,7 @@
 'use client';
 
 import styles from './OcrProcessingScreen.module.css';
+import { ClearGuardLogo } from '@/components/brand/ClearGuardLogo';
 
 export type OcrProcessingStage = 'quality' | 'extract' | 'verify';
 
@@ -84,7 +85,7 @@ export function OcrProcessingScreen({
     <div className={styles.screen}>
       <header className={styles.header}>
         <span className={styles.iconButton} aria-hidden="true" />
-        <h1 className={styles.logo}>ClearGuard</h1>
+        <h1 className={styles.logo}><ClearGuardLogo size={26} /></h1>
         <button
           type="button"
           className={styles.iconButton}

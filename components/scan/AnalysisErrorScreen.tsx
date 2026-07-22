@@ -1,4 +1,5 @@
 import styles from './AnalysisErrorScreen.module.css';
+import { ClearGuardLogo } from '@/components/brand/ClearGuardLogo';
 
 function ShieldIcon() {
   return (
@@ -54,12 +55,7 @@ export default function AnalysisErrorScreen({ kind, onRetry, onEdit, onBack }: A
         <button type="button" className={styles.iconButton} onClick={onBack} aria-label="이전 화면으로">
           <BackIcon />
         </button>
-        <div className={styles.brand}>
-          <span className={styles.brandIcon}>
-            <ShieldIcon />
-          </span>
-          <span>ClearGuard</span>
-        </div>
+        <ClearGuardLogo size={26} />
         <span />
       </header>
 
